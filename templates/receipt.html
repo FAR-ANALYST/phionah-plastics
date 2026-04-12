@@ -1,9 +1,42 @@
-<div style="text-align: center; border: 2px solid #000; padding: 20px; width: 300px; margin: auto;">
-    <h2>Order #{{ order.order_id }}</h2>
-    <p>Total: UGX {{ order.total_price }}</p>
-    <p>Paid: UGX {{ order.amount_paid }}</p>
-    <h3 style="color: red;">Balance: UGX {{ order.balance }}</h3>
-    <p>Location: {{ order.location }}</p>
-    <p><strong>Status: {{ order.status }}</strong></p>
-    <p>Use Order ID {{ order.order_id }} to track.</p>
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Receipt</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .receipt-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .success-icon { color: #4CAF50; font-size: 50px; }
+        .details { text-align: left; margin: 20px 0; border-top: 1px dashed #ccc; padding-top: 20px; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .btn-back { 
+            display: inline-block; 
+            background: #004a99; 
+            color: white; 
+            text-decoration: none; 
+            padding: 12px 25px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            margin-top: 20px;
+        }
+        .btn-back:hover { background: #003366; }
+    </style>
+</head>
+<body>
+    <div class="receipt-card">
+        <div class="success-icon">✔</div>
+        <h2>Order Received!</h2>
+        <p>Thank you, {{ order.username }}. We are processing your order for delivery to {{ order.location }}.</p>
+        
+        <div class="details">
+            <div class="row"><strong>Items:</strong> <span>{{ order.item_name }}</span></div>
+            <div class="row"><strong>Total:</strong> <span>UGX {{ "{:,}".format(order.total_price) }}</span></div>
+            <div class="row"><strong>Paid:</strong> <span>UGX {{ "{:,}".format(order.amount_paid) }}</span></div>
+            <div class="row"><strong>Balance:</strong> <span style="color: red;">UGX {{ "{:,}".format(order.balance) }}</span></div>
+        </div>
+
+        <p style="font-size: 0.9em; color: #666;">Please keep your Order ID: <strong>#{{ order.order_id }}</strong></p>
+        
+        <a href="/" class="btn-back">Go Back to Shop</a>
+    </div>
+</body>
+</html>
