@@ -4,37 +4,25 @@ from supabase import create_client, Client
 
 app = Flask(__name__)
 
-# 1. Retrieve keys
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+# Hardcoded keys as a fallback to ensure the connection works
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://vzeznnngcqzdwnfqwtra.supabase.co")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6ZXpubnRnY3F6ZHduZnF3dHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5ODI5NTMsImV4cCI6MjA5MTU1ODk1M30.DgAjwuAOa46jXdVoq_BglmBiNNP2Rfa_N1Ja3wylhDk")
 
-# 2. Initialize the client OUTSIDE the routes
-# If keys are missing, we use None to avoid the NameError
-supabase = None
-if SUPABASE_URL and SUPABASE_KEY:
-    try:
-        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-    except Exception as e:
-        print(f"Failed to connect to Supabase: {e}")
+# Initialize the client
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/')
 def index():
-    # 3. Check if supabase exists before using it
-    if not supabase:
-        return "Database keys are missing or incorrect. Please check Render Environment Variables."
-    
     try:
         response = supabase.table("products").select("*").execute()
         product_list = response.data if response.data else []
         return render_template('index.html', products=product_list)
     except Exception as e:
-        print(f"Error: {e}")
-        return "Internal Error: Could not fetch products."
+        print(f"Database Error: {e}")
+        return f"Error connecting to Supabase: {e}"
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
-    if not supabase: return "Database Error"
-    
     username = request.form.get('username')
     location = request.form.get('location')
     product_id = int(request.form.get('product_id'))
@@ -60,7 +48,6 @@ def place_order():
 
 @app.route('/track', methods=['POST'])
 def track():
-    if not supabase: return "Database Error"
     order_id = request.form.get('order_id')
     order = supabase.table("orders").select("*").eq("order_id", order_id).execute()
     result = order.data[0] if order.data else None
@@ -68,13 +55,11 @@ def track():
 
 @app.route('/admin')
 def admin():
-    if not supabase: return "Database Error"
     orders = supabase.table("orders").select("*").order("order_id").execute()
     return render_template('admin.html', orders=orders.data)
 
 @app.route('/update_status/<int:order_id>')
 def update_status(order_id):
-    if not supabase: return "Database Error"
     supabase.table("orders").update({"status": "On the Way"}).eq("order_id", order_id).execute()
     return redirect(url_for('admin'))
 
