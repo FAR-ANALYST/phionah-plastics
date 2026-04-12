@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel - Phionah Plastics</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #333; color: white; }
+        .status-btn { background: #28a745; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>Order Management</h1>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Item</th>
+            <th>Balance</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+        {% for o in orders %}
+        <tr>
+            <td>{{ o.order_id }}</td>
+            <td>{{ o.username }} ({{ o.location }})</td>
+            <td>{{ o.item_name }}</td>
+            <td>UGX {{ o.balance }}</td>
+            <td><strong>{{ o.status }}</strong></td>
+            <td>
+                {% if o.status == 'Pending' %}
+                <a href="/update_status/{{ o.order_id }}" class="status-btn">Ship Order</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

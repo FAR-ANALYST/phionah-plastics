@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Phionah Plastics - Shop</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+        .product-card { border: 1px solid #ddd; padding: 10px; margin: 10px 0; display: flex; align-items: center; border-radius: 8px; }
+        .product-img { width: 80px; height: 80px; object-fit: cover; margin-right: 15px; border-radius: 5px; }
+        .btn { background: #007bff; color: white; padding: 10px; border: none; width: 100%; cursor: pointer; border-radius: 5px; }
+        .info { color: #d32f2f; font-weight: bold; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Phionah Plastics</h1>
+        <p class="info">Pay via Airtel Money: 0703070193</p>
+        
+        <form action="/place_order" method="post">
+            <input type="text" name="username" placeholder="Your Name" required style="width:100%; margin-bottom:10px; padding:8px;">
+            <input type="text" name="location" placeholder="Delivery Location" required style="width:100%; margin-bottom:10px; padding:8px;">
+            
+            <h3>Select Item:</h3>
+            {% for p in products %}
+            <div class="product-card">
+                <input type="radio" name="product_id" value="{{ p.id }}" required>
+                <img src="{{ url_for('static', filename='images/' + p.image_url) }}" class="product-img">
+                <div>
+                    <strong>{{ p.name }}</strong><br>
+                    Price: UGX {{ p.price }}
+                </div>
+            </div>
+            {% endfor %}
+            
+            <input type="number" name="quantity" placeholder="Quantity" min="1" required style="width:45%; padding:8px;">
+            <input type="number" name="amount_paid" placeholder="Amount Paid (UGX)" required style="width:45%; padding:8px;">
+            <br><br>
+            <button type="submit" class="btn">Confirm Order</button>
+        </form>
+
+        <hr>
+        <h4>Track Order</h4>
+        <form action="/track" method="post">
+            <input type="text" name="order_id" placeholder="Enter Order ID">
+            <button type="submit">Track Status</button>
+        </form>
+    </div>
+</body>
+</html>

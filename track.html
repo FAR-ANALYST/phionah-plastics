@@ -1,0 +1,9 @@
+<div style="text-align: center; padding: 50px;">
+    {% if order %}
+        <h1>Order #{{ order.order_id }} Status: <span style="color: blue;">{{ order.status }}</span></h1>
+        <p>Item: {{ order.item_name }} | Location: {{ order.location }}</p>
+    {% else %}
+        <h1>Order Not Found</h1>
+    {% endif %}
+    <a href="/">Back to Shop</a>
+</div>
