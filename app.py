@@ -4,11 +4,15 @@ from supabase import create_client, Client
 
 app = Flask(__name__)
 
-# Environment Variables for Render deployment
+# Retrieve keys from Render Environment Variables
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Create the client only if keys are present to avoid startup crash
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+else:
+    print("CRITICAL ERROR: Supabase Environment Variables are missing!")
 
 @app.route('/')
 def index():
@@ -23,7 +27,6 @@ def place_order():
     quantity = int(request.form.get('quantity'))
     amount_paid = int(request.form.get('amount_paid'))
     
-    # Get item price
     product_req = supabase.table("products").select("name, price").eq("id", product_id).single().execute()
     total_price = product_req.data['price'] * quantity
     balance = total_price - amount_paid
@@ -59,5 +62,6 @@ def update_status(order_id):
     return redirect(url_for('admin'))
 
 if __name__ == '__main__':
+    # Required for Render deployment
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
