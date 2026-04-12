@@ -1,42 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phionah's Shops Kampala</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        :root {
+            --primary-orange: #ff6600;
+            --secondary-blue: #004a99;
+            --bg-light: #f4f7f6;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-top: 8px solid var(--primary-orange);
+        }
+        h1 {
+            color: var(--secondary-blue);
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+        }
+        .product-card {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+        .product-card:hover {
+            transform: scale(1.02);
+            border-color: var(--primary-orange);
+        }
+        .product-card img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 15px;
+        }
+        .product-info { flex-grow: 1; }
+        .product-name { font-weight: bold; font-size: 1.1em; }
+        .product-price { color: var(--primary-orange); font-weight: bold; }
+        
+        input[type="number"], input[type="text"] {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 5px;
+        }
+        .qty-input { width: 80px !important; }
+
+        .total-box {
+            background: var(--secondary-blue);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        #grand-total { font-size: 1.5em; font-weight: bold; }
+
+        .payment-info {
+            background: #fff9e6;
+            padding: 15px;
+            border-left: 5px solid #ffcc00;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+        button {
+            background: var(--primary-orange);
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover { background: #e65c00; }
+    </style>
 </head>
 <body>
-    <h1>Phionah's Plastics & Cookware</h1>
-    <p>Select your items and quantities below:</p>
 
-    <form action="/place_order" method="POST">
-        <input type="text" name="username" placeholder="Your Name" required>
-        <input type="text" name="location" placeholder="Delivery Location" required>
-        
-        <table border="1">
-            <tr>
-                <th>Product</th>
-                <th>Price (UGX)</th>
-                <th>Quantity</th>
-            </tr>
-            {% for p in products %}
-            <tr>
-                <td>
-                    <img src="{{ url_for('static', filename='images/' + p.image_url) }}" width="50"><br>
-                    {{ p.name }}
-                </td>
-                <td>{{ "{:,}".format(p.price) }}</td>
-                <td>
-                    <input type="number" name="qty_{{ p.id }}" value="0" min="0">
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
+<div class="container">
+    <h1>Phionah's Shops</h1>
+    <p class="subtitle">Premium Plastics & Cookware Kampala</p>
 
-        <h3>Payment Information</h3>
-        <p>Airtel Money: 0703070193 (Kagulire Farouk)</p>
-        <input type="number" name="amount_paid" placeholder="Amount Paid (UGX)" required>
+    <form action="/place_order" method="POST" id="orderForm">
+        <label>Customer Name</label>
+        <input type="text" name="username" placeholder="Enter your name" required>
         
-        <button type="submit">Place Order</button>
+        <label>Delivery Location</label>
+        <input type="text" name="location" placeholder="e.g. Ntinda, Kampala" required>
+
+        <h3 style="margin-top:25px;">Available Products</h3>
+        
+        {% for p in products %}
+        <div class="product-card">
+            <img src="{{ url_for('static', filename='images/' + p.image_url) }}" alt="{{ p.name }}">
+            <div class="product-info">
+                <div class="product-name">{{ p.name }}</div>
+                <div class="product-price" data-price="{{ p.price }}">UGX {{ "{:,}".format(p.price) }}</div>
+            </div>
+            <div>
+                <input type="number" name="qty_{{ p.id }}" class="qty-input" 
+                       value="0" min="0" oninput="calculateTotal()">
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="total-box">
+            Total to Pay: <br>
+            <span id="grand-total">UGX 0</span>
+        </div>
+
+        <div class="payment-info">
+            <strong>How to Pay:</strong><br>
+            Send to Airtel Money: <strong>0703070193</strong> (Kagulire Farouk)<br>
+            Enter the amount you paid below:
+        </div>
+
+        <input type="number" name="amount_paid" placeholder="Enter Amount Paid (UGX)" required>
+        
+        <button type="submit" style="margin-top: 15px;">Place My Order</button>
     </form>
+</div>
+
+<script>
+    function calculateTotal() {
+        let total = 0;
+        // Find all product price elements
+        const priceElements = document.querySelectorAll('.product-price');
+        
+        priceElements.forEach(el => {
+            const price = parseInt(el.getAttribute('data-price'));
+            // Find the input that belongs to this specific product card
+            const qtyInput = el.closest('.product-card').querySelector('.qty-input');
+            const qty = parseInt(qtyInput.value) || 0;
+            total += (price * qty);
+        });
+
+        // Update the display with formatting
+        document.getElementById('grand-total').innerText = "UGX " + total.toLocaleString();
+    }
+</script>
+
 </body>
 </html>
