@@ -1,9 +1,28 @@
-<div style="text-align: center; padding: 50px;">
-    {% if order %}
-        <h1>Order #{{ order.order_id }} Status: <span style="color: blue;">{{ order.status }}</span></h1>
-        <p>Item: {{ order.item_name }} | Location: {{ order.location }}</p>
-    {% else %}
-        <h1>Order Not Found</h1>
-    {% endif %}
-    <a href="/">Back to Shop</a>
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Status</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; display: flex; justify-content: center; }
+        .status-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .status-badge { display: inline-block; padding: 8px 20px; border-radius: 20px; font-weight: bold; background: #e3f2fd; color: #1976d2; margin: 15px 0; }
+        .btn { display: block; padding: 12px; background: #004a99; color: white; text-decoration: none; border-radius: 8px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="status-card">
+        {% if order %}
+            <h2>Order #{{ order.order_id }}</h2>
+            <p>Hello <strong>{{ order.username }}</strong>,</p>
+            <div class="status-badge">{{ order.status }}</div>
+            <p>Delivery to: {{ order.location }}</p>
+            <p>Contact: {{ order.phone }}</p>
+            <p>Balance Due: <strong style="color: red;">UGX {{ "{:,}".format(order.balance) }}</strong></p>
+        {% else %}
+            <h2 style="color: red;">Order Not Found</h2>
+            <p>We couldn't find an order with that ID. Please check the number and try again.</p>
+        {% endif %}
+        <a href="/" class="btn">Back to Shop</a>
+    </div>
+</body>
+</html>
