@@ -5,193 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phionah's Shops Kampala</title>
     <style>
-        :root {
-            --primary-orange: #ff6600;
-            --secondary-blue: #004a99;
-            --bg-light: #f4f7f6;
-            --white: #ffffff;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-light);
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: var(--white);
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            border-top: 8px solid var(--primary-orange);
-        }
-        h1 {
-            color: var(--secondary-blue);
-            text-align: center;
-            margin-bottom: 5px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 25px;
-        }
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 15px;
-            color: var(--secondary-blue);
-        }
-        input[type="text"], input[type="number"] {
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            width: 100%;
-            box-sizing: border-box;
-            margin-top: 5px;
-            font-size: 16px;
-        }
-        .product-card {
-            display: flex;
-            align-items: center;
-            background: #fff;
-            border: 1px solid #eee;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            transition: transform 0.2s, border-color 0.2s;
-        }
-        .product-card:hover {
-            transform: scale(1.01);
-            border-color: var(--primary-orange);
-        }
-        .product-card img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-right: 15px;
-            background: #f9f9f9;
-        }
-        .product-info { flex-grow: 1; }
-        .product-name { font-weight: bold; font-size: 1.1em; color: #222; }
-        .product-price { color: var(--primary-orange); font-weight: bold; font-size: 1.05em; }
+        :root { --orange: #ff6600; --blue: #004a99; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 15px; border-top: 8px solid var(--orange); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         
-        .qty-input {
-            width: 70px !important;
-            text-align: center;
-            border: 2px solid var(--secondary-blue) !important;
-        }
+        .product-card { display: flex; align-items: center; border: 1px solid #eee; padding: 10px; margin-bottom: 10px; border-radius: 10px; }
+        .product-card img { width: 70px; height: 70px; border-radius: 5px; cursor: zoom-in; margin-right: 15px; border: 1px solid #f0f0f0; }
+        .total-box { background: var(--blue); color: white; text-align: center; padding: 15px; border-radius: 10px; margin: 15px 0; font-size: 1.4em; font-weight: bold; }
+        
+        .track-section { margin-top: 40px; padding-top: 20px; border-top: 2px dashed #ddd; }
+        .track-btn { background: var(--blue); margin-top: 5px; }
+        
+        button { background: var(--orange); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; font-size: 1.1em; cursor: pointer; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
 
-        .total-box {
-            background: var(--secondary-blue);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            margin: 25px 0;
-            box-shadow: 0 4px 10px rgba(0,74,153,0.3);
-        }
-        #grand-total { font-size: 1.8em; font-weight: bold; display: block; margin-top: 5px; }
-
-        .payment-info {
-            background: #fff9e6;
-            padding: 18px;
-            border-left: 6px solid #ffcc00;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }
-        .payment-info strong { color: #d32f2f; }
-
-        button {
-            background: var(--primary-orange);
-            color: white;
-            border: none;
-            padding: 18px;
-            width: 100%;
-            border-radius: 8px;
-            font-size: 1.2em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-            box-shadow: 0 4px 12px rgba(255,102,0,0.3);
-        }
-        button:hover { background: #e65c00; }
-
-        .footer-note {
-            text-align: center;
-            font-size: 0.85em;
-            color: #888;
-            margin-top: 20px;
-        }
+        #imageModal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
+        #imageModal img { max-width: 90%; max-height: 80%; border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Phionah's Shops</h1>
-    <p class="subtitle">Premium Plastics & Cookware Kampala</p>
+    <h2 style="text-align: center; color: var(--blue); margin-top: 0;">Phionah's Shops</h2>
+    
+    <form action="/place_order" method="POST">
+        <input type="text" name="username" placeholder="Your Full Name" required>
+        <input type="text" name="location" placeholder="Delivery Location (e.g. Ntinda)" required>
+        <input type="tel" name="phone" placeholder="Phone Number (070...)" required>
 
-    <form action="/place_order" method="POST" id="orderForm">
-        <label for="username">Customer Name</label>
-        <input type="text" id="username" name="username" placeholder="Enter your full name" required>
-        
-        <label for="location">Delivery Location</label>
-        <input type="text" id="location" name="location" placeholder="e.g. Ntinda, Wandegeya, or Bweyogerere" required>
-
-        <h3 style="margin-top:30px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Select Products</h3>
-        
+        <h3 style="margin-bottom: 10px; color: #444;">Select Products</h3>
         {% for p in products %}
         <div class="product-card">
-            <img src="{{ url_for('static', filename='images/' + p.image_url) }}" alt="{{ p.name }}">
-            <div class="product-info">
-                <div class="product-name">{{ p.name }}</div>
-                <div class="product-price" data-price="{{ p.price }}">UGX {{ "{:,}".format(p.price) }}</div>
+            <img src="{{ url_for('static', filename='images/' + p.image_url) }}" onclick="openModal(this.src)" title="Tap to zoom">
+            <div style="flex-grow: 1;">
+                <div style="font-weight: bold;">{{ p.name }}</div>
+                <div class="price" data-price="{{ p.price }}" style="color: var(--orange);">UGX {{ "{:,}".format(p.price) }}</div>
             </div>
-            <div>
-                <input type="number" name="qty_{{ p.id }}" class="qty-input" 
-                       value="0" min="0" oninput="calculateTotal()">
-            </div>
+            <input type="number" name="qty_{{ p.id }}" value="0" min="0" style="width: 65px; border-color: var(--blue);" oninput="updateTotal()">
         </div>
         {% endfor %}
 
-        <div class="total-box">
-            Amount Due:
-            <span id="grand-total">UGX 0</span>
-        </div>
-
-        <div class="payment-info">
-            <strong>Payment Instructions:</strong><br>
-            Pay via Airtel Money: <strong>0703070193</strong><br>
-            Registered Name: <strong>Naisanga Phiona</strong><br>
-            <p style="font-size: 0.9em; margin-top: 8px; color: #444;">Please send the total amount shown above before submitting.</p>
-        </div>
-
-        <label for="amount_paid">Confirm Amount Paid (UGX)</label>
-        <input type="number" id="amount_paid" name="amount_paid" placeholder="How much did you send?" required>
+        <div class="total-box">Total: <span id="display-total">UGX 0</span></div>
         
-        <button type="submit" style="margin-top: 20px;">Complete My Order</button>
+        <div style="background: #fff9e6; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ffcc00; font-size: 0.95em;">
+            <strong>Payment:</strong> Airtel Money <strong>0703070193</strong><br>
+            Name: <strong>Naisanga Phiona</strong>
+        </div>
+        <input type="number" name="amount_paid" placeholder="Enter Amount Sent (UGX)" required>
+        <button type="submit">Complete Order</button>
     </form>
-    
-    <p class="footer-note">Fast Delivery Across Kampala & Surrounding Areas</p>
+
+    <div class="track-section">
+        <h3 style="color: var(--blue); margin-bottom: 10px;">Already ordered?</h3>
+        <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">Enter your Order ID below to see delivery progress:</p>
+        <form action="/track" method="POST">
+            <input type="number" name="order_id" placeholder="Enter Order ID (e.g. 1)" required>
+            <button type="submit" class="track-btn">Check Status</button>
+        </form>
+    </div>
+</div>
+
+<div id="imageModal" onclick="this.style.display='none'">
+    <img id="modalImg">
+    <p style="color: white; position: absolute; bottom: 30px;">Tap anywhere to close</p>
 </div>
 
 <script>
-    function calculateTotal() {
+    function openModal(src) {
+        document.getElementById('modalImg').src = src;
+        document.getElementById('imageModal').style.display = 'flex';
+    }
+    function updateTotal() {
         let total = 0;
-        const priceElements = document.querySelectorAll('.product-price');
-        
-        priceElements.forEach(el => {
-            const price = parseInt(el.getAttribute('data-price'));
-            const qtyInput = el.closest('.product-card').querySelector('.qty-input');
-            const qty = parseInt(qtyInput.value) || 0;
+        document.querySelectorAll('.product-card').forEach(card => {
+            const price = parseInt(card.querySelector('.price').getAttribute('data-price'));
+            const qty = parseInt(card.querySelector('input[type="number"]').value) || 0;
             total += (price * qty);
         });
-
-        document.getElementById('grand-total').innerText = "UGX " + total.toLocaleString();
+        document.getElementById('display-total').innerText = "UGX " + total.toLocaleString();
     }
 </script>
-
 </body>
 </html>
