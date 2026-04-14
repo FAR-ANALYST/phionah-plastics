@@ -11,8 +11,6 @@ SUPABASE_URL = "https://vzeznntgcqzdwnfqwtra.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6ZXpubnRnY3F6ZHduZnF3dHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5ODI5NTMsImV4cCI6MjA5MTU1ODk1M30.DgAjwuAOa46jXdVoq_BglmBiNNP2Rfa_N1Ja3wylhDk"
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# --- CUSTOMER STOREFRONT ---
-
 @app.route('/')
 def index():
     try:
@@ -58,25 +56,16 @@ def place_order():
     except Exception as e:
         return f"Order Error: {e}"
 
-# --- TRACKING ROUTES ---
-
-@app.route('/track_status')
-def track_status_page():
-    # Shows the search box for the Order ID
-    return render_template('track_search.html')
-
-@app.route('/do_track', methods=['POST'])
-def do_track():
+@app.route('/track_order', methods=['POST'])
+def track_order():
     order_id = request.form.get('order_id')
     try:
-        # Search database for the specific ID provided by the customer
         res = supabase.table("orders").select("*").eq("order_id", order_id).execute()
-        order = res.data[0] if res.data else None
-        return render_template('track_result.html', order=order)
+        if res.data:
+            return render_template('receipt.html', order=res.data[0])
+        return "Order ID not found. <a href='/'>Go back</a>"
     except Exception as e:
         return f"Tracking Error: {e}"
-
-# --- ADMIN AUTHENTICATION & ACTIONS ---
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -99,35 +88,9 @@ def admin():
     products = supabase.table("products").select("*").order("id").execute()
     return render_template('admin.html', orders=orders.data, products=products.data)
 
-@app.route('/add_product', methods=['POST'])
-def add_product():
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    try:
-        cat = request.form.get('category')
-        name = request.form.get('name')
-        desc = request.form.get('description')
-        price = int(request.form.get('price'))
-        file = request.files.get('image')
-
-        if file:
-            filename = secure_filename(file.filename)
-            file_content = file.read()
-            storage_path = f"items/{filename}"
-            supabase.storage.from_("product-images").upload(storage_path, file_content)
-            img_url = supabase.storage.from_("product-images").get_public_url(storage_path)
-            
-            supabase.table("products").insert({
-                "category": cat, "name": name, "description": desc,
-                "price": price, "image_url": img_url
-            }).execute()
-        return redirect(url_for('admin'))
-    except Exception as e:
-        return f"Upload Error: {e}"
-
 @app.route('/update_status/<int:order_id>')
 def update_status(order_id):
     if not session.get('logged_in'): return redirect(url_for('login'))
-    # Update status to "On the Way" so customer can see it when tracking
     supabase.table("orders").update({"status": "On the Way"}).eq("order_id", order_id).execute()
     return redirect(url_for('admin'))
 
