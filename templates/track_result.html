@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status - Phionah's Shops</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 20px; text-align: center; }
+        .card { max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .status-box { font-size: 26px; font-weight: bold; color: #ff6600; background: #fff5ee; padding: 20px; border-radius: 10px; margin: 20px 0; border: 2px dashed #ff6600; }
+        .details { text-align: left; background: #f9f9f9; padding: 15px; border-radius: 10px; line-height: 1.6; }
+        .btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #004a99; color: white; text-decoration: none; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        {% if order %}
+            <h2>Order #{{ order.order_id }}</h2>
+            <div class="status-box">{{ order.status }}</div>
+            <div class="details">
+                <strong>Customer:</strong> {{ order.username }}<br>
+                <strong>Items:</strong> {{ order.item_name }}<br>
+                <strong>Balance:</strong> UGX {{ "{:,}".format(order.balance) }}
+            </div>
+            <p style="font-size: 13px; color: #666; margin-top: 15px;">If status is "On the Way", please keep your phone active for the delivery agent.</p>
+        {% else %}
+            <h2 style="color: #d9534f;">Order Not Found</h2>
+            <p>We couldn't find an order with that ID. Please check your receipt or contact Phiona.</p>
+        {% endif %}
+        <a href="/track_status" class="btn">Check Another ID</a>
+    </div>
+</body>
+</html>
