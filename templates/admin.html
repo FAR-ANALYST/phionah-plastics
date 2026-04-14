@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>Admin - Phionah's Shops</title>
     <style>
         body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
@@ -12,13 +11,11 @@
         button { background: #28a745; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; grid-column: span 2; font-weight: bold; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; border: 1px solid #eee; text-align: left; }
-        th { background: #f8f9fa; }
-        .map-link { color: #004a99; text-decoration: none; font-weight: bold; font-size: 12px; }
     </style>
 </head>
 <body>
     <div style="display: flex; justify-content: space-between;">
-        <h1>Dashboard</h1>
+        <h1>Admin Dashboard</h1>
         <a href="/logout" style="margin-top: 25px;">Logout</a>
     </div>
 
@@ -38,66 +35,23 @@
     </div>
 
     <div class="box">
-        <h2>Customer Orders</h2>
+        <h2>Orders</h2>
         <table>
-            <thead>
-                <tr>
-                    <th>Customer</th>
-                    <th>Items Purchased</th>
-                    <th>Location Details</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for o in orders %}
-                <tr>
-                    <td>
-                        <strong>{{ o.username }}</strong><br>
-                        <small>{{ o.phone }}</small>
-                    </td>
-                    <td>{{ o.item_name }}</td>
-                    <td>
-                        {{ o.location }}<br>
-                        {% if o.coordinates %}
-                        <a href="https://www.google.com/maps/search/?api=1&query={{ o.coordinates }}" target="_blank" class="map-link">📍 View Pin on Map</a>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if o.status == 'Pending' %}
-                        <a href="/update_status/{{ o.order_id }}" style="color: green; font-weight: bold;">Mark Shipped</a>
-                        {% else %}
-                        <span style="color: #888;">{{ o.status }}</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <div class="box">
-        <h2>Inventory Items</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Category</th>
-                    <th>Product</th>
-                    <th>Size</th>
-                    <th>Price</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in products %}
-                <tr>
-                    <td>{{ p.category }}</td>
-                    <td>{{ p.name }}</td>
-                    <td>{{ p.description }}</td>
-                    <td>UGX {{ "{:,}".format(p.price) }}</td>
-                    <td><a href="/delete_product/{{ p.id }}" style="color: red;" onclick="return confirm('Delete this?')">Delete</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
+            <tr><th>Customer</th><th>Items</th><th>Location</th><th>Status</th></tr>
+            {% for o in orders %}
+            <tr>
+                <td><strong>{{ o.username }}</strong><br>{{ o.phone }}</td>
+                <td>{{ o.item_name }}</td>
+                <td>{{ o.location }}</td>
+                <td>
+                    {% if o.status == 'Pending' %}
+                    <a href="/update_status/{{ o.order_id }}" style="color: green; font-weight: bold;">Ship</a>
+                    {% else %}
+                    {{ o.status }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
         </table>
     </div>
 </body>
