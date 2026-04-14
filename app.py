@@ -51,7 +51,7 @@ def place_order():
         total_price = 0
         
         for p in products_req.data:
-            # Safely handle duplicate inputs from preview + list
+            # Handles inputs from both preview and main list safely
             qtys = request.form.getlist(f"qty_{p['id']}")
             total_qty = sum(int(q) if q.isdigit() else 0 for q in qtys)
             
@@ -71,22 +71,28 @@ def place_order():
         res = supabase.table("orders").insert(order_data).execute()
         return render_template('receipt.html', order=res.data[0])
     except Exception as e:
-        print(f"Order Error: {e}")
         return f"Order Error: {e}", 500
 
-@app.route('/track_order', methods=['POST'])
-def track_order():
-    order_id = request.form.get('order_id')
+@app.route('/add_product', methods=['POST'])
+def add_product():
+    """Adds new inventory to the database."""
+    if not session.get('logged_in'): return redirect(url_for('login'))
     try:
-        res = supabase.table("orders").select("*").eq("order_id", order_id).execute()
-        if res.data:
-            return render_template('receipt.html', order=res.data[0])
-        return "Order ID not found. <a href='/'>Go back</a>"
+        product_data = {
+            "name": request.form.get('name'),
+            "category": request.form.get('category'),
+            "description": request.form.get('description'),
+            "price": int(request.form.get('price')),
+            "image_url": request.form.get('image_url')
+        }
+        supabase.table("products").insert(product_data).execute()
+        return redirect(url_for('admin'))
     except Exception as e:
-        return f"Tracking Error: {e}"
+        return f"Error adding product: {e}"
 
 @app.route('/export_orders')
 def export_orders():
+    """Generates CSV of orders for Phiona."""
     if not session.get('logged_in'): return redirect(url_for('login'))
     try:
         res = supabase.table("orders").select("*").order("order_id", desc=True).execute()
@@ -103,20 +109,19 @@ def export_orders():
     except Exception as e:
         return f"Export Error: {e}"
 
+@app.route('/admin')
+def admin():
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    orders = supabase.table("orders").select("*").order("order_id", desc=True).execute()
+    return render_template('admin.html', orders=orders.data)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         if request.form.get('username') == "phiona" and request.form.get('password') == "phiona-plastics":
             session['logged_in'] = True
             return redirect(url_for('admin'))
-        return "Invalid login. <a href='/login'>Try again</a>"
     return render_template('login.html')
-
-@app.route('/admin')
-def admin():
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    orders = supabase.table("orders").select("*").order("order_id", desc=True).execute()
-    return render_template('admin.html', orders=orders.data)
 
 @app.route('/update_status/<int:order_id>')
 def update_status(order_id):
