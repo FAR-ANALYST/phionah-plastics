@@ -2,23 +2,54 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Phionah's Shops</title>
+    <title>Admin Dashboard - Phionah's Shops</title>
     <style>
         body { font-family: sans-serif; background: #f4f7f6; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
-        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-        .btn-csv { background: #28a745; color: white; padding: 10px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .form-box { background: #e9ecef; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
+        input { padding: 10px; border-radius: 5px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        .btn-add { background: #004a99; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-csv { background: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 8px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>Orders (Last 30 Days)</h2>
-            <a href="/export_orders" class="btn-csv">📥 Download CSV</a>
-        </div>
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1>Admin Control</h1>
+        <a href="/logout" style="color: #666;">Logout</a>
+    </div>
+
+    <div class="form-box">
+        <h3 style="margin-top: 0;">Add New Inventory</h3>
+        <form action="/add_product" method="POST">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <input type="text" name="name" placeholder="Product Name" required>
+                <input type="text" name="category" placeholder="Category" required>
+                <input type="text" name="description" placeholder="Short Description" required>
+                <input type="number" name="price" placeholder="Price (UGX)" required>
+            </div>
+            <input type="text" name="image_url" placeholder="Image URL Link" required>
+            <button type="submit" class="btn-add">➕ Add to Shop</button>
+        </form>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3>Customer Orders (30 Day History)</h3>
+        <a href="/export_orders" class="btn-csv">📥 Download CSV</a>
+    </div>
+    <div style="overflow-x: auto;">
         <table>
-            <thead><tr><th>ID</th><th>Customer</th><th>Items</th><th>Status</th><th>Action</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Items</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
             <tbody>
                 {% for o in orders %}
                 <tr>
@@ -28,14 +59,14 @@
                     <td>{{ o.status }}</td>
                     <td>
                         {% if o.status == 'Pending' %}
-                        <a href="/update_status/{{ o.order_id }}" style="color: blue;">Mark Shipped</a>
+                        <a href="/update_status/{{ o.order_id }}" style="color: #004a99; font-weight: bold;">Ship</a>
                         {% else %} ✅ {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <br><a href="/logout">Logout</a>
     </div>
+</div>
 </body>
 </html>
