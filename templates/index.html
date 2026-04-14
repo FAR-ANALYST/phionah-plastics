@@ -49,7 +49,7 @@
         summary::after { content: "▼"; font-size: 12px; }
         details[open] summary::after { content: "▲"; }
 
-        /* Product Cards inside Dropdowns */
+        /* Product Cards */
         .product-card { 
             display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #f9f9f9;
         }
@@ -66,9 +66,19 @@
 
         .total-box { background: var(--blue); color: white; text-align: center; padding: 18px; border-radius: 12px; margin: 20px 0; font-size: 1.2em; font-weight: bold; }
 
-        .order-btn { background: var(--orange); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .order-btn { background: var(--orange); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 102, 0, 0.3); }
 
-        /* --- Image Modal (Zoom Feature) --- */
+        /* Order Tracking Section */
+        .track-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px dashed #ccc;
+        }
+
+        /* Image Modal (Zoom) */
         .modal {
             display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9);
             justify-content: center; align-items: center;
@@ -90,7 +100,7 @@
         </div>
 
         <div id="inventory-list">
-            <p style="font-size: 12px; color: #666; text-align: center;">Tap a category to see products. Tap a photo to zoom.</p>
+            <p style="font-size: 12px; color: #666; text-align: center; margin-bottom: 15px;">Tap categories to browse. Tap photos to zoom.</p>
             
             {% for cat_name, items in categories.items() %}
             <details>
@@ -98,7 +108,6 @@
                 {% for p in items %}
                 <div class="product-card">
                     <img src="{{ p.image_url }}" onclick="openModal(this.src)" alt="{{ p.name }}">
-                    
                     <div class="product-info">
                         <strong>{{ p.name }}</strong>
                         <span class="product-price">UGX {{ "{:,}".format(p.price) }}</span>
@@ -112,9 +121,20 @@
         </div>
 
         <div class="total-box">Total: <span id="display-total">UGX 0</span></div>
-        <input type="number" name="amount_paid" placeholder="Amount Paid (UGX)" required style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
+        
+        <input type="number" name="amount_paid" placeholder="Amount Paid (UGX)" required style="width:100%; padding:14px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd; box-sizing: border-box;">
+        
         <button type="submit" class="order-btn">🚀 Place My Order</button>
     </form>
+
+    <div class="track-section">
+        <h4 style="margin: 0 0 10px; color: var(--blue);">Track Your Order</h4>
+        <p style="margin: 0 0 15px; font-size: 13px; color: #666;">Enter your Order ID to check status</p>
+        <form action="/track_order" method="POST" style="display: flex; gap: 10px;">
+            <input type="number" name="order_id" placeholder="ID" required style="flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin: 0;">
+            <button type="submit" style="background: var(--blue); color: white; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">Check</button>
+        </form>
+    </div>
 </div>
 
 <div id="myModal" class="modal">
@@ -127,21 +147,25 @@
         let total = 0;
         document.querySelectorAll('.qty-input').forEach(input => {
             const card = input.closest('.product-card');
-            const price = parseInt(card.querySelector('.price-val').getAttribute('data-price')) || 0;
-            total += (price * (parseInt(input.value) || 0));
+            const priceVal = card.querySelector('.price-val');
+            if (priceVal) {
+                const price = parseInt(priceVal.getAttribute('data-price')) || 0;
+                const qty = parseInt(input.value) || 0;
+                total += (price * qty);
+            }
         });
         document.getElementById('display-total').innerText = "UGX " + total.toLocaleString();
     }
 
-    // Modal Functions
     function openModal(src) {
         document.getElementById("myModal").style.display = "flex";
         document.getElementById("img01").src = src;
     }
+    
     function closeModal() {
         document.getElementById("myModal").style.display = "none";
     }
-    // Close modal if user taps outside the image
+
     window.onclick = function(event) {
         let modal = document.getElementById("myModal");
         if (event.target == modal) { closeModal(); }
