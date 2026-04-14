@@ -8,23 +8,24 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
         th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
         .btn-del { color: #d32f2f; text-decoration: none; font-weight: bold; }
-        .btn-status { background: #004a99; color: white; padding: 6px 12px; border-radius: 5px; text-decoration: none; display: inline-block; }
+        .btn-status { background: #004a99; color: white; padding: 6px 12px; border-radius: 5px; text-decoration: none; }
         input[type="text"], input[type="number"] { padding: 10px; width: 200px; margin-right: 10px; border-radius: 5px; border: 1px solid #ccc; }
     </style>
 </head>
 <body>
+
     <div class="box">
         <h2>Add New Product</h2>
         <form action="/add_product" method="POST" enctype="multipart/form-data">
             <input type="text" name="name" placeholder="Item Name" required>
             <input type="number" name="price" placeholder="Price (UGX)" required>
             <input type="file" name="image" required>
-            <button type="submit" style="padding: 10px; background: #4caf50; color: white; border: none; border-radius: 5px;">Add to Shop</button>
+            <button type="submit" style="padding: 10px; background: #4caf50; color: white; border: none; border-radius: 5px; cursor: pointer;">Add to Shop</button>
         </form>
     </div>
 
     <div class="box">
-        <h2>Active Inventory</h2>
+        <h2>Inventory Management</h2>
         <table>
             <tr><th>Image</th><th>Name</th><th>Price</th><th>Action</th></tr>
             {% for p in products %}
@@ -32,14 +33,14 @@
                 <td><img src="{{ p.image_url }}" width="50" style="border-radius: 4px;"></td>
                 <td>{{ p.name }}</td>
                 <td>UGX {{ "{:,}".format(p.price) }}</td>
-                <td><a href="/delete_product/{{ p.id }}" class="btn-del" onclick="return confirm('Remove this item?')">Delete</a></td>
+                <td><a href="/delete_product/{{ p.id }}" class="btn-del" onclick="return confirm('Delete this item?')">Delete</a></td>
             </tr>
             {% endfor %}
         </table>
     </div>
 
     <div class="box">
-        <h2>Orders Tracking</h2>
+        <h2>Recent Orders</h2>
         <table>
             <tr><th>ID</th><th>Customer</th><th>Items</th><th>Paid</th><th>Status</th><th>Action</th></tr>
             {% for o in orders %}
@@ -54,5 +55,6 @@
             {% endfor %}
         </table>
     </div>
+
 </body>
 </html>
