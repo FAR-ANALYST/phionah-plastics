@@ -1,58 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin - Phionah's Shops</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Phionah's Shops</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
-        .box { background: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h2 { color: #004a99; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; width: 100%; box-sizing: border-box; }
-        button { background: #28a745; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; grid-column: span 2; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; border: 1px solid #eee; text-align: left; }
+        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        .btn-csv { background: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 8px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #f8f9fa; color: #004a99; }
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .pending { background: #fff3cd; color: #856404; }
+        .shipped { background: #d4edda; color: #155724; }
+        .ship-link { color: #004a99; font-weight: bold; text-decoration: none; border: 1px solid #004a99; padding: 4px 8px; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <div style="display: flex; justify-content: space-between;">
+<div class="container">
+    <div class="header-flex">
         <h1>Admin Dashboard</h1>
-        <a href="/logout" style="margin-top: 25px;">Logout</a>
+        <div>
+            <a href="/export_orders" class="btn-csv">📥 Download CSV</a>
+            <a href="/logout" style="color: #666; margin-left: 15px;">Logout</a>
+        </div>
     </div>
 
-    <div class="box">
-        <h2>Add Product</h2>
-        <form action="/add_product" method="POST" enctype="multipart/form-data" class="form-grid">
-            <input type="text" name="category" placeholder="Category (e.g., Home Cleaners)" required>
-            <input type="text" name="name" placeholder="Item Name" required>
-            <input type="text" name="description" placeholder="Size/Description (e.g., 5 Liters)" required>
-            <input type="number" name="price" placeholder="Price (UGX)" required>
-            <div style="grid-column: span 2;">
-                <label>Product Image:</label>
-                <input type="file" name="image" required>
-            </div>
-            <button type="submit">Add to Inventory</button>
-        </form>
-    </div>
-
-    <div class="box">
-        <h2>Orders</h2>
+    <h3>Customer Orders (Last 30 Days)</h3>
+    <div style="overflow-x: auto;">
         <table>
-            <tr><th>Customer</th><th>Items</th><th>Location</th><th>Status</th></tr>
-            {% for o in orders %}
-            <tr>
-                <td><strong>{{ o.username }}</strong><br>{{ o.phone }}</td>
-                <td>{{ o.item_name }}</td>
-                <td>{{ o.location }}</td>
-                <td>
-                    {% if o.status == 'Pending' %}
-                    <a href="/update_status/{{ o.order_id }}" style="color: green; font-weight: bold;">Ship</a>
-                    {% else %}
-                    {{ o.status }}
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Items</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for o in orders %}
+                <tr>
+                    <td>#{{ o.order_id }}</td>
+                    <td><strong>{{ o.username }}</strong><br><small>{{ o.phone }}</small></td>
+                    <td>{{ o.item_name }}</td>
+                    <td style="color: red; font-weight: bold;">UGX {{ "{:,}".format(o.balance) }}</td>
+                    <td>
+                        <span class="status-badge {{ 'shipped' if o.status == 'On the Way' else 'pending' }}">
+                            {{ o.status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if o.status == 'Pending' %}
+                            <a href="/update_status/{{ o.order_id }}" class="ship-link">Mark Shipped</a>
+                        {% else %}
+                            ✅
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
+</div>
 </body>
 </html>
