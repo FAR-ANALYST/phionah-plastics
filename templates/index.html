@@ -3,103 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phionah's Shops Kampala</title>
+    <title>Phionah's Shops | Order Online</title>
     <style>
         :root { --orange: #ff6600; --blue: #004a99; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 15px; margin: 0; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; border-top: 8px solid var(--orange); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .preview-grid { display: flex; gap: 10px; margin: 15px 0; }
-        .preview-item { flex: 1; background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 10px; text-align: center; }
-        .preview-item img { width: 100%; height: 90px; object-fit: cover; border-radius: 5px; }
-        .p-name { font-size: 13px; font-weight: bold; margin-top: 5px; color: var(--blue); display: block; }
-        .p-desc { font-size: 10px; color: #777; display: block; }
-        .p-price { font-size: 12px; color: var(--orange); font-weight: bold; margin: 5px 0; display: block; }
-        .toggle-btn { background: #007bff; color: white; padding: 15px; width: 100%; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
-        #product-area { display: none; }
-        .category-section { margin-bottom: 10px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
-        .category-header { background: #f8f9fa; padding: 12px; cursor: pointer; font-weight: bold; color: var(--blue); list-style: none; display: flex; justify-content: space-between; }
-        .product-card { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #f9f9f9; }
-        .product-card img { width: 50px; height: 50px; border-radius: 5px; margin-right: 12px; }
-        .total-box { background: var(--blue); color: white; text-align: center; padding: 15px; border-radius: 10px; margin: 15px 0; font-size: 1.2em; font-weight: bold; }
-        .order-btn { background: var(--orange); color: white; border: none; padding: 16px; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); padding: 15px; margin: 0; }
+        
+        .container { 
+            max-width: 500px; 
+            margin: auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 15px; 
+            border-top: 8px solid var(--orange); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); 
+        }
+
+        h2 { text-align: center; color: var(--blue); margin-bottom: 20px; }
+        
+        /* Input Styling */
+        .user-info input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 8px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 16px;
+        }
+
+        /* Category Header */
+        .category-header { 
+            background: var(--blue); 
+            color: white; 
+            padding: 10px 15px; 
+            margin: 25px 0 10px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        /* Product Cards */
+        .product-card { 
+            display: flex; 
+            align-items: center; 
+            padding: 12px; 
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .product-card img { 
+            width: 70px; 
+            height: 70px; 
+            border-radius: 8px; 
+            margin-right: 15px; 
+            object-fit: cover; 
+            background: #eee;
+        }
+
+        .product-info { flex-grow: 1; }
+        .product-info strong { display: block; color: #333; font-size: 15px; }
+        .product-info small { color: #777; font-size: 12px; }
+        .product-price { color: var(--orange); font-weight: bold; display: block; margin-top: 4px; }
+
+        /* Quantity Input */
+        .qty-input { 
+            width: 65px; 
+            padding: 8px; 
+            border: 2px solid #eee; 
+            border-radius: 6px; 
+            text-align: center; 
+            font-weight: bold;
+            color: var(--blue);
+        }
+
+        /* Footer & Total */
+        .total-box { 
+            background: var(--blue); 
+            color: white; 
+            text-align: center; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin: 20px 0; 
+            font-size: 1.3em; 
+            font-weight: bold; 
+        }
+
+        .order-btn { 
+            background: var(--orange); 
+            color: white; 
+            border: none; 
+            padding: 18px; 
+            width: 100%; 
+            border-radius: 12px; 
+            font-size: 18px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            box-shadow: 0 4px 10px rgba(255, 102, 0, 0.3);
+        }
+
+        .order-btn:active { transform: scale(0.98); }
+
+        /* Track Order Section */
+        .track-section {
+            margin-top: 30px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <h2 style="text-align: center; color: var(--blue);">Phionah's Shops</h2>
-    <form action="/place_order" method="POST">
-        <input type="text" name="username" placeholder="Your Name" required>
-        <input type="tel" name="phone" placeholder="Phone Number" required>
-        <input type="text" name="location" placeholder="Delivery Location" required>
 
-        <div class="preview-grid">
-            {% set count = namespace(value=0) %}
-            {% for cat, items in categories.items() %}{% for p in items %}{% if count.value < 2 %}
-            <div class="preview-item">
-                <img src="{{ p.image_url }}">
-                <span class="p-name">{{ p.name }}</span>
-                <span class="p-desc">{{ p.description }}</span>
-                <span class="p-price">UGX {{ "{:,}".format(p.price) }}</span>
-                <span class="price-data" data-price="{{ p.price }}" style="display:none;"></span>
-                <input type="number" name="qty_{{ p.id }}" value="0" min="0" oninput="updateTotal()" style="padding: 5px; width: 60px;">
-            </div>
-            {% set count.value = count.value + 1 %}{% endif %}{% endfor %}{% endfor %}
+<div class="container">
+    <h2>Phionah's Shops</h2>
+    
+    <form action="/place_order" method="POST">
+        <div class="user-info">
+            <input type="text" name="username" placeholder="Your Full Name" required>
+            <input type="tel" name="phone" placeholder="Phone Number (e.g. 070...)" required>
+            <input type="text" name="location" placeholder="Delivery Location in Kampala" required>
         </div>
 
-        <button type="button" class="toggle-btn" id="toggle-btn" onclick="toggleProducts()">More Products ⬇️</button>
-
-        <div id="product-area">
+        <div id="inventory-list">
             {% for cat_name, items in categories.items() %}
-            <details class="category-section">
-                <summary class="category-header">{{ cat_name }} <span>▼</span></summary>
-                {% for p in items %}
-                <div class="product-card">
-                    <img src="{{ p.image_url }}">
-                    <div style="flex-grow: 1;">
-                        <small>{{ p.name }}</small><br>
-                        <span class="price-data" data-price="{{ p.price }}" style="color: var(--orange);">UGX {{ "{:,}".format(p.price) }}</span>
-                    </div>
-                    <input type="number" name="qty_{{ p.id }}" value="0" min="0" oninput="updateTotal()" style="width: 50px; padding: 5px;">
+            <div class="category-header">{{ cat_name }}</div>
+            {% for p in items %}
+            <div class="product-card">
+                <img src="{{ p.image_url }}" alt="{{ p.name }}">
+                <div class="product-info">
+                    <strong>{{ p.name }}</strong>
+                    <small>{{ p.description }}</small>
+                    <span class="product-price">UGX {{ "{:,}".format(p.price) }}</span>
+                    <span class="price-val" data-price="{{ p.price }}" style="display:none;"></span>
                 </div>
-                {% endfor %}
-            </details>
+                <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" oninput="updateTotal()">
+            </div>
+            {% endfor %}
             {% endfor %}
         </div>
 
-        <div class="total-box">Total: <span id="display-total">UGX 0</span></div>
-        <input type="number" name="amount_paid" placeholder="Amount Paid (UGX)" required>
-        <button type="submit" class="order-btn">Place My Order</button>
+        <div class="total-box">
+            Total: <span id="display-total">UGX 0</span>
+        </div>
+
+        <input type="number" name="amount_paid" placeholder="Amount You are Paying Now (UGX)" required>
+        
+        <button type="submit" class="order-btn">🚀 Place My Order</button>
     </form>
 
-    <div style="background: #f9f9f9; padding: 15px; border-radius: 12px; margin-top: 30px; text-align: center;">
-        <h3 style="margin: 0; font-size: 16px; color: var(--blue);">Track Order</h3>
-        <form action="/track_order" method="POST" style="display: flex; gap: 5px; margin-top: 10px;">
-            <input type="number" name="order_id" placeholder="Order ID" required style="margin: 0; flex: 2;">
-            <button type="submit" style="background: var(--blue); color: white; border: none; border-radius: 8px; padding: 0 15px;">Go</button>
+    <div class="track-section">
+        <p style="margin: 0 0 10px; font-size: 14px; color: #666;">Already ordered?</p>
+        <form action="/track_order" method="POST" style="display: flex; gap: 8px;">
+            <input type="number" name="order_id" placeholder="Order ID" required style="margin: 0; flex-grow: 1; padding: 10px; border-radius: 6px; border: 1px solid #ddd;">
+            <button type="submit" style="background: var(--blue); color: white; border: none; padding: 0 15px; border-radius: 6px; font-weight: bold;">Track</button>
         </form>
     </div>
 </div>
 
 <script>
-    function toggleProducts() {
-        const area = document.getElementById('product-area');
-        area.style.display = area.style.display === "block" ? "none" : "block";
-    }
-
     function updateTotal() {
         let total = 0;
-        document.querySelectorAll('input[name^="qty_"]').forEach(input => {
-            const container = input.closest('div');
-            const priceData = container.querySelector('.price-data');
-            if (priceData) {
-                const price = parseInt(priceData.getAttribute('data-price'));
+        // Find all quantity inputs
+        const inputs = document.querySelectorAll('.qty-input');
+        
+        inputs.forEach(input => {
+            const card = input.closest('.product-card');
+            const priceElement = card.querySelector('.price-val');
+            
+            if (priceElement) {
+                const price = parseInt(priceElement.getAttribute('data-price')) || 0;
                 const qty = parseInt(input.value) || 0;
                 total += (price * qty);
             }
         });
+
+        // Format and display the total with commas
         document.getElementById('display-total').innerText = "UGX " + total.toLocaleString();
     }
 </script>
+
 </body>
 </html>
