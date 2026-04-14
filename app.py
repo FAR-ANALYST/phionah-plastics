@@ -4,6 +4,7 @@ import io
 from datetime import datetime, timedelta, timezone
 from flask import Flask, render_template, request, redirect, url_for, session, make_response
 from supabase import create_client, Client
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = "phionah-plastics-secure-key-2026"
@@ -14,7 +15,7 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def cleanup_old_orders():
-    """Auto-deletes orders older than 30 days."""
+    """Deletes orders older than 30 days automatically."""
     try:
         cutoff_date = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
         supabase.table("orders").delete().lt("created_at", cutoff_date).execute()
@@ -51,7 +52,6 @@ def place_order():
         total_price = 0
         
         for p in products_req.data:
-            # Handles inputs from both preview and main list safely
             qtys = request.form.getlist(f"qty_{p['id']}")
             total_qty = sum(int(q) if q.isdigit() else 0 for q in qtys)
             
@@ -75,24 +75,34 @@ def place_order():
 
 @app.route('/add_product', methods=['POST'])
 def add_product():
-    """Adds new inventory to the database."""
+    """Uploads image to the 'product-images' bucket and saves details."""
     if not session.get('logged_in'): return redirect(url_for('login'))
     try:
+        file = request.files.get('product_image')
+        image_url = ""
+        if file:
+            filename = secure_filename(file.filename)
+            file_path = f"inventory/{datetime.now().timestamp()}_{filename}"
+            file_content = file.read()
+            
+            # Using your existing 'product-images' bucket
+            supabase.storage.from_("product-images").upload(file_path, file_content)
+            image_url = supabase.storage.from_("product-images").get_public_url(file_path)
+
         product_data = {
-            "name": request.form.get('name'),
+            "name": request.form.get('name'), 
             "category": request.form.get('category'),
-            "description": request.form.get('description'),
+            "description": request.form.get('description'), 
             "price": int(request.form.get('price')),
-            "image_url": request.form.get('image_url')
+            "image_url": image_url
         }
         supabase.table("products").insert(product_data).execute()
         return redirect(url_for('admin'))
     except Exception as e:
-        return f"Error adding product: {e}"
+        return f"Upload Error: {e}"
 
 @app.route('/export_orders')
 def export_orders():
-    """Generates CSV of orders for Phiona."""
     if not session.get('logged_in'): return redirect(url_for('login'))
     try:
         res = supabase.table("orders").select("*").order("order_id", desc=True).execute()
@@ -109,12 +119,6 @@ def export_orders():
     except Exception as e:
         return f"Export Error: {e}"
 
-@app.route('/admin')
-def admin():
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    orders = supabase.table("orders").select("*").order("order_id", desc=True).execute()
-    return render_template('admin.html', orders=orders.data)
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -122,6 +126,12 @@ def login():
             session['logged_in'] = True
             return redirect(url_for('admin'))
     return render_template('login.html')
+
+@app.route('/admin')
+def admin():
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    orders = supabase.table("orders").select("*").order("order_id", desc=True).execute()
+    return render_template('admin.html', orders=orders.data)
 
 @app.route('/update_status/<int:order_id>')
 def update_status(order_id):
@@ -135,4 +145,5 @@ def logout():
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
