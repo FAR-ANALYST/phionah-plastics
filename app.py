@@ -15,6 +15,7 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def cleanup_old_orders():
+    """Removes orders older than 30 days to keep the DB clean."""
     try:
         cutoff_date = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
         supabase.table("orders").delete().lt("created_at", cutoff_date).execute()
@@ -25,7 +26,6 @@ def cleanup_old_orders():
 def index():
     cleanup_old_orders()
     try:
-        # Fetch all products to display on the homepage
         response = supabase.table("products").select("*").order("id").execute()
         categories = {}
         for p in response.data:
@@ -37,8 +37,16 @@ def index():
     except Exception as e:
         return f"Database Error: {e}"
 
+@app.route('/admin')
+def admin():
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    orders = supabase.table("orders").select("*").order("order_id", desc=True).execute()
+    products = supabase.table("products").select("*").order("id").execute()
+    return render_template('admin.html', orders=orders.data, products=products.data)
+
 @app.route('/add_product', methods=['POST'])
 def add_product():
+    """Uploads photo to 'product-images' bucket and saves product."""
     if not session.get('logged_in'): return redirect(url_for('login'))
     try:
         file = request.files.get('product_image')
@@ -47,7 +55,7 @@ def add_product():
             filename = secure_filename(file.filename)
             file_path = f"inventory/{datetime.now().timestamp()}_{filename}"
             file_content = file.read()
-            # Upload to your existing 'product-images' bucket
+            # Direct upload to your existing bucket
             supabase.storage.from_("product-images").upload(file_path, file_content)
             image_url = supabase.storage.from_("product-images").get_public_url(file_path)
 
@@ -62,6 +70,16 @@ def add_product():
         return redirect(url_for('admin'))
     except Exception as e:
         return f"Upload Error: {e}"
+
+@app.route('/delete_product/<int:product_id>')
+def delete_product(product_id):
+    """Removes out-of-stock items."""
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    try:
+        supabase.table("products").delete().eq("id", product_id).execute()
+        return redirect(url_for('admin'))
+    except Exception as e:
+        return f"Delete Error: {e}"
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
@@ -90,12 +108,21 @@ def place_order():
     except Exception as e:
         return f"Order Error: {e}", 500
 
-@app.route('/admin')
-def admin():
+@app.route('/export_orders')
+def export_orders():
     if not session.get('logged_in'): return redirect(url_for('login'))
-    orders = supabase.table("orders").select("*").order("order_id", desc=True).execute()
-    products = supabase.table("products").select("*").order("id").execute()
-    return render_template('admin.html', orders=orders.data, products=products.data)
+    try:
+        res = supabase.table("orders").select("*").order("order_id", desc=True).execute()
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(['ID', 'Date', 'Customer', 'Phone', 'Items', 'Total', 'Paid', 'Balance', 'Status'])
+        for o in res.data:
+            writer.writerow([o.get('order_id'), o.get('created_at'), o.get('username'), o.get('phone'), o.get('item_name'), o.get('total_price'), o.get('amount_paid'), o.get('balance'), o.get('status')])
+        response = make_response(output.getvalue())
+        response.headers["Content-Disposition"] = f"attachment; filename=orders_{datetime.now().strftime('%Y-%m-%d')}.csv"
+        response.headers["Content-type"] = "text/csv"
+        return response
+    except Exception as e: return f"Export Error: {e}"
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -104,6 +131,12 @@ def login():
             session['logged_in'] = True
             return redirect(url_for('admin'))
     return render_template('login.html')
+
+@app.route('/update_status/<int:order_id>')
+def update_status(order_id):
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    supabase.table("orders").update({"status": "On the Way"}).eq("order_id", order_id).execute()
+    return redirect(url_for('admin'))
 
 @app.route('/logout')
 def logout():
