@@ -11,6 +11,8 @@ SUPABASE_URL = "https://vzeznntgcqzdwnfqwtra.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6ZXpubnRnY3F6ZHduZnF3dHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5ODI5NTMsImV4cCI6MjA5MTU1ODk1M30.DgAjwuAOa46jXdVoq_BglmBiNNP2Rfa_N1Ja3wylhDk"
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# --- CUSTOMER STOREFRONT ---
+
 @app.route('/')
 def index():
     try:
@@ -55,6 +57,26 @@ def place_order():
         return render_template('receipt.html', order=res.data[0])
     except Exception as e:
         return f"Order Error: {e}"
+
+# --- TRACKING ROUTES ---
+
+@app.route('/track_status')
+def track_status_page():
+    # Shows the search box for the Order ID
+    return render_template('track_search.html')
+
+@app.route('/do_track', methods=['POST'])
+def do_track():
+    order_id = request.form.get('order_id')
+    try:
+        # Search database for the specific ID provided by the customer
+        res = supabase.table("orders").select("*").eq("order_id", order_id).execute()
+        order = res.data[0] if res.data else None
+        return render_template('track_result.html', order=order)
+    except Exception as e:
+        return f"Tracking Error: {e}"
+
+# --- ADMIN AUTHENTICATION & ACTIONS ---
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -105,6 +127,7 @@ def add_product():
 @app.route('/update_status/<int:order_id>')
 def update_status(order_id):
     if not session.get('logged_in'): return redirect(url_for('login'))
+    # Update status to "On the Way" so customer can see it when tracking
     supabase.table("orders").update({"status": "On the Way"}).eq("order_id", order_id).execute()
     return redirect(url_for('admin'))
 
