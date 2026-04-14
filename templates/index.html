@@ -20,101 +20,61 @@
 
         h2 { text-align: center; color: var(--blue); margin-bottom: 20px; }
         
-        /* Input Styling */
         .user-info input { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 8px 0; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-            font-size: 16px;
+            width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px;
         }
 
-        /* Category Header */
-        .category-header { 
-            background: var(--blue); 
-            color: white; 
-            padding: 10px 15px; 
-            margin: 25px 0 10px; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            font-size: 14px;
-            text-transform: uppercase;
-        }
-
-        /* Product Cards */
-        .product-card { 
-            display: flex; 
-            align-items: center; 
-            padding: 12px; 
+        /* Dropdown Category Styling */
+        details {
             background: #fff;
-            border: 1px solid #f0f0f0;
-            border-radius: 10px;
             margin-bottom: 10px;
-            transition: transform 0.2s;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        summary {
+            background: var(--blue);
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::-webkit-details-marker { display: none; }
+        summary::after { content: "▼"; font-size: 12px; }
+        details[open] summary::after { content: "▲"; }
+
+        /* Product Cards inside Dropdowns */
+        .product-card { 
+            display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #f9f9f9;
         }
         
         .product-card img { 
-            width: 70px; 
-            height: 70px; 
-            border-radius: 8px; 
-            margin-right: 15px; 
-            object-fit: cover; 
-            background: #eee;
+            width: 60px; height: 60px; border-radius: 8px; margin-right: 15px; object-fit: cover; cursor: pointer; border: 1px solid #ddd;
         }
 
         .product-info { flex-grow: 1; }
-        .product-info strong { display: block; color: #333; font-size: 15px; }
-        .product-info small { color: #777; font-size: 12px; }
-        .product-price { color: var(--orange); font-weight: bold; display: block; margin-top: 4px; }
+        .product-info strong { display: block; color: #333; font-size: 14px; }
+        .product-price { color: var(--orange); font-weight: bold; font-size: 14px; }
 
-        /* Quantity Input */
-        .qty-input { 
-            width: 65px; 
-            padding: 8px; 
-            border: 2px solid #eee; 
-            border-radius: 6px; 
-            text-align: center; 
-            font-weight: bold;
-            color: var(--blue);
+        .qty-input { width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; text-align: center; }
+
+        .total-box { background: var(--blue); color: white; text-align: center; padding: 18px; border-radius: 12px; margin: 20px 0; font-size: 1.2em; font-weight: bold; }
+
+        .order-btn { background: var(--orange); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
+
+        /* --- Image Modal (Zoom Feature) --- */
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9);
+            justify-content: center; align-items: center;
         }
-
-        /* Footer & Total */
-        .total-box { 
-            background: var(--blue); 
-            color: white; 
-            text-align: center; 
-            padding: 20px; 
-            border-radius: 12px; 
-            margin: 20px 0; 
-            font-size: 1.3em; 
-            font-weight: bold; 
-        }
-
-        .order-btn { 
-            background: var(--orange); 
-            color: white; 
-            border: none; 
-            padding: 18px; 
-            width: 100%; 
-            border-radius: 12px; 
-            font-size: 18px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            box-shadow: 0 4px 10px rgba(255, 102, 0, 0.3);
-        }
-
-        .order-btn:active { transform: scale(0.98); }
-
-        /* Track Order Section */
-        .track-section {
-            margin-top: 30px;
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 10px;
-            text-align: center;
-        }
+        .modal-content { max-width: 90%; max-height: 80%; border-radius: 10px; }
+        .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -124,66 +84,67 @@
     
     <form action="/place_order" method="POST">
         <div class="user-info">
-            <input type="text" name="username" placeholder="Your Full Name" required>
-            <input type="tel" name="phone" placeholder="Phone Number (e.g. 070...)" required>
-            <input type="text" name="location" placeholder="Delivery Location in Kampala" required>
+            <input type="text" name="username" placeholder="Your Name" required>
+            <input type="tel" name="phone" placeholder="Phone Number" required>
+            <input type="text" name="location" placeholder="Delivery Location" required>
         </div>
 
         <div id="inventory-list">
+            <p style="font-size: 12px; color: #666; text-align: center;">Tap a category to see products. Tap a photo to zoom.</p>
+            
             {% for cat_name, items in categories.items() %}
-            <div class="category-header">{{ cat_name }}</div>
-            {% for p in items %}
-            <div class="product-card">
-                <img src="{{ p.image_url }}" alt="{{ p.name }}">
-                <div class="product-info">
-                    <strong>{{ p.name }}</strong>
-                    <small>{{ p.description }}</small>
-                    <span class="product-price">UGX {{ "{:,}".format(p.price) }}</span>
-                    <span class="price-val" data-price="{{ p.price }}" style="display:none;"></span>
+            <details>
+                <summary>{{ cat_name }}</summary>
+                {% for p in items %}
+                <div class="product-card">
+                    <img src="{{ p.image_url }}" onclick="openModal(this.src)" alt="{{ p.name }}">
+                    
+                    <div class="product-info">
+                        <strong>{{ p.name }}</strong>
+                        <span class="product-price">UGX {{ "{:,}".format(p.price) }}</span>
+                        <span class="price-val" data-price="{{ p.price }}" style="display:none;"></span>
+                    </div>
+                    <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" oninput="updateTotal()">
                 </div>
-                <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" oninput="updateTotal()">
-            </div>
-            {% endfor %}
+                {% endfor %}
+            </details>
             {% endfor %}
         </div>
 
-        <div class="total-box">
-            Total: <span id="display-total">UGX 0</span>
-        </div>
-
-        <input type="number" name="amount_paid" placeholder="Amount You are Paying Now (UGX)" required>
-        
+        <div class="total-box">Total: <span id="display-total">UGX 0</span></div>
+        <input type="number" name="amount_paid" placeholder="Amount Paid (UGX)" required style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
         <button type="submit" class="order-btn">🚀 Place My Order</button>
     </form>
+</div>
 
-    <div class="track-section">
-        <p style="margin: 0 0 10px; font-size: 14px; color: #666;">Already ordered?</p>
-        <form action="/track_order" method="POST" style="display: flex; gap: 8px;">
-            <input type="number" name="order_id" placeholder="Order ID" required style="margin: 0; flex-grow: 1; padding: 10px; border-radius: 6px; border: 1px solid #ddd;">
-            <button type="submit" style="background: var(--blue); color: white; border: none; padding: 0 15px; border-radius: 6px; font-weight: bold;">Track</button>
-        </form>
-    </div>
+<div id="myModal" class="modal">
+    <span class="close-modal" onclick="closeModal()">&times;</span>
+    <img class="modal-content" id="img01">
 </div>
 
 <script>
     function updateTotal() {
         let total = 0;
-        // Find all quantity inputs
-        const inputs = document.querySelectorAll('.qty-input');
-        
-        inputs.forEach(input => {
+        document.querySelectorAll('.qty-input').forEach(input => {
             const card = input.closest('.product-card');
-            const priceElement = card.querySelector('.price-val');
-            
-            if (priceElement) {
-                const price = parseInt(priceElement.getAttribute('data-price')) || 0;
-                const qty = parseInt(input.value) || 0;
-                total += (price * qty);
-            }
+            const price = parseInt(card.querySelector('.price-val').getAttribute('data-price')) || 0;
+            total += (price * (parseInt(input.value) || 0));
         });
-
-        // Format and display the total with commas
         document.getElementById('display-total').innerText = "UGX " + total.toLocaleString();
+    }
+
+    // Modal Functions
+    function openModal(src) {
+        document.getElementById("myModal").style.display = "flex";
+        document.getElementById("img01").src = src;
+    }
+    function closeModal() {
+        document.getElementById("myModal").style.display = "none";
+    }
+    // Close modal if user taps outside the image
+    window.onclick = function(event) {
+        let modal = document.getElementById("myModal");
+        if (event.target == modal) { closeModal(); }
     }
 </script>
 
