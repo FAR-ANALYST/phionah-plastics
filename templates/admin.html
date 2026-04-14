@@ -2,47 +2,48 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Admin Panel | Phionah's Shops</title>
     <style>
         body { font-family: sans-serif; background: #f4f7f6; padding: 15px; margin: 0; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .form-box { background: #f0f2f5; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #ddd; }
+        .container { max-width: 850px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .box { background: #f0f2f5; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #ddd; }
         input { padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; width: 100%; box-sizing: border-box; }
         .btn-add { background: #004a99; color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-csv { background: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 6px; font-size: 14px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 15px; }
-        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+        .btn-csv { background: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 6px; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+        .delete-link { color: #d9534f; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 <div class="container">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="color: #004a99; margin: 0;">Admin Panel</h2>
-        <a href="/logout" style="color: #d9534f; text-decoration: none; font-weight: bold;">Logout</a>
+        <h2 style="color: #004a99; margin: 0;">Admin Dashboard</h2>
+        <a href="/logout" style="color: #666; text-decoration: none;">Logout</a>
     </div>
 
-    <div class="form-box">
-        <h3 style="margin-top: 0;">➕ Add New Inventory</h3>
+    <div class="box">
+        <h3 style="margin-top: 0;">➕ Add New Item</h3>
         <form action="/add_product" method="POST" enctype="multipart/form-data">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input type="text" name="name" placeholder="Product Name" required>
-                <input type="text" name="category" placeholder="Category" required>
-                <input type="text" name="description" placeholder="Short Description" required>
+                <input type="text" name="name" placeholder="Name (e.g. Blue Bucket)" required>
+                <input type="text" name="category" placeholder="Category (e.g. Plastics)" required>
+                <input type="text" name="description" placeholder="Short Desc (e.g. 20L)" required>
                 <input type="number" name="price" placeholder="Price (UGX)" required>
             </div>
-            <label style="font-weight: bold; font-size: 14px; display: block; margin-bottom: 5px;">Upload Photo (Camera or Gallery):</label>
-            <input type="file" name="product_image" accept="image/*" required style="background: white; padding: 10px;">
-            <button type="submit" class="btn-add">Upload & Save Product</button>
+            <label style="font-weight: bold; font-size: 13px;">Product Photo (Camera/Gallery):</label>
+            <input type="file" name="product_image" accept="image/*" required style="background: white; padding: 8px;">
+            <button type="submit" class="btn-add">Upload & Save to Shop</button>
         </form>
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="margin: 0;">Orders (30 Days)</h3>
-        <a href="/export_orders" class="btn-csv">📥 Export CSV</a>
+        <h3 style="margin: 0;">Customer Orders</h3>
+        <a href="/export_orders" class="btn-csv">📥 Download CSV</a>
     </div>
     <div style="overflow-x: auto;">
         <table>
-            <thead><tr><th>ID</th><th>Customer</th><th>Items</th><th>Action</th></tr></thead>
+            <thead><tr><th>ID</th><th>Customer</th><th>Items</th><th>Status</th></tr></thead>
             <tbody>
                 {% for o in orders %}
                 <tr>
@@ -51,8 +52,30 @@
                     <td>{{ o.item_name }}</td>
                     <td>
                         {% if o.status == 'Pending' %}
-                        <a href="/update_status/{{ o.order_id }}" style="color: #004a99; font-weight: bold;">Ship</a>
-                        {% else %} ✅ {% endif %}
+                        <a href="/update_status/{{ o.order_id }}" style="color: #004a99; font-weight: bold;">Mark Shipped</a>
+                        {% else %} ✅ Shipped {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <hr style="margin: 30px 0; border: 0.5px solid #eee;">
+
+    <h3 style="margin: 0;">Manage Shop Inventory</h3>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Action</th></tr></thead>
+            <tbody>
+                {% for p in products %}
+                <tr>
+                    <td><img src="{{ p.image_url }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;"></td>
+                    <td><strong>{{ p.name }}</strong></td>
+                    <td>{{ p.category }}</td>
+                    <td>UGX {{ "{:,}".format(p.price) }}</td>
+                    <td>
+                        <a href="/delete_product/{{ p.id }}" class="delete-link" onclick="return confirm('Delete this product from shop?')">🗑️ Delete</a>
                     </td>
                 </tr>
                 {% endfor %}
