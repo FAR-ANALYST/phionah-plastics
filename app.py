@@ -1,8 +1,8 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for
 from supabase import create_client, Client
+from werkzeug.utils import secure_filename
 
-# Initialize Flask
 app = Flask(__name__)
 
 # Supabase Credentials
@@ -13,7 +13,8 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 @app.route('/')
 def index():
     try:
-        response = supabase.table("products").select("*").execute()
+        # Fetch products and sort by ID
+        response = supabase.table("products").select("*").order("id").execute()
         return render_template('index.html', products=response.data)
     except Exception as e:
         return f"Database Connection Error: {e}"
@@ -23,22 +24,20 @@ def place_order():
     username = request.form.get('username')
     location = request.form.get('location')
     phone = request.form.get('phone')
-    amount_paid_input = request.form.get('amount_paid', '0')
-    amount_paid = int(amount_paid_input) if amount_paid_input.strip() else 0
+    amount_paid = int(request.form.get('amount_paid', 0))
     
     products_req = supabase.table("products").select("*").execute()
     selected_items = []
     total_price = 0
     
     for p in products_req.data:
-        qty_input = request.form.get(f"qty_{p['id']}", "0")
-        qty = int(qty_input) if qty_input.strip() else 0
+        qty = int(request.form.get(f"qty_{p['id']}", 0))
         if qty > 0:
             total_price += (p['price'] * qty)
             selected_items.append(f"{p['name']} (x{qty})")
     
     if not selected_items:
-        return "Please select at least one item."
+        return "Please go back and select at least one item."
 
     order_data = {
         "username": username,
@@ -56,7 +55,6 @@ def place_order():
 
 @app.route('/track', methods=['POST'])
 def track():
-    # FIXED INDENTATION HERE
     order_id = request.form.get('order_id')
     try:
         res = supabase.table("orders").select("*").eq("order_id", order_id).execute()
@@ -65,10 +63,42 @@ def track():
     except Exception as e:
         return f"Tracking Error: {e}"
 
+# --- ADMIN SECTION ---
+
 @app.route('/admin')
 def admin():
-    res = supabase.table("orders").select("*").order("order_id", desc=True).execute()
-    return render_template('admin.html', orders=res.data)
+    orders = supabase.table("orders").select("*").order("order_id", desc=True).execute()
+    products = supabase.table("products").select("*").order("id").execute()
+    return render_template('admin.html', orders=orders.data, products=products.data)
+
+@app.route('/add_product', methods=['POST'])
+def add_product():
+    name = request.form.get('name')
+    price = int(request.form.get('price'))
+    file = request.files.get('image')
+
+    if file:
+        filename = secure_filename(file.filename)
+        file_content = file.read()
+        # Uploading to 'product-images' bucket
+        storage_path = f"items/{filename}"
+        supabase.storage.from_("product-images").upload(storage_path, file_content)
+        
+        # Get the public URL to save in the database
+        img_url = supabase.storage.from_("product-images").get_public_url(storage_path)
+        
+        supabase.table("products").insert({
+            "name": name, 
+            "price": price, 
+            "image_url": img_url
+        }).execute()
+        
+    return redirect(url_for('admin'))
+
+@app.route('/delete_product/<int:p_id>')
+def delete_product(p_id):
+    supabase.table("products").delete().eq("id", p_id).execute()
+    return redirect(url_for('admin'))
 
 @app.route('/update_status/<int:order_id>')
 def update_status(order_id):
