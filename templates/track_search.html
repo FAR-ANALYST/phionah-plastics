@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Your Order - Phionah's Shops</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
+        h2 { color: #004a99; margin-bottom: 10px; }
+        input { width: 100%; padding: 15px; margin: 20px 0; border: 2px solid #eee; border-radius: 10px; font-size: 18px; text-align: center; box-sizing: border-box; }
+        button { background: #ff6600; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .back { display: block; margin-top: 20px; color: #888; text-decoration: none; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Track Order</h2>
+        <p>Enter your Order ID from your receipt to check delivery status.</p>
+        <form action="/do_track" method="POST">
+            <input type="number" name="order_id" placeholder="Order ID (e.g. 102)" required>
+            <button type="submit">Track My Package</button>
+        </form>
+        <a href="/" class="back">← Back to Shopping</a>
+    </div>
+</body>
+</html>
