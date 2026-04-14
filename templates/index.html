@@ -8,48 +8,35 @@
         :root { --orange: #ff6600; --blue: #004a99; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 15px; margin: 0; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; border-top: 8px solid var(--orange); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h2 { text-align: center; color: var(--blue); }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         
-        /* Map UI */
-        #map { height: 250px; width: 100%; margin: 10px 0; border-radius: 10px; border: 1px solid #ddd; display: none; }
-        .map-btn { background: #eee; border: 1px solid #ccc; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; font-size: 14px; }
-
-        /* Product Toggle Button */
-        #see-products-btn {
+        .toggle-btn {
             background: linear-gradient(135deg, var(--blue), #007bff); color: white;
             padding: 15px; width: 100%; border: none; border-radius: 10px;
             font-size: 18px; font-weight: bold; cursor: pointer; margin: 15px 0;
             display: flex; justify-content: center; align-items: center; gap: 10px;
         }
 
-        #product-area { display: none; margin-top: 15px; }
-
+        #product-area { display: none; }
         .category-section { margin-bottom: 10px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
         .category-header { background: #f8f9fa; padding: 12px; cursor: pointer; font-weight: bold; color: var(--blue); list-style: none; display: flex; justify-content: space-between; }
-        
         .product-card { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #f9f9f9; }
         .product-card img { width: 60px; height: 60px; border-radius: 5px; margin-right: 12px; object-fit: cover; }
         
         .total-box { background: var(--blue); color: white; text-align: center; padding: 15px; border-radius: 10px; margin: 15px 0; font-size: 1.3em; font-weight: bold; }
         .order-btn { background: var(--orange); color: white; border: none; padding: 16px; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
-        .track-link { display: block; text-align: center; margin-top: 20px; color: var(--blue); text-decoration: none; font-size: 14px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>Phionah's Shops</h2>
+    <h2 style="text-align: center; color: var(--blue);">Phionah's Shops</h2>
     
     <form action="/place_order" method="POST">
         <input type="text" name="username" placeholder="Your Name" required>
         <input type="tel" name="phone" placeholder="Phone Number" required>
-        
-        <input type="text" id="location-text" name="location" placeholder="Type Delivery Location" required>
-        <button type="button" class="map-btn" onclick="initMap()">📍 Pin Your Exact House on Map</button>
-        <div id="map"></div>
-        <input type="hidden" id="coords" name="coordinates">
+        <input type="text" name="location" placeholder="Delivery Location (e.g., Kampala Central)" required>
 
-        <button type="button" id="see-products-btn" onclick="toggleProducts()">
+        <button type="button" class="toggle-btn" id="toggle-btn" onclick="toggleProducts()">
             🛒 See Products & Pricing ⬇️
         </button>
 
@@ -75,33 +62,15 @@
         </div>
 
         <div class="total-box">Total: <span id="display-total">UGX 0</span></div>
-        <input type="number" name="amount_paid" placeholder="Amount You are Paying (UGX)" required>
+        <input type="number" name="amount_paid" placeholder="Amount Paid (UGX)" required>
         <button type="submit" class="order-btn">Place My Order</button>
     </form>
-
-    <a href="/track_status" class="track-link">Already ordered? Track status here</a>
 </div>
 
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY"></script>
 <script>
-    let map, marker;
-
-    function initMap() {
-        const mapDiv = document.getElementById('map');
-        mapDiv.style.display = "block";
-        const kampala = { lat: 0.3476, lng: 32.5825 };
-        map = new google.maps.Map(mapDiv, { zoom: 13, center: kampala });
-        marker = new google.maps.Marker({ position: kampala, map: map, draggable: true });
-
-        marker.addListener('dragend', function() {
-            const pos = marker.getPosition();
-            document.getElementById('coords').value = `${pos.lat()},${pos.lng()}`;
-        });
-    }
-
     function toggleProducts() {
         const area = document.getElementById('product-area');
-        const btn = document.getElementById('see-products-btn');
+        const btn = document.getElementById('toggle-btn');
         if (area.style.display === "none" || area.style.display === "") {
             area.style.display = "block";
             btn.innerHTML = "❌ Close Products List";
