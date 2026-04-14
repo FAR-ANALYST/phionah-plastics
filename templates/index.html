@@ -5,83 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phionah's Shops Kampala</title>
     <style>
-        :root { --orange: #ff6600; --blue: #004a99; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); padding: 15px; margin: 0; }
+        :root { --orange: #ff6600; --blue: #004a99; --bg: #f4f7f6; --green: #28a745; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 15px; margin: 0; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; border-top: 8px solid var(--orange); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h2 { text-align: center; color: var(--blue); margin-bottom: 25px; }
-        .input-group { margin-bottom: 15px; }
-        input[type="text"], input[type="tel"], input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        h2 { text-align: center; color: var(--blue); margin-bottom: 20px; }
         
-        /* Category Dropdown Styles */
-        .category-section { margin-bottom: 15px; border: 1px solid #eee; border-radius: 10px; background: #fff; overflow: hidden; }
-        .category-header { background: #f8f9fa; padding: 15px; cursor: pointer; font-weight: bold; color: var(--blue); list-style: none; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
-        .category-header:hover { background: #f0f2f5; }
-        .category-header span { font-size: 0.8em; color: var(--orange); }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
 
-        .product-card { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #f9f9f9; }
-        .product-card:last-child { border-bottom: none; }
-        .product-card img { width: 70px; height: 70px; border-radius: 8px; margin-right: 15px; object-fit: cover; background: #eee; }
-        .product-info { flex-grow: 1; }
-        .product-info strong { display: block; font-size: 16px; color: #333; }
-        .product-info small { color: #777; font-size: 13px; }
-        .price { color: var(--orange); font-weight: bold; display: block; margin-top: 4px; }
+        /* The New Colorful Toggle Button */
+        #see-products-btn {
+            background: linear-gradient(135deg, var(--blue), #007bff);
+            color: white;
+            padding: 15px;
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+        #see-products-btn:hover { transform: scale(1.02); }
+
+        /* Hidden Product Area */
+        #product-area { display: none; margin-top: 15px; border-top: 2px dashed #eee; padding-top: 15px; }
+
+        .category-section { margin-bottom: 10px; border: 1px solid #eee; border-radius: 8px; }
+        .category-header { background: #f8f9fa; padding: 12px; cursor: pointer; font-weight: bold; color: var(--blue); list-style: none; display: flex; justify-content: space-between; }
         
-        .qty-input { width: 60px !important; text-align: center; border-color: var(--blue) !important; font-weight: bold; margin: 0 !important; }
+        .product-card { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #f9f9f9; }
+        .product-card img { width: 50px; height: 50px; border-radius: 5px; margin-right: 12px; object-fit: cover; }
         
-        .total-box { background: var(--blue); color: white; text-align: center; padding: 18px; border-radius: 10px; margin: 20px 0; font-size: 1.4em; font-weight: bold; }
-        button { background: var(--orange); color: white; border: none; padding: 16px; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:hover { background: #e65c00; transform: translateY(-1px); }
+        .total-box { background: var(--blue); color: white; text-align: center; padding: 15px; border-radius: 10px; margin: 15px 0; font-size: 1.2em; font-weight: bold; }
+        .order-btn { background: var(--orange); color: white; border: none; padding: 16px; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        
+        /* Quick Tracking Link */
+        .track-link { display: block; text-align: center; margin-top: 20px; color: var(--blue); text-decoration: none; font-size: 14px; }
     </style>
 </head>
 <body>
 <div class="container">
     <h2>Phionah's Shops</h2>
+    
     <form action="/place_order" method="POST">
-        <div class="input-group">
-            <input type="text" name="username" placeholder="Your Name" required>
-        </div>
-        <div class="input-group">
-            <input type="text" name="location" placeholder="Delivery Location (e.g., Wandegeya)" required>
-        </div>
-        <div class="input-group">
-            <input type="tel" name="phone" placeholder="Phone Number" required>
-        </div>
+        <input type="text" name="username" placeholder="Your Name" required>
+        <input type="text" name="location" placeholder="Delivery Location" required>
+        <input type="tel" name="phone" placeholder="Phone Number" required>
 
-        <h3 style="color: var(--blue); border-bottom: 2px solid #eee; padding-bottom: 10px;">Select Products</h3>
+        <button type="button" id="see-products-btn" onclick="toggleProducts()">
+            🛒 See Products & Pricing ⬇️
+        </button>
 
-        {% for cat_name, items in categories.items() %}
-        <details class="category-section" {% if items|length <= 4 %}open{% endif %}>
-            <summary class="category-header">
-                {{ cat_name }} <span>({{ items|length }} items) ▼</span>
-            </summary>
-            {% for p in items %}
-            <div class="product-card">
-                <img src="{{ p.image_url }}" alt="{{ p.name }}">
-                <div class="product-info">
-                    <strong>{{ p.name }}</strong>
-                    <small>{{ p.description }}</small>
-                    <span class="price" data-price="{{ p.price }}">UGX {{ "{:,}".format(p.price) }}</span>
+        <div id="product-area">
+            {% for cat_name, items in categories.items() %}
+            <details class="category-section">
+                <summary class="category-header">{{ cat_name }} <span>▼</span></summary>
+                {% for p in items %}
+                <div class="product-card">
+                    <img src="{{ p.image_url }}">
+                    <div style="flex-grow: 1;">
+                        <small>{{ p.name }}</small><br>
+                        <strong>{{ p.description }}</strong><br>
+                        <span class="price" data-price="{{ p.price }}" style="color: var(--orange);">
+                            UGX {{ "{:,}".format(p.price) }}
+                        </span>
+                    </div>
+                    <input type="number" name="qty_{{ p.id }}" value="0" min="0" style="width: 45px;" oninput="updateTotal()">
                 </div>
-                <input type="number" name="qty_{{ p.id }}" value="0" min="0" class="qty-input" oninput="updateTotal()">
-            </div>
+                {% endfor %}
+            </details>
             {% endfor %}
-        </details>
-        {% endfor %}
+        </div>
 
         <div class="total-box">Total: <span id="display-total">UGX 0</span></div>
-        <div class="input-group">
-            <input type="number" name="amount_paid" placeholder="Amount You are Paying Now (UGX)" required>
-        </div>
-        <button type="submit">Complete Order</button>
+        <input type="number" name="amount_paid" placeholder="Amount Paid (UGX)" required>
+        <button type="submit" class="order-btn">Place My Order</button>
     </form>
+
+    <a href="/track_status" class="track-link">Already ordered? Click here to track status</a>
 </div>
 
 <script>
+    function toggleProducts() {
+        const area = document.getElementById('product-area');
+        const btn = document.getElementById('see-products-btn');
+        if (area.style.display === "none" || area.style.display === "") {
+            area.style.display = "block";
+            btn.innerHTML = "❌ Close Product List";
+            btn.style.background = "#666";
+        } else {
+            area.style.display = "none";
+            btn.innerHTML = "🛒 See Products & Pricing ⬇️";
+            btn.style.background = "linear-gradient(135deg, var(--blue), #007bff)";
+        }
+    }
+
     function updateTotal() {
         let total = 0;
         document.querySelectorAll('.product-card').forEach(card => {
             const price = parseInt(card.querySelector('.price').getAttribute('data-price'));
-            const qty = parseInt(card.querySelector('.qty-input').value) || 0;
+            const qty = parseInt(card.querySelector('input[type="number"]').value) || 0;
             total += (price * qty);
         });
         document.getElementById('display-total').innerText = "UGX " + total.toLocaleString();
