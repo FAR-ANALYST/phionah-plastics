@@ -10,20 +10,26 @@
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; border-top: 8px solid var(--orange); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         
-        .toggle-btn {
+        /* Horizontal Preview Layout */
+        .preview-grid { display: flex; gap: 10px; margin: 15px 0; }
+        .preview-item { flex: 1; background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 10px; text-align: center; }
+        .preview-item img { width: 100%; height: 80px; object-fit: cover; border-radius: 5px; }
+        .preview-item span { font-size: 12px; display: block; margin-top: 5px; font-weight: bold; }
+
+        /* The Colorful Toggle Button */
+        #see-products-btn {
             background: linear-gradient(135deg, var(--blue), #007bff); color: white;
             padding: 15px; width: 100%; border: none; border-radius: 10px;
-            font-size: 18px; font-weight: bold; cursor: pointer; margin: 15px 0;
-            display: flex; justify-content: center; align-items: center; gap: 10px;
+            font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 15px;
         }
 
         #product-area { display: none; }
         .category-section { margin-bottom: 10px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
         .category-header { background: #f8f9fa; padding: 12px; cursor: pointer; font-weight: bold; color: var(--blue); list-style: none; display: flex; justify-content: space-between; }
         .product-card { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #f9f9f9; }
-        .product-card img { width: 60px; height: 60px; border-radius: 5px; margin-right: 12px; object-fit: cover; }
+        .product-card img { width: 50px; height: 50px; border-radius: 5px; margin-right: 12px; object-fit: cover; }
         
-        .total-box { background: var(--blue); color: white; text-align: center; padding: 15px; border-radius: 10px; margin: 15px 0; font-size: 1.3em; font-weight: bold; }
+        .total-box { background: var(--blue); color: white; text-align: center; padding: 15px; border-radius: 10px; margin: 15px 0; font-size: 1.2em; font-weight: bold; }
         .order-btn { background: var(--orange); color: white; border: none; padding: 16px; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
@@ -34,10 +40,25 @@
     <form action="/place_order" method="POST">
         <input type="text" name="username" placeholder="Your Name" required>
         <input type="tel" name="phone" placeholder="Phone Number" required>
-        <input type="text" name="location" placeholder="Delivery Location (e.g., Kampala Central)" required>
+        <input type="text" name="location" placeholder="Delivery Location" required>
 
-        <button type="button" class="toggle-btn" id="toggle-btn" onclick="toggleProducts()">
-            🛒 See Products & Pricing ⬇️
+        <div class="preview-grid" id="preview-grid">
+            {% set count = namespace(value=0) %}
+            {% for cat, items in categories.items() %}
+                {% for p in items %}
+                    {% if count.value < 2 %}
+                    <div class="preview-item">
+                        <img src="{{ p.image_url }}">
+                        <span>{{ p.name }}</span>
+                    </div>
+                    {% set count.value = count.value + 1 %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+        <button type="button" id="see-products-btn" onclick="toggleProducts()">
+            Click here to see more products and pricing ⬇️
         </button>
 
         <div id="product-area">
@@ -50,9 +71,7 @@
                     <div style="flex-grow: 1;">
                         <small>{{ p.name }}</small><br>
                         <strong>{{ p.description }}</strong><br>
-                        <span class="price" data-price="{{ p.price }}" style="color: var(--orange);">
-                            UGX {{ "{:,}".format(p.price) }}
-                        </span>
+                        <span class="price" data-price="{{ p.price }}" style="color: var(--orange);">UGX {{ "{:,}".format(p.price) }}</span>
                     </div>
                     <input type="number" name="qty_{{ p.id }}" value="0" min="0" style="width: 45px;" oninput="updateTotal()">
                 </div>
@@ -70,14 +89,18 @@
 <script>
     function toggleProducts() {
         const area = document.getElementById('product-area');
-        const btn = document.getElementById('toggle-btn');
+        const preview = document.getElementById('preview-grid');
+        const btn = document.getElementById('see-products-btn');
+        
         if (area.style.display === "none" || area.style.display === "") {
             area.style.display = "block";
-            btn.innerHTML = "❌ Close Products List";
+            preview.style.display = "none"; // Hide preview when list is open
+            btn.innerHTML = "❌ Close Product List";
             btn.style.background = "#666";
         } else {
             area.style.display = "none";
-            btn.innerHTML = "🛒 See Products & Pricing ⬇️";
+            preview.style.display = "flex";
+            btn.innerHTML = "Click here to see more products and pricing ⬇️";
             btn.style.background = "linear-gradient(135deg, var(--blue), #007bff)";
         }
     }
