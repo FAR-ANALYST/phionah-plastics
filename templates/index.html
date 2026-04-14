@@ -9,15 +9,23 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 15px; margin: 0; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; border-top: 8px solid var(--orange); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        
+        /* Horizontal Preview Layout */
         .preview-grid { display: flex; gap: 10px; margin: 15px 0; }
-        .preview-item { flex: 1; background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 10px; text-align: center; }
-        .preview-item img { width: 100%; height: 80px; object-fit: cover; border-radius: 5px; }
+        .preview-item { flex: 1; background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 10px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
+        .preview-item img { width: 100%; height: 90px; object-fit: cover; border-radius: 5px; }
+        .preview-item .p-name { font-size: 13px; font-weight: bold; margin-top: 5px; color: var(--blue); display: block; }
+        .preview-item .p-desc { font-size: 11px; color: #666; display: block; margin-bottom: 5px; }
+        .preview-item .p-price { font-size: 12px; color: var(--orange); font-weight: bold; }
+        .preview-qty { width: 60px !important; margin: 5px auto 0 !important; text-align: center; padding: 5px !important; }
+
         .toggle-btn { background: linear-gradient(135deg, var(--blue), #007bff); color: white; padding: 15px; width: 100%; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
         #product-area { display: none; }
         .category-section { margin-bottom: 10px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
         .category-header { background: #f8f9fa; padding: 12px; cursor: pointer; font-weight: bold; color: var(--blue); list-style: none; display: flex; justify-content: space-between; }
         .product-card { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #f9f9f9; }
         .product-card img { width: 50px; height: 50px; border-radius: 5px; margin-right: 12px; object-fit: cover; }
+        
         .total-box { background: var(--blue); color: white; text-align: center; padding: 15px; border-radius: 10px; margin: 15px 0; font-size: 1.2em; font-weight: bold; }
         .order-btn { background: var(--orange); color: white; border: none; padding: 16px; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
     </style>
@@ -25,19 +33,34 @@
 <body>
 <div class="container">
     <h2 style="text-align: center; color: var(--blue);">Phionah's Shops</h2>
+    
     <form action="/place_order" method="POST">
         <input type="text" name="username" placeholder="Your Name" required>
         <input type="tel" name="phone" placeholder="Phone Number" required>
         <input type="text" name="location" placeholder="Delivery Location" required>
-        
+
+        <h4 style="margin: 10px 0 5px; color: #444;">Featured Products</h4>
         <div class="preview-grid" id="preview-grid">
             {% set count = namespace(value=0) %}
-            {% for cat, items in categories.items() %}{% for p in items %}{% if count.value < 2 %}
-            <div class="preview-item"><img src="{{ p.image_url }}"><span>{{ p.name }}</span></div>
-            {% set count.value = count.value + 1 %}{% endif %}{% endfor %}{% endfor %}
+            {% for cat, items in categories.items() %}
+                {% for p in items %}
+                    {% if count.value < 2 %}
+                    <div class="preview-item">
+                        <img src="{{ p.image_url }}">
+                        <span class="p-name">{{ p.name }}</span>
+                        <span class="p-desc">{{ p.description }}</span>
+                        <span class="p-price" data-price="{{ p.price }}">UGX {{ "{:,}".format(p.price) }}</span>
+                        <input type="number" name="qty_{{ p.id }}" class="preview-qty" value="0" min="0" oninput="updateTotal()">
+                    </div>
+                    {% set count.value = count.value + 1 %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
         </div>
 
-        <button type="button" class="toggle-btn" id="toggle-btn" onclick="toggleProducts()">Click here to see more products and pricing ⬇️</button>
+        <button type="button" class="toggle-btn" id="toggle-btn" onclick="toggleProducts()">
+            Click for more categories & pricing ⬇️
+        </button>
 
         <div id="product-area">
             {% for cat_name, items in categories.items() %}
@@ -46,14 +69,19 @@
                 {% for p in items %}
                 <div class="product-card">
                     <img src="{{ p.image_url }}">
-                    <div style="flex-grow: 1;"><small>{{ p.name }}</small><br><strong>{{ p.description }}</strong><br>
-                    <span class="price" data-price="{{ p.price }}" style="color: var(--orange);">UGX {{ "{:,}".format(p.price) }}</span></div>
+                    <div style="flex-grow: 1;">
+                        <small>{{ p.name }}</small><br>
+                        <strong>{{ p.description }}</strong><br>
+                        <span class="price" data-price="{{ p.price }}" style="color: var(--orange);">
+                            UGX {{ "{:,}".format(p.price) }}
+                        </span>
+                    </div>
                     <input type="number" name="qty_{{ p.id }}" value="0" min="0" style="width: 45px;" oninput="updateTotal()">
                 </div>
                 {% endfor %}
-            </details>
             {% endfor %}
         </div>
+
         <div class="total-box">Total: <span id="display-total">UGX 0</span></div>
         <input type="number" name="amount_paid" placeholder="Amount Paid (UGX)" required>
         <button type="submit" class="order-btn">Place My Order</button>
@@ -67,26 +95,33 @@
         </form>
     </div>
 </div>
+
 <script>
     function toggleProducts() {
         const area = document.getElementById('product-area');
-        const preview = document.getElementById('preview-grid');
         const btn = document.getElementById('toggle-btn');
         if (area.style.display === "none" || area.style.display === "") {
-            area.style.display = "block"; preview.style.display = "none";
-            btn.innerHTML = "❌ Close Products"; btn.style.background = "#666";
+            area.style.display = "block";
+            btn.innerHTML = "❌ Close Extra Categories";
+            btn.style.background = "#666";
         } else {
-            area.style.display = "none"; preview.style.display = "flex";
-            btn.innerHTML = "Click here to see more products and pricing ⬇️";
+            area.style.display = "none";
+            btn.innerHTML = "Click for more categories & pricing ⬇️";
             btn.style.background = "linear-gradient(135deg, var(--blue), #007bff)";
         }
     }
+
     function updateTotal() {
         let total = 0;
-        document.querySelectorAll('.product-card').forEach(card => {
-            const price = parseInt(card.querySelector('.price').getAttribute('data-price'));
-            const qty = parseInt(card.querySelector('input[type="number"]').value) || 0;
-            total += (price * qty);
+        // Check both preview items and dropdown items
+        document.querySelectorAll('input[name^="qty_"]').forEach(input => {
+            // Find the price from the closest container
+            let priceElement = input.parentElement.querySelector('[data-price]');
+            if (priceElement) {
+                const price = parseInt(priceElement.getAttribute('data-price'));
+                const qty = parseInt(input.value) || 0;
+                total += (price * qty);
+            }
         });
         document.getElementById('display-total').innerText = "UGX " + total.toLocaleString();
     }
