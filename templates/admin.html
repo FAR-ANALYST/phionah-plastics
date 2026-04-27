@@ -18,7 +18,8 @@
         th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
         th { color: #555; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
         
-        .delete-link { color: #d9534f; text-decoration: none; font-weight: bold; font-size: 16px; }
+        .delete-link { color: #d9534f; text-decoration: none; font-weight: bold; font-size: 16px; margin-left: 10px; }
+        .edit-btn { background: none; border: none; cursor: pointer; font-size: 16px; padding: 0; }
         
         summary {
             background: #e9ecef;
@@ -37,6 +38,18 @@
         .status-badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; text-decoration: none; }
         .status-pending { background: #fff3cd; color: #856404; }
         .status-shipped { color: #28a745; }
+
+        /* Modal Background */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; top: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.6); 
+            justify-content: center; 
+            align-items: center; 
+        }
     </style>
 </head>
 <body>
@@ -137,8 +150,9 @@
                     <td><strong>{{ p.name }}</strong></td>
                     <td>{{ p.category }}</td>
                     <td>UGX {{ "{:,}".format(p.price) }}</td>
-                    <td>
-                        <a href="/delete_product/{{ p.id }}" class="delete-link" onclick="return confirm('Is this item out of stock? It will be removed from the shop.')">🗑️</a>
+                    <td style="white-space: nowrap;">
+                        <button onclick="openEditModal('{{ p.id }}', '{{ p.name }}', '{{ p.category }}', '{{ p.price }}', '{{ p.description }}')" class="edit-btn">✏️</button>
+                        <a href="/delete_product/{{ p.id }}" class="delete-link" onclick="return confirm('Remove this item?')">🗑️</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -155,10 +169,11 @@
                     {% for p in products[5:] %}
                     <tr>
                         <td><img src="{{ p.image_url }}" style="width: 35px; height: 35px; object-fit: cover; border-radius: 4px;"></td>
-                        <td>{{ p.name }}</td>
+                        <td><strong>{{ p.name }}</strong></td>
                         <td>{{ p.category }}</td>
                         <td>UGX {{ "{:,}".format(p.price) }}</td>
-                        <td>
+                        <td style="white-space: nowrap;">
+                            <button onclick="openEditModal('{{ p.id }}', '{{ p.name }}', '{{ p.category }}', '{{ p.price }}', '{{ p.description }}')" class="edit-btn">✏️</button>
                             <a href="/delete_product/{{ p.id }}" class="delete-link" onclick="return confirm('Remove product?')">🗑️</a>
                         </td>
                     </tr>
@@ -168,8 +183,63 @@
         </div>
     </details>
     {% endif %}
-
 </div>
+
+<div id="editModal" class="modal">
+    <div class="box" style="width: 90%; max-width: 450px; background: white; margin: auto;">
+        <h3 style="margin-top: 0; color: var(--blue);">✏️ Edit Product Details</h3>
+        <form id="editForm" method="POST" enctype="multipart/form-data">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <label style="font-size: 11px; font-weight: bold;">Product Name</label>
+                    <input type="text" name="name" id="editName" required>
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: bold;">Category</label>
+                    <input type="text" name="category" id="editCategory" required>
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: bold;">Description</label>
+                    <input type="text" name="description" id="editDesc" required>
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: bold;">Price (UGX)</label>
+                    <input type="number" name="price" id="editPrice" required>
+                </div>
+            </div>
+            
+            <label style="font-weight: bold; font-size: 11px; display: block; margin-top: 10px;">Update Photo (Leave blank to keep current):</label>
+            <input type="file" name="product_image" accept="image/*" style="background: #f9f9f9; padding: 8px; margin-bottom: 20px;">
+            
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn-add" style="flex: 2;">Save Changes</button>
+                <button type="button" onclick="closeEditModal()" style="flex: 1; background: #ccc; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openEditModal(id, name, cat, price, desc) {
+        document.getElementById('editModal').style.display = 'flex';
+        document.getElementById('editForm').action = '/edit_product/' + id;
+        document.getElementById('editName').value = name;
+        document.getElementById('editCategory').value = cat;
+        document.getElementById('editPrice').value = price;
+        document.getElementById('editDesc').value = desc;
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    // Close modal if clicking outside the white box
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('editModal')) {
+            closeEditModal();
+        }
+    }
+</script>
 
 </body>
 </html>
