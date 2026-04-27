@@ -31,7 +31,7 @@ def index():
 
 @app.route('/track_order', methods=['POST'])
 def track_order():
-    """FIX: Restores the tracking route to solve the 404 Not Found error."""
+    """Handles order status lookups."""
     try:
         order_id = request.form.get('order_id')
         res = supabase.table("orders").select("*").eq("order_id", order_id).execute()
@@ -71,6 +71,34 @@ def add_product():
         return redirect(url_for('admin'))
     except Exception as e:
         return f"Upload Error: {e}"
+
+@app.route('/edit_product/<int:product_id>', methods=['POST'])
+def edit_product(product_id):
+    """Updates existing product details and optionally the image."""
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    try:
+        # Get existing product to retain image if no new one is uploaded
+        existing = supabase.table("products").select("*").eq("id", product_id).single().execute()
+        image_url = existing.data.get('image_url')
+
+        file = request.files.get('product_image')
+        if file and file.filename != '':
+            filename = secure_filename(file.filename)
+            file_path = f"inventory/{datetime.now().timestamp()}_{filename}"
+            supabase.storage.from_("product-images").upload(file_path, file.read())
+            image_url = supabase.storage.from_("product-images").get_public_url(file_path)
+
+        update_data = {
+            "name": request.form.get('name'),
+            "category": request.form.get('category'),
+            "description": request.form.get('description'),
+            "price": int(request.form.get('price')),
+            "image_url": image_url
+        }
+        supabase.table("products").update(update_data).eq("id", product_id).execute()
+        return redirect(url_for('admin'))
+    except Exception as e:
+        return f"Update Error: {e}"
 
 @app.route('/delete_product/<int:product_id>')
 def delete_product(product_id):
@@ -120,12 +148,3 @@ def login():
         if request.form.get('username') == "phiona" and request.form.get('password') == "phiona-plastics":
             session['logged_in'] = True
             return redirect(url_for('admin'))
-    return render_template('login.html')
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('index'))
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
