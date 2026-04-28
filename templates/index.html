@@ -10,32 +10,39 @@
         .container { max-width: 550px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid transparent; border-image: var(--grad) 1; }
         
         .shop-header { text-align: center; margin-bottom: 20px; }
-        .shop-header h1 { margin: 0; color: var(--blue); text-transform: uppercase; }
-
-        /* Premium Payment Box */
-        .pay-instructions { 
-            background: #fffdf5; border: 2px solid var(--gold); padding: 20px; 
-            border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-        .pay-instructions h3 { margin-top: 0; color: #856404; display: flex; align-items: center; gap: 10px; }
-        .contact-card { background: white; padding: 10px; border-radius: 10px; border: 1px solid #eee; margin: 10px 0; }
-        .highlight { color: var(--purple); font-weight: bold; font-size: 1.1em; }
+        .shop-header h1 { margin: 0; color: var(--blue); text-transform: uppercase; font-size: 24px; }
 
         .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 15px; border: none; background: none; cursor: pointer; font-weight: bold; color: #777; }
         .tab-btn.active { color: var(--purple); border-bottom: 3px solid var(--purple); }
 
+        /* Catalog & Images */
         .catalog-toggle { background: #f8f9fa; color: var(--blue); border: 2px dashed #ddd; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin: 10px 0; }
         .product-card { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f9f9f9; }
-        .product-card img { width: 65px; height: 65px; border-radius: 10px; margin-right: 15px; object-fit: cover; }
+        .product-card img { width: 65px; height: 65px; border-radius: 10px; margin-right: 15px; object-fit: cover; cursor: zoom-in; border: 1px solid #ddd; }
         
+        /* Zoom Modal */
+        #imgModal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
+        #modalImg { max-width: 90%; max-height: 80%; border-radius: 10px; }
+        .close-modal { position: absolute; top: 30px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
+
         .summary-box { background: var(--blue); color: white; padding: 20px; border-radius: 15px; text-align: center; margin: 15px 0; }
-        .order-btn { background: var(--grad); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .order-btn { background: var(--grad); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+
+        /* Bottom Payment Box */
+        .pay-instructions { background: #fffdf5; border: 2px solid var(--gold); padding: 18px; border-radius: 15px; margin-top: 25px; }
+        .contact-card { background: white; padding: 10px; border-radius: 10px; border: 1px solid #eee; margin: 8px 0; text-align: center; }
+        .highlight { color: var(--purple); font-weight: bold; font-size: 1.1em; }
         
-        .delivery-note { background: #e7f3ff; color: #004085; padding: 12px; border-radius: 10px; font-size: 13px; margin-top: 20px; text-align: center; border: 1px solid #b8daff; }
+        .delivery-note { background: #e7f3ff; color: #004085; padding: 12px; border-radius: 10px; font-size: 12px; margin-top: 15px; text-align: center; border: 1px solid #b8daff; }
     </style>
 </head>
 <body>
+
+<div id="imgModal" onclick="closeZoom()">
+    <span class="close-modal">&times;</span>
+    <img id="modalImg">
+</div>
 
 <div class="container">
     <div class="shop-header">
@@ -49,16 +56,6 @@
     </div>
 
     <div id="order-tab">
-        <div class="pay-instructions">
-            <h3>💰 Payment Instructions</h3>
-            <p style="margin-bottom: 5px;">Please send Mobile Money to:</p>
-            <div class="contact-card">
-                <strong>Name:</strong> <span class="highlight">NAISANGA PHIONA</span><br>
-                <strong>Number:</strong> <span class="highlight">0703070193</span>
-            </div>
-            <p style="font-size: 13px; color: #666;"><em>Note: Ensure you include your name as the reference/reason.</em></p>
-        </div>
-
         <form action="/place_order" method="POST">
             <div class="user-info">
                 <input type="text" name="username" placeholder="Customer Name" style="width:100%; padding:14px; margin-bottom:10px; border:1px solid #ddd; border-radius:12px;" required>
@@ -66,7 +63,7 @@
                 <input type="text" name="location" placeholder="Delivery Location" style="width:100%; padding:14px; margin-bottom:10px; border:1px solid #ddd; border-radius:12px;" required>
             </div>
 
-            <button type="button" class="catalog-toggle" id="viewBtn" onclick="toggleCatalog()">✨ Select Products & See Prices</button>
+            <button type="button" class="catalog-toggle" id="viewBtn" onclick="toggleCatalog()">✨ View Products (Tap Image to Zoom)</button>
             
             <div id="catalog-area" style="display:none;">
                 {% for cat, items in categories.items() %}
@@ -74,12 +71,12 @@
                     <summary style="padding:12px; background:#f9f9f9; cursor:pointer; font-weight:bold;">{{ cat }}</summary>
                     {% for p in items %}
                     <div class="product-card">
-                        <img src="{{ p.image_url }}">
+                        <img src="{{ p.image_url }}" onclick="openZoom(this.src)" alt="{{ p.name }}">
                         <div style="flex-grow:1;">
                             <strong>{{ p.name }}</strong><br>
                             <span class="price-val" data-raw="{{ p.price }}">UGX {{ "{:,}".format(p.price) }}</span>
                         </div>
-                        <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" style="width:50px; padding:5px;" oninput="updateTotal()">
+                        <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" style="width:50px; padding:5px; border-radius:8px; border:1px solid #ddd;" oninput="updateTotal()">
                     </div>
                     {% endfor %}
                 </details>
@@ -93,33 +90,44 @@
             </div>
 
             <div style="margin-top:15px;">
-                <label style="font-weight:bold; font-size:14px;">Confirm Amount Paid (UGX):</label>
-                <input type="number" name="amount_paid" placeholder="Enter amount sent (or 0 for Cash)" style="width:100%; padding:14px; margin-top:5px; border:1px solid #ddd; border-radius:12px;" required>
+                <label style="font-weight:bold; font-size:13px; color:var(--blue);">Payment Method & Amount:</label>
+                <select name="payment_method" style="width:100%; padding:14px; margin-top:5px; border:1px solid #ddd; border-radius:12px; background:white;" required>
+                    <option value="Mobile Money">Mobile Money (Pre-paid)</option>
+                    <option value="Cash on Delivery">Cash on Delivery</option>
+                </select>
+                <input type="number" name="amount_paid" placeholder="Enter amount sent (or 0 for Cash)" style="width:100%; padding:14px; margin-top:10px; border:1px solid #ddd; border-radius:12px;" required>
             </div>
 
-            <button type="submit" class="order-btn" style="margin-top:20px;">🚀 Place Order & Download Receipt</button>
+            <button type="submit" class="order-btn">🚀 Place Order & Download Receipt</button>
         </form>
+
+        <div class="pay-instructions">
+            <h4 style="margin:0; color:#856404; text-align:center;">💰 Official Payment Details</h4>
+            <p style="font-size:13px; margin:10px 0; text-align:center;">For Mobile Money transfers, pay to:</p>
+            <div class="contact-card">
+                <strong>Name:</strong> <span class="highlight">NAISANGA PHIONA</span><br>
+                <strong>Number:</strong> <span class="highlight">0703070193</span>
+            </div>
+            <p style="font-size: 11px; color: #666; text-align:center;"><em>Please use your full name as the payment reference.</em></p>
+        </div>
 
         <div class="delivery-note">
             🚚 <strong>Free delivery</strong> on orders above <strong>500,000 UGX</strong>!
         </div>
     </div>
 
-    <div id="track-tab" style="display:none;">
-        <div style="padding:20px; text-align:center;">
-            <input type="tel" id="track-phone" placeholder="Your Phone Number" style="width:100%; padding:14px; border:1px solid #ddd; border-radius:12px;">
-            <button onclick="trackOrder()" class="order-btn" style="margin-top:10px;">Check Status</button>
-            <div id="status-display" style="margin-top:20px; font-weight:bold; color:var(--blue);"></div>
-        </div>
+    <div id="track-tab" style="display:none; padding:20px; text-align:center;">
+        <input type="tel" id="track-phone" placeholder="Enter Registered Phone Number" style="width:100%; padding:14px; border:1px solid #ddd; border-radius:12px;">
+        <button onclick="trackOrder()" class="order-btn" style="margin-top:10px;">Check Status</button>
+        <div id="status-display" style="margin-top:20px; font-weight:bold; color:var(--blue);"></div>
     </div>
 </div>
 
 <script>
-    // Logic to handle receipt download after redirect
     window.onload = function() {
         const params = new URLSearchParams(window.location.search);
         if (params.get('success') === 'true') {
-            alert("Order Placed Successfully! Your receipt is downloading.");
+            alert("Order Placed! Receipt is downloading...");
             const user = params.get('user');
             const items = params.get('items');
             const total = params.get('total');
@@ -127,10 +135,18 @@
         }
     };
 
+    function openZoom(src) {
+        document.getElementById('modalImg').src = src;
+        document.getElementById('imgModal').style.display = 'flex';
+    }
+    function closeZoom() {
+        document.getElementById('imgModal').style.display = 'none';
+    }
+
     function toggleCatalog() {
         const area = document.getElementById('catalog-area');
         area.style.display = (area.style.display === 'none') ? 'block' : 'none';
-        document.getElementById('viewBtn').innerText = (area.style.display === 'none') ? "✨ Select Products & See Prices" : "🔼 Hide Catalog";
+        document.getElementById('viewBtn').innerText = (area.style.display === 'none') ? "✨ View Products (Tap Image to Zoom)" : "🔼 Hide Catalog";
     }
 
     function updateTotal() {
