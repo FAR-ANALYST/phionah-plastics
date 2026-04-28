@@ -60,6 +60,10 @@
 
         .product-info { flex-grow: 1; }
         .product-info strong { display: block; color: #333; font-size: 14px; }
+        
+        /* Product Description Style */
+        .product-desc { display: block; color: #666; font-size: 12px; margin: 2px 0 5px 0; line-height: 1.3; }
+        
         .product-price { color: var(--orange); font-weight: bold; font-size: 14px; }
 
         .qty-input { width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; text-align: center; }
@@ -68,7 +72,7 @@
 
         .order-btn { background: var(--orange); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 102, 0, 0.3); }
 
-        /* NEW Contact & Inquiries Section */
+        /* Contact & Inquiries Section */
         .contact-section {
             margin-top: 30px;
             padding: 20px;
@@ -120,6 +124,7 @@
                     <img src="{{ p.image_url }}" onclick="openModal(this.src)" alt="{{ p.name }}">
                     <div class="product-info">
                         <strong>{{ p.name }}</strong>
+                        <span class="product-desc">{{ p.description }}</span>
                         <span class="product-price">UGX {{ "{:,}".format(p.price) }}</span>
                         <span class="price-val" data-price="{{ p.price }}" style="display:none;"></span>
                     </div>
