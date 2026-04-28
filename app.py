@@ -7,9 +7,10 @@ from supabase import create_client, Client
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = "phionah-secure-key-2026"
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "phionah-secure-key-2026")
 
 # --- SUPABASE CONFIGURATION ---
+# Using the project reference 'vzeznntgcqzdwnfqwtra' and the specific key you provided
 SUPABASE_URL = "https://vzeznntgcqzdwnfqwtra.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6ZXpubnRnY3F6ZHduZnF3dHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5ODI5NTMsImV4cCI6MjA5MTU1ODk1M30.DgAjwuAOa46jXdVoq_BglmBiNNP2Rfa_N1Ja3wylhDk"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -18,7 +19,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/')
 def index():
-    """Renders the storefront with products grouped by category."""
+    """Main storefront. Fetches and groups products by category."""
     try:
         res = supabase.table("products").select("*").execute()
         products = res.data if res.data else []
@@ -31,18 +32,21 @@ def index():
             categories[cat].append(p)
         return render_template('index.html', categories=categories)
     except Exception as e:
-        print(f"Index Load Error: {e}")
-        return "Store temporarily unavailable.", 500
+        print(f"Error loading products: {e}")
+        return "Store temporarily unavailable. Please try again later.", 500
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
-    """Handles order placement and calculates totals on the server for security."""
+    """
+    Handles order submission. 
+    Matches Supabase schema: username, phone, location, item_name, amount_paid, status.
+    """
     try:
         username = request.form.get('username')
         phone = request.form.get('phone')
-        location = request.form.get('location')
+        location = request.form.get('location') # Maps to 'location' column
         
-        # Fetch current products to verify prices and build order string
+        # Verify product data for price calculation
         res_prod = supabase.table("products").select("*").execute()
         selected_items = []
         total_price = 0
@@ -62,20 +66,21 @@ def place_order():
             "phone": phone,
             "location": location,
             "item_name": ", ".join(selected_items),
-            "total_price": total_price,
+            "amount_paid": total_price, # Matches 'amount_paid' in your database
             "status": "Pending"
         }
         
-        # INSERT order - Note: Ensure RLS is disabled or policy is set in Supabase
+        # Insert into Supabase - Requires RLS disabled or Insert Policy enabled
         supabase.table("orders").insert(order_data).execute()
         return redirect(url_for('index'))
     except Exception as e:
         print(f"Order Placement Error: {e}")
-        return "Error placing order. Please contact Phionah directly.", 500
+        # Returning a clear error message to help identify column name mismatches
+        return f"Order failed: {str(e)}. Please check database columns.", 500
 
 @app.route('/get_status')
 def get_status():
-    """JSON route for the tracking feature on index.html."""
+    """Returns order status for customers via JSON/JavaScript."""
     phone = request.args.get('phone')
     if not phone:
         return jsonify({"status": "Enter phone number"}), 400
@@ -88,15 +93,15 @@ def get_status():
             
         if res.data:
             return jsonify({"status": res.data[0]['status']})
-        return jsonify({"status": "No order found for this number"})
+        return jsonify({"status": "No order found."})
     except Exception as e:
-        return jsonify({"status": "Error checking status"}), 500
+        return jsonify({"status": "System busy"}), 500
 
 # --- ADMIN ROUTES ---
 
 @app.route('/admin')
 def admin():
-    """Dashboard viewing area for orders and inventory management."""
+    """Dashboard to manage orders and current inventory."""
     if not session.get('logged_in'):
         return redirect(url_for('login'))
         
@@ -113,12 +118,12 @@ def admin():
             
         return render_template('admin.html', orders=orders, inventory_by_cat=inventory_by_cat)
     except Exception as e:
-        print(f"Admin Access Error: {e}")
-        return "Internal Error. Verify Supabase table columns.", 500
+        print(f"Admin Error: {e}")
+        return "Internal Error: Check Supabase Key and Table Columns.", 500
 
 @app.route('/add_product', methods=['POST'])
 def add_product():
-    """Adds a new product including image upload to Supabase Storage."""
+    """Adds new items to the products table with image hosting."""
     if not session.get('logged_in'): return redirect(url_for('login'))
     
     file = request.files.get('product_image')
@@ -132,7 +137,7 @@ def add_product():
             "name": request.form.get('name'),
             "category": request.form.get('category'),
             "price": int(request.form.get('price')),
-            "description": request.form.get('description'),
+            "description": request.form.get('description', ''),
             "image_url": img_url
         }
         supabase.table("products").insert(data).execute()
@@ -140,7 +145,7 @@ def add_product():
 
 @app.route('/edit_product/<int:id>', methods=['POST'])
 def edit_product(id):
-    """Updates existing product details. Handles optional image updates."""
+    """Updates existing inventory data. Allows swapping images."""
     if not session.get('logged_in'): return redirect(url_for('login'))
     
     update_data = {
@@ -161,26 +166,26 @@ def edit_product(id):
 
 @app.route('/delete_product/<int:id>')
 def delete_product(id):
-    """Permanently removes a product from inventory."""
+    """Deletes a product by ID."""
     if not session.get('logged_in'): return redirect(url_for('login'))
     supabase.table("products").delete().eq("id", id).execute()
     return redirect(url_for('admin'))
 
 @app.route('/export_orders')
 def export_orders():
-    """Generates a downloadable CSV of all orders for business records."""
+    """Generates and serves a CSV file of all shop orders."""
     if not session.get('logged_in'): return redirect(url_for('login'))
     
-    res = supabase.table("orders").select("*").order("order_id", desc=True).execute()
+    res = supabase.table("orders").select("*").order("order_id", desc=True).execute().data
     
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['Order ID', 'Customer', 'Phone', 'Location', 'Items', 'Total Price', 'Status'])
+    writer.writerow(['Order ID', 'Customer', 'Phone', 'Location', 'Items', 'Total Paid', 'Status'])
     
-    for o in res.data:
+    for o in res:
         writer.writerow([
             o.get('order_id'), o.get('username'), o.get('phone'),
-            o.get('location'), o.get('item_name'), o.get('total_price'),
+            o.get('location'), o.get('item_name'), o.get('amount_paid'),
             o.get('status')
         ])
     
@@ -193,20 +198,21 @@ def export_orders():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Admin login handler using established credentials."""
+    """Secure access for the Admin Panel."""
     if request.method == 'POST':
-        if request.form.get('username') == 'phiona' and request.form.get('password') == 'phiona-plastics':
+        # Matching established phionah-plastics credentials
+        if request.form.get('password') == 'phiona-plastics':
             session['logged_in'] = True
             return redirect(url_for('admin'))
     return render_template('login.html')
 
 @app.route('/logout')
 def logout():
-    """Clears admin session."""
+    """Ends the admin session."""
     session.clear()
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    # On Render, the port is typically assigned automatically.
-    # debug=True is for development; set to False for production.
-    app.run(debug=True)
+    # Running on default Flask port or port assigned by Render
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port, debug=False)
