@@ -3,193 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phionah's Shops | Premium Ordering</title>
+    <title>Phionah's Shops | Order & Track</title>
     <style>
-        :root { 
-            --blue: #001f3f; 
-            --purple: #6a0dad; 
-            --gold: #ffd700;
-            --grad: linear-gradient(135deg, #001f3f 0%, #6a0dad 50%, #ffd700 100%);
-        }
-        body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            background: #f8f9fa; 
-            padding: 20px; 
-            margin: 0; 
-            color: #333;
-        }
-        .container { 
-            max-width: 600px; 
-            margin: auto; 
-            background: white; 
-            padding: 35px; 
-            border-radius: 25px; 
-            border-top: 12px solid transparent; 
-            border-image: var(--grad) 1;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        }
-        h2 { 
-            text-align: center; 
-            background: var(--grad);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 32px; 
-            margin-bottom: 30px;
-            font-weight: 800;
-        }
-        .user-info label { display: block; font-weight: bold; margin-bottom: 5px; color: var(--blue); font-size: 14px; }
-        .user-info input { 
-            width: 100%; padding: 15px; margin-bottom: 20px; border: 1.5px solid #eee; 
-            border-radius: 12px; box-sizing: border-box; font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        .user-info input:focus { border-color: var(--purple); outline: none; background: #fff; }
+        :root { --blue: #001f3f; --purple: #6a0dad; --gold: #ffd700; --grad: linear-gradient(135deg, #001f3f 0%, #6a0dad 50%, #ffd700 100%); }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; padding: 15px; margin: 0; }
+        .container { max-width: 550px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid transparent; border-image: var(--grad) 1; }
         
-        .reveal-btn, .order-btn { 
-            background: var(--grad); color: white; border: none; padding: 20px; 
-            width: 100%; border-radius: 15px; font-weight: bold; cursor: pointer; 
-            font-size: 18px; text-transform: uppercase; letter-spacing: 1px;
-            box-shadow: 0 5px 15px rgba(106, 13, 173, 0.3);
-            transition: all 0.3s ease;
-        }
-        .reveal-btn:hover, .order-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(106, 13, 173, 0.4); }
-        .reveal-btn:active, .order-btn:active { transform: translateY(0); }
+        .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: none; cursor: pointer; font-weight: bold; color: #777; transition: 0.3s; }
+        .tab-btn.active { color: var(--purple); border-bottom: 3px solid var(--purple); }
 
-        details { border: 1px solid #f0f0f0; border-radius: 15px; margin-bottom: 15px; background: #fff; overflow: hidden; }
-        summary { 
-            padding: 20px; font-weight: 700; color: var(--blue); cursor: pointer; 
-            background: #fafafa; border-left: 8px solid var(--purple); list-style: none;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        summary::-webkit-details-marker { display: none; }
+        .user-info input { width: 100%; padding: 14px; margin: 10px 0; border: 1.5px solid #ddd; border-radius: 12px; box-sizing: border-box; }
+        .order-btn, .track-btn { background: var(--grad); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px; }
         
-        .product-card { 
-            display: flex; align-items: center; padding: 15px; 
-            border-bottom: 1px solid #f7f7f7; animation: fadeIn 0.4s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .product-card img { 
-            width: 75px; height: 75px; border-radius: 12px; margin-right: 15px; 
-            object-fit: cover; border: 1px solid #eee; cursor: zoom-in;
-            transition: transform 0.2s;
-        }
-        .product-card img:hover { transform: scale(1.05); }
+        .product-card { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f9f9f9; }
+        .product-card img { width: 65px; height: 65px; border-radius: 10px; margin-right: 15px; object-fit: cover; border: 1px solid #eee; }
         
-        .price-tag { color: var(--purple); font-weight: 800; font-size: 16px; margin-top: 4px; display: block; }
-        .qty-input { 
-            width: 65px; padding: 10px; border-radius: 10px; border: 1.5px solid #ddd; 
-            text-align: center; font-weight: bold; font-size: 16px;
-        }
-
-        .summary-display { 
-            background: var(--blue); color: white; padding: 25px; border-radius: 20px; 
-            text-align: center; margin: 25px 0; position: relative;
-        }
-        .summary-display small { text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; font-size: 12px; }
-        .summary-display #grand-total { font-size: 30px; font-weight: 800; margin-top: 5px; }
-
-        .payment-card { 
-            background: #fff9e6; padding: 20px; border-radius: 15px; 
-            border: 2px dashed #ffd700; margin-bottom: 20px;
-        }
-        
-        /* Zoom Overlay */
-        #zoomOverlay { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; 
-        }
-        #zoomOverlay img { max-width: 90%; max-height: 85%; border-radius: 10px; }
+        .summary-box { background: var(--blue); color: white; padding: 20px; border-radius: 15px; text-align: center; margin: 15px 0; }
+        .status-result { margin-top: 20px; padding: 20px; border-radius: 12px; background: #eef; text-align: center; font-weight: bold; color: var(--blue); border: 1px solid var(--purple); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Phionah's Shops</h2>
-    
-    <form action="/place_order" method="POST">
-        <div class="user-info">
-            <label>Your Name</label>
-            <input type="text" name="username" placeholder="e.g. John Doe" required>
-            
-            <label>Phone Number</label>
-            <input type="tel" name="phone" placeholder="e.g. 0757XXXXXX" required>
-            
-            <label>Delivery Location</label>
-            <input type="text" name="location" placeholder="e.g. Kampala, Wandegeya" required>
-        </div>
+    <h2 style="text-align:center; color:var(--blue);">Phionah's Shops</h2>
 
-        <button type="button" class="reveal-btn" id="revealBtn" onclick="toggleCatalog()">✨ Browse Catalog & Order</button>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('order-tab')">🛍️ Place Order</button>
+        <button class="tab-btn" onclick="showTab('track-tab')">📍 Track Status</button>
+    </div>
 
-        <div id="orderSection" style="display:none; margin-top:10px;">
-            {% for cat, items in categories.items() %}
-            <details open>
-                <summary>
-                    <span>📂 {{ cat }}</span>
-                    <span style="font-size: 12px; font-weight: normal; color: #666;">{{ items|length }} Items</span>
-                </summary>
-                {% for p in items %}
-                <div class="product-card">
-                    <img src="{{ p.image_url }}" onclick="openZoom(this.src)" title="Click to enlarge">
-                    <div style="flex-grow:1;">
-                        <span style="font-size: 16px; font-weight: 600; color: var(--blue);">{{ p.name }}</span>
-                        <span class="price-tag" data-price="{{ p.price }}">UGX {{ "{:,}".format(p.price) }}</span>
+    <div id="order-tab">
+        <form action="/place_order" method="POST">
+            <div class="user-info">
+                <input type="text" name="username" placeholder="Your Full Name" required>
+                <input type="tel" name="phone" placeholder="Phone Number" required>
+                <input type="text" name="location" placeholder="Delivery Location" required>
+            </div>
+
+            <div id="catalog" style="margin-top:20px;">
+                {% for cat, items in categories.items() %}
+                <details open style="margin-bottom:10px; border:1px solid #eee; border-radius:12px; overflow:hidden;">
+                    <summary style="padding:15px; background:#fcfcfc; cursor:pointer; font-weight:bold; color:var(--blue);">{{ cat }}</summary>
+                    {% for p in items %}
+                    <div class="product-card">
+                        <img src="{{ p.image_url }}">
+                        <div style="flex-grow:1;">
+                            <strong>{{ p.name }}</strong><br>
+                            <span class="price-val" data-raw="{{ p.price }}">UGX {{ "{:,}".format(p.price) }}</span>
+                        </div>
+                        <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" style="width:55px; padding:5px; border-radius:5px; border:1px solid #ddd;" oninput="updateTotal()">
                     </div>
-                    <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" oninput="runCalculator()">
-                </div>
+                    {% endfor %}
+                </details>
                 {% endfor %}
-            </details>
-            {% endfor %}
 
-            <div class="summary-display">
-                <small>Cart Total Amount</small>
-                <div id="grand-total">UGX 0</div>
-                <input type="hidden" name="total_price_hidden" id="totalPriceHidden" value="0">
+                <div class="summary-box">
+                    <div style="font-size: 14px; opacity: 0.8;">Grand Total</div>
+                    <div id="grand-total" style="font-size: 24px; font-weight: bold;">UGX 0</div>
+                </div>
+
+                <div class="user-info">
+                    <label style="font-weight:bold; color:var(--blue); font-size:14px;">Confirm Amount Paid (UGX):</label>
+                    <input type="number" name="amount_paid" placeholder="Enter amount sent via MM" required>
+                </div>
+
+                <button type="submit" class="order-btn">🚀 Place My Order</button>
             </div>
+        </form>
+    </div>
 
-            <div class="payment-card">
-                <label style="color: var(--blue); font-weight: 800; display: block; margin-bottom: 10px;">💵 Amount Paid (Confirm via Mobile Money):</label>
-                <input type="number" name="amount_paid" placeholder="Enter the UGX amount you sent" required 
-                       style="width:100%; padding:15px; border-radius:10px; border:1px solid #ccc; font-size:18px;">
-                <p style="font-size: 12px; color: #856404; margin-top: 10px;">Confirm your payment matches your cart total before submitting.</p>
-            </div>
-
-            <button type="submit" class="order-btn">🚀 Confirm & Place Order</button>
+    <div id="track-tab" style="display:none;">
+        <div class="user-info">
+            <p style="color:#666; font-size:14px;">Enter your phone number to see your latest order status.</p>
+            <input type="tel" id="track-phone" placeholder="Enter Phone Number">
+            <button class="track-btn" onclick="trackOrder()">🔍 Check My Status</button>
         </div>
-    </form>
-</div>
-
-<div id="zoomOverlay" onclick="this.style.display='none'">
-    <img id="zoomImg" src="">
+        <div id="status-display" class="status-result" style="display:none;"></div>
+    </div>
 </div>
 
 <script>
-    function toggleCatalog() {
-        document.getElementById('orderSection').style.display = 'block';
-        document.getElementById('revealBtn').style.display = 'none';
-        window.scrollTo({ top: 200, behavior: 'smooth' });
+    function showTab(tabId) {
+        document.getElementById('order-tab').style.display = (tabId === 'order-tab') ? 'block' : 'none';
+        document.getElementById('track-tab').style.display = (tabId === 'track-tab') ? 'block' : 'none';
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(tabId === 'order-tab' ? 'Place' : 'Track')));
     }
 
-    function runCalculator() {
-        let grandTotal = 0;
+    function updateTotal() {
+        let total = 0;
         document.querySelectorAll('.product-card').forEach(card => {
             const qty = parseInt(card.querySelector('.qty-input').value) || 0;
-            const price = parseInt(card.querySelector('.price-tag').getAttribute('data-price')) || 0;
-            grandTotal += (qty * price);
+            const price = parseInt(card.querySelector('.price-val').getAttribute('data-raw')) || 0;
+            total += (qty * price);
         });
-        
-        // Update the visual total
-        document.getElementById('grand-total').innerText = "UGX " + grandTotal.toLocaleString();
-        
-        // Update hidden field for the Python backend
-        document.getElementById('totalPriceHidden').value = grandTotal;
+        document.getElementById('grand-total').innerText = "UGX " + total.toLocaleString();
     }
 
-    function openZoom(url) {
-        document.getElementById('zoomImg').src = url;
-        document.getElementById('zoomOverlay').style.display = 'flex';
+    async function trackOrder() {
+        const phone = document.getElementById('track-phone').value;
+        if(!phone) return alert("Enter phone number");
+        const res = await fetch(`/get_status?phone=${phone}`);
+        const data = await res.json();
+        const display = document.getElementById('status-display');
+        display.style.display = 'block';
+        display.innerText = "Order Status: " + data.status;
     }
 </script>
-
 </body>
 </html>
