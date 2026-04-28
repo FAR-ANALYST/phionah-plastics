@@ -1,0 +1,40 @@
+/* Phionah's Shops - Theme Control */
+:root {
+    /* YOUR NEW COLOR PALETTE */
+    --dark-blue: #001f3f;
+    --royal-purple: #6a0dad;
+    --gold-gradient: linear-gradient(135deg, #001f3f 0%, #6a0dad 50%, #ffd700 100%);
+    
+    /* FUNCTIONAL COLORS */
+    --bg-light: #f4f7f6;
+    --white: #ffffff;
+    --text-main: #333333;
+}
+
+/* Apply the gradient to the top of containers like your index and admin panels */
+.container, .sidebar {
+    border-top: 10px solid;
+    border-image: var(--gold-gradient) 1;
+}
+
+/* Use the gradient for buttons to make them pop */
+.btn-add, .order-btn, .reveal-btn {
+    background: var(--gold-gradient) !important;
+    color: white !important;
+    border: none !important;
+    transition: transform 0.2s ease;
+}
+
+.btn-add:hover, .order-btn:hover {
+    transform: scale(1.02);
+    filter: brightness(1.1);
+}
+
+/* Update headers to match the dark blue theme */
+h2, h3, .nav-item.active {
+    color: var(--dark-blue) !important;
+}
+
+summary {
+    border-left: 5px solid var(--royal-purple);
+}
