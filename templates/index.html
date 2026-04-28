@@ -27,7 +27,7 @@
         summary { padding: 15px; font-weight: bold; color: var(--blue); cursor: pointer; border-left: 5px solid var(--purple); background: #fafafa; }
         
         .product-card { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #f9f9f9; }
-        .product-card img { width: 60px; height: 60px; border-radius: 8px; margin-right: 15px; object-fit: cover; }
+        .product-card img { width: 60px; height: 60px; border-radius: 8px; margin-right: 15px; object-fit: cover; cursor: zoom-in; }
         
         .status-section { margin-top: 30px; padding-top: 20px; border-top: 2px dashed #eee; text-align: center; }
         .status-box { background: #f9f9f9; padding: 15px; border-radius: 10px; margin-top: 10px; border: 1px solid #ddd; }
@@ -49,44 +49,41 @@
 
         <div id="inventory-list" style="display:none;">
             {% for cat, items in categories.items() %}
-            <details>
+            <details open>
                 <summary>{{ cat }}</summary>
                 {% for p in items %}
                 <div class="product-card">
-                    <img src="{{ p.image_url }}" onclick="openModal(this.src)" style="cursor:zoom-in;">
+                    <img src="{{ p.image_url }}" onclick="openZoom(this.src)">
                     <div style="flex-grow:1;">
                         <strong>{{ p.name }}</strong><br>
-                        <small style="color:var(--purple)">UGX {{ "{:,}".format(p.price) }}</small>
+                        <small class="price-display" data-price="{{ p.price }}">UGX {{ "{:,}".format(p.price) }}</small>
                     </div>
-                    <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" style="width:50px; padding:5px;" onchange="updateTotal()">
+                    <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" style="width:55px; padding:5px; border-radius:5px; border:1px solid #ccc;" oninput="updateTotal()">
                 </div>
                 {% endfor %}
             </details>
             {% endfor %}
 
             <div style="background: var(--blue); color: white; padding: 15px; border-radius: 10px; text-align: center; margin: 15px 0;">
-                <span id="display-total" style="font-size: 18px; font-weight: bold;">UGX 0</span>
+                <span id="display-total" style="font-size: 18px; font-weight: bold;">Total: UGX 0</span>
             </div>
 
-            <input type="number" name="amount_paid" placeholder="Amount Paid (Optional)" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
             <button type="submit" class="order-btn">🚀 Place My Order</button>
         </div>
     </form>
 
     <div class="status-section">
         <h3 style="color: var(--blue); margin-bottom: 5px;">Track Order</h3>
-        <p style="font-size: 12px; color: #666;">Enter your phone number to check status</p>
         <div class="status-box">
-            <input type="tel" id="statusPhone" placeholder="07... / 07..." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px;">
-            <button class="check-btn" onclick="checkStatus()" style="padding: 10px;">🔍 Check Status</button>
+            <input type="tel" id="statusPhone" placeholder="Enter phone number" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px;">
+            <button type="button" class="check-btn" onclick="checkStatus()" style="padding: 10px;">🔍 Check Status</button>
             <div id="statusResult" style="margin-top: 10px; font-weight: bold; color: var(--purple);"></div>
         </div>
     </div>
 </div>
 
-<div id="myModal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center;">
-    <span style="position:absolute; top:20px; right:35px; color:white; font-size:40px; cursor:pointer;" onclick="closeModal()">&times;</span>
-    <img id="img01" style="max-width:90%; max-height:80%; border-radius:10px;">
+<div id="zoomModal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center;" onclick="this.style.display='none'">
+    <img id="zoomImg" style="max-width:90%; max-height:80%; border-radius:10px;">
 </div>
 
 <script>
@@ -97,19 +94,17 @@
 
     function updateTotal() {
         let total = 0;
-        // This assumes you have the price hidden or available. 
-        // For a live total, your Python needs to send prices to JS.
-        // For now, this placeholder reminds the user to check their sum.
-        document.getElementById('display-total').innerText = "Calculating...";
+        document.querySelectorAll('.product-card').forEach(card => {
+            const qty = parseInt(card.querySelector('.qty-input').value) || 0;
+            const price = parseInt(card.querySelector('.price-display').getAttribute('data-price')) || 0;
+            total += (qty * price);
+        });
+        document.getElementById('display-total').innerText = "Total: UGX " + total.toLocaleString();
     }
 
-    function openModal(src) {
-        document.getElementById("myModal").style.display = "flex";
-        document.getElementById("img01").src = src;
-    }
-    
-    function closeModal() {
-        document.getElementById("myModal").style.display = "none";
+    function openZoom(src) {
+        document.getElementById("zoomModal").style.display = "flex";
+        document.getElementById("zoomImg").src = src;
     }
 
     async function checkStatus() {
@@ -118,15 +113,10 @@
         if(!phone) return alert("Please enter a phone number");
 
         resultDiv.innerText = "Searching...";
-        
         try {
             const response = await fetch(`/get_status?phone=${phone}`);
             const data = await response.json();
-            if(data.status) {
-                resultDiv.innerHTML = `Order Status: <span style="color:green;">${data.status}</span>`;
-            } else {
-                resultDiv.innerText = "No order found for this number.";
-            }
+            resultDiv.innerText = data.status || "No order found.";
         } catch(e) {
             resultDiv.innerText = "Error checking status.";
         }
