@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GALPHY HOME ESSENTIALS | Quality for Your Home</title>
+    <title>GARPHY HOME ESSENTIALS | Quality for Your Home</title>
     <style>
         :root { --blue: #001f3f; --purple: #6a0dad; --gold: #ffd700; --grad: linear-gradient(135deg, #001f3f 0%, #6a0dad 50%, #ffd700 100%); }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; padding: 15px; margin: 0; }
         .container { max-width: 550px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid transparent; border-image: var(--grad) 1; }
         
-        .shop-header { text-align: center; margin-bottom: 25px; }
-        .shop-header h1 { margin: 0; color: var(--blue); font-size: 28px; letter-spacing: 1px; text-transform: uppercase; }
-        .shop-header p { margin: 5px 0 0; color: #666; font-size: 14px; font-style: italic; }
+        .shop-header { text-align: center; margin-bottom: 20px; }
+        .shop-header h1 { margin: 0; color: var(--blue); font-size: 26px; letter-spacing: 1px; text-transform: uppercase; }
+        .shop-header p { margin: 5px 0 0; color: #666; font-size: 13px; font-style: italic; }
 
         .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 15px; border: none; background: none; cursor: pointer; font-weight: bold; color: #777; transition: 0.3s; }
@@ -20,8 +20,16 @@
         .user-info label { display: block; font-weight: bold; margin: 15px 0 5px; color: var(--blue); font-size: 14px; }
         .user-info input, .user-info select { width: 100%; padding: 14px; margin-bottom: 10px; border: 1.5px solid #ddd; border-radius: 12px; box-sizing: border-box; font-size: 16px; background: white; }
         
+        /* Dropdown Product Button */
+        .catalog-toggle { 
+            background: #f8f9fa; color: var(--blue); border: 2px dashed #ddd; padding: 15px; 
+            width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; 
+            margin: 10px 0; font-size: 16px; transition: 0.3s;
+        }
+        .catalog-toggle:hover { border-color: var(--purple); background: #fdfdff; }
+
         .product-card { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f9f9f9; }
-        .product-card img { width: 70px; height: 70px; border-radius: 10px; margin-right: 15px; object-fit: cover; border: 1px solid #eee; }
+        .product-card img { width: 65px; height: 65px; border-radius: 10px; margin-right: 15px; object-fit: cover; border: 1px solid #eee; }
         
         .summary-box { background: var(--blue); color: white; padding: 20px; border-radius: 15px; text-align: center; margin: 15px 0; }
         #delivery-alert { font-size: 12px; margin-top: 8px; color: var(--gold); font-weight: bold; display: none; }
@@ -31,7 +39,7 @@
         .payment-footer { background: #fcfcfc; border: 1.5px solid #eee; padding: 20px; border-radius: 15px; margin-top: 25px; text-align: center; }
         .highlight-num { background: var(--gold); padding: 3px 8px; border-radius: 5px; font-weight: bold; color: #000; }
         
-        .delivery-note { background: #e7f3ff; color: #004085; padding: 10px; border-radius: 8px; font-size: 13px; margin-top: 15px; border: 1px solid #b8daff; font-weight: 500; }
+        .delivery-note { background: #e7f3ff; color: #004085; padding: 10px; border-radius: 8px; font-size: 13px; margin-top: 15px; border: 1px solid #b8daff; }
     </style>
 </head>
 <body>
@@ -43,21 +51,23 @@
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('order-tab')">🛒 Shop Now</button>
-        <button class="tab-btn" onclick="showTab('track-tab')">📍 Track Order</button>
+        <button class="tab-btn active" onclick="showTab('order-tab')">🛍️ Shop</button>
+        <button class="tab-btn" onclick="showTab('track-tab')">📍 Track</button>
     </div>
 
     <div id="order-tab">
         <form action="/place_order" method="POST">
             <div class="user-info">
-                <input type="text" name="username" placeholder="Customer Full Name" required>
-                <input type="tel" name="phone" placeholder="Phone Number (WhatsApp)" required>
-                <input type="text" name="location" placeholder="Delivery Address/Location" required>
+                <input type="text" name="username" placeholder="Full Name" required>
+                <input type="tel" name="phone" placeholder="Phone (WhatsApp)" required>
+                <input type="text" name="location" placeholder="Delivery Location" required>
             </div>
 
-            <div id="catalog" style="margin-top:20px;">
+            <button type="button" class="catalog-toggle" id="viewBtn" onclick="toggleCatalog()">✨ View Our Products & Prices</button>
+            
+            <div id="catalog-area" style="display:none; margin-top:10px; animation: fadeIn 0.3s;">
                 {% for cat, items in categories.items() %}
-                <details open style="margin-bottom:10px; border:1px solid #eee; border-radius:12px; overflow:hidden;">
+                <details style="margin-bottom:10px; border:1px solid #eee; border-radius:12px; overflow:hidden;">
                     <summary style="padding:15px; background:#fcfcfc; cursor:pointer; font-weight:bold; color:var(--blue);">{{ cat }}</summary>
                     {% for p in items %}
                     <div class="product-card">
@@ -66,61 +76,64 @@
                             <strong>{{ p.name }}</strong><br>
                             <span class="price-val" data-raw="{{ p.price }}">UGX {{ "{:,}".format(p.price) }}</span>
                         </div>
-                        <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" style="width:55px; padding:5px; border-radius:8px; border:1.5px solid #ddd;" oninput="updateTotal()">
+                        <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" style="width:50px; padding:5px; border-radius:6px; border:1px solid #ddd;" oninput="updateTotal()">
                     </div>
                     {% endfor %}
                 </details>
                 {% endfor %}
 
                 <div class="summary-box">
-                    <div style="font-size: 14px; opacity: 0.8; letter-spacing: 1px;">TOTAL AMOUNT DUE</div>
-                    <div id="grand-total" style="font-size: 26px; font-weight: bold;">UGX 0</div>
-                    <div id="delivery-alert">🎉 YOU QUALIFY FOR FREE DELIVERY!</div>
+                    <div style="font-size: 12px; opacity: 0.8; letter-spacing: 1px;">TOTAL AMOUNT</div>
+                    <div id="grand-total" style="font-size: 24px; font-weight: bold;">UGX 0</div>
+                    <div id="delivery-alert">🎉 FREE DELIVERY APPLIED!</div>
                 </div>
-
-                <div class="user-info">
-                    <label>Preferred Payment Method:</label>
-                    <select name="payment_method" required onchange="handlePaymentLogic(this.value)">
-                        <option value="" disabled selected>Select how you will pay...</option>
-                        <option value="Mobile Money">Mobile Money (Pre-paid)</option>
-                        <option value="Cash on Delivery">Cash on Delivery</option>
-                    </select>
-
-                    <div id="amount-area">
-                        <label>Confirm Amount Sent (UGX):</label>
-                        <input type="number" name="amount_paid" placeholder="Enter amount or 0 for Cash" required>
-                    </div>
-                </div>
-
-                <button type="submit" class="order-btn">🚀 Confirm & Place Order</button>
             </div>
+
+            <div class="user-info">
+                <label>Payment Method:</label>
+                <select name="payment_method" required onchange="handlePaymentLogic(this.value)">
+                    <option value="" disabled selected>Select method...</option>
+                    <option value="Mobile Money">Mobile Money (Pre-paid)</option>
+                    <option value="Cash on Delivery">Cash on Delivery</option>
+                </select>
+
+                <label>Amount Paid (UGX):</label>
+                <input type="number" name="amount_paid" placeholder="Amount sent or 0 for Cash" required>
+            </div>
+
+            <button type="submit" class="order-btn">🚀 Place Order</button>
         </form>
 
         <div class="payment-footer">
-            <h4>💳 Payment Information</h4>
-            <p style="font-size: 14px; color: #555;">For Mobile Money transfers:</p>
-            <p style="font-size: 18px; margin: 10px 0;">
-                <strong>Phionah</strong><br>
-                <span class="highlight-num">0703070193</span>
-            </p>
-            
+            <p style="font-size: 14px; margin: 0;">Pay via MM to: <span class="highlight-num">0703070193</span> (Phionah)</p>
             <div class="delivery-note">
-                🚚 <strong>Delivery Note:</strong> Orders above 500,000 UGX qualify for <strong>FREE delivery</strong>. For orders below this amount, delivery fees apply.
+                🚚 <strong>Free delivery</strong> on orders above <strong>500,000 UGX</strong>!
             </div>
         </div>
     </div>
 
     <div id="track-tab" style="display:none;">
         <div class="user-info">
-            <p style="color:#666; font-size:14px; margin-bottom:15px;">Check status using your registered phone number.</p>
-            <input type="tel" id="track-phone" placeholder="Phone Number">
-            <button class="track-btn" onclick="trackOrder()">🔍 Search Order</button>
+            <input type="tel" id="track-phone" placeholder="Registered Phone Number">
+            <button class="track-btn" onclick="trackOrder()">🔍 Check Status</button>
         </div>
         <div id="status-display" class="status-result" style="display:none;"></div>
     </div>
 </div>
 
 <script>
+    function toggleCatalog() {
+        const area = document.getElementById('catalog-area');
+        const btn = document.getElementById('viewBtn');
+        if(area.style.display === 'none') {
+            area.style.display = 'block';
+            btn.innerText = "🔼 Hide Product Catalog";
+        } else {
+            area.style.display = 'none';
+            btn.innerText = "✨ View Our Products & Prices";
+        }
+    }
+
     function showTab(tabId) {
         document.getElementById('order-tab').style.display = (tabId === 'order-tab') ? 'block' : 'none';
         document.getElementById('track-tab').style.display = (tabId === 'track-tab') ? 'block' : 'none';
@@ -136,16 +149,8 @@
             const price = parseInt(card.querySelector('.price-val').getAttribute('data-raw')) || 0;
             total += (qty * price);
         });
-        
         document.getElementById('grand-total').innerText = "UGX " + total.toLocaleString();
-        
-        // Dynamic Delivery Alert
-        const alertBox = document.getElementById('delivery-alert');
-        if (total >= 500000) {
-            alertBox.style.display = 'block';
-        } else {
-            alertBox.style.display = 'none';
-        }
+        document.getElementById('delivery-alert').style.display = (total >= 500000) ? 'block' : 'none';
     }
 
     function handlePaymentLogic(val) {
@@ -164,15 +169,11 @@
     async function trackOrder() {
         const phone = document.getElementById('track-phone').value;
         if(!phone) return alert("Enter phone number");
-        try {
-            const res = await fetch(`/get_status?phone=${phone}`);
-            const data = await res.json();
-            const display = document.getElementById('status-display');
-            display.style.display = 'block';
-            display.innerText = "Current Status: " + data.status;
-        } catch (e) {
-            alert("Error loading status.");
-        }
+        const res = await fetch(`/get_status?phone=${phone}`);
+        const data = await res.json();
+        const display = document.getElementById('status-display');
+        display.style.display = 'block';
+        display.innerText = "Status: " + data.status;
     }
 </script>
 </body>
