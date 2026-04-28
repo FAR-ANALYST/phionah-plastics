@@ -3,29 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galphy Home Essentials | Order & Pay</title>
+    <title>Phionah's Shops | Order & Pay</title>
     <style>
         :root { --blue: #001f3f; --purple: #6a0dad; --gold: #ffd700; --grad: linear-gradient(135deg, #001f3f 0%, #6a0dad 50%, #ffd700 100%); }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 15px; margin: 0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; padding: 15px; margin: 0; }
         .container { max-width: 550px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid transparent; border-image: var(--grad) 1; }
         
         .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: none; cursor: pointer; font-weight: bold; color: #777; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: none; cursor: pointer; font-weight: bold; color: #777; transition: 0.3s; }
         .tab-btn.active { color: var(--purple); border-bottom: 3px solid var(--purple); }
 
-        /* Payment Instructions Style */
-        .pay-instructions { background: #fff9e6; border: 1.5px solid #ffeeba; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; color: #856404; }
+        /* Payment Instructions Styling */
+        .pay-instructions { background: #fff9e6; border: 1.5px solid #ffeeba; padding: 18px; border-radius: 12px; margin-bottom: 20px; font-size: 15px; color: #856404; line-height: 1.5; }
+        .pay-instructions strong { color: #533f03; font-size: 16px; }
         .pay-instructions ol { margin: 10px 0 0 20px; padding: 0; }
-        .pay-instructions li { margin-bottom: 5px; }
+        .pay-instructions li { margin-bottom: 8px; }
+        .highlight-num { background: var(--gold); color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
 
-        .user-info input { width: 100%; padding: 14px; margin: 10px 0; border: 1.5px solid #ddd; border-radius: 12px; box-sizing: border-box; }
-        .order-btn, .track-btn { background: var(--grad); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .user-info input { width: 100%; padding: 14px; margin: 10px 0; border: 1.5px solid #ddd; border-radius: 12px; box-sizing: border-box; font-size: 16px; }
+        .order-btn, .track-btn { background: var(--grad); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px; transition: transform 0.2s; }
+        .order-btn:active, .track-btn:active { transform: scale(0.98); }
         
         .product-card { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f9f9f9; }
-        .product-card img { width: 60px; height: 60px; border-radius: 10px; margin-right: 15px; object-fit: cover; }
+        .product-card img { width: 65px; height: 65px; border-radius: 10px; margin-right: 15px; object-fit: cover; border: 1px solid #eee; }
         
         .summary-box { background: var(--blue); color: white; padding: 20px; border-radius: 15px; text-align: center; margin: 15px 0; }
-        .status-result { margin-top: 20px; padding: 20px; border-radius: 12px; background: #eef; text-align: center; font-weight: bold; color: var(--blue); }
+        .status-result { margin-top: 20px; padding: 20px; border-radius: 12px; background: #eef; text-align: center; font-weight: bold; color: var(--blue); border: 1px solid var(--purple); }
     </style>
 </head>
 <body>
@@ -40,25 +43,26 @@
 
     <div id="order-tab">
         <div class="pay-instructions">
-            <strong>How to Pay:</strong>
+            <strong>📋 How to Pay:</strong>
             <ol>
-                <li>Calculate your total below.</li>
-                <li>Send the exact amount to <strong>07XX XXXXXX (Phionah)</strong> via MTN/Airtel Money.</li>
-                <li>Enter the amount you sent in the "Amount Paid" box before clicking submit.</li>
+                <li>Select your items below to see the <strong>Cart Total</strong>.</li>
+                <li>Send the exact amount to <span class="highlight-num">0703070193</span> via Mobile Money (Phionah).</li>
+                <li>Enter the amount you sent in the <strong>Amount Paid</strong> box at the bottom.</li>
+                <li>Click "Place My Order" to finish.</li>
             </ol>
         </div>
 
         <form action="/place_order" method="POST">
             <div class="user-info">
-                <input type="text" name="username" placeholder="Full Name" required>
-                <input type="tel" name="phone" placeholder="Phone Number" required>
-                <input type="text" name="location" placeholder="Delivery Location" required>
+                <input type="text" name="username" placeholder="Your Full Name" required>
+                <input type="tel" name="phone" placeholder="Phone Number (e.g., 07XXXXXXXX)" required>
+                <input type="text" name="location" placeholder="Detailed Delivery Location" required>
             </div>
 
-            <div id="catalog">
+            <div id="catalog" style="margin-top:20px;">
                 {% for cat, items in categories.items() %}
-                <details open style="margin-bottom:10px; border:1px solid #eee; border-radius:12px;">
-                    <summary style="padding:15px; background:#fcfcfc; cursor:pointer; font-weight:bold;">{{ cat }}</summary>
+                <details open style="margin-bottom:10px; border:1px solid #eee; border-radius:12px; overflow:hidden;">
+                    <summary style="padding:15px; background:#fcfcfc; cursor:pointer; font-weight:bold; color:var(--blue);">{{ cat }}</summary>
                     {% for p in items %}
                     <div class="product-card">
                         <img src="{{ p.image_url }}">
@@ -66,20 +70,20 @@
                             <strong>{{ p.name }}</strong><br>
                             <span class="price-val" data-raw="{{ p.price }}">UGX {{ "{:,}".format(p.price) }}</span>
                         </div>
-                        <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" style="width:50px;" oninput="updateTotal()">
+                        <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" style="width:55px; padding:5px; border-radius:8px; border:1.5px solid #ddd;" oninput="updateTotal()">
                     </div>
                     {% endfor %}
                 </details>
                 {% endfor %}
 
                 <div class="summary-box">
-                    <div style="font-size: 14px; opacity: 0.8;">Cart Total</div>
-                    <div id="grand-total" style="font-size: 24px; font-weight: bold;">UGX 0</div>
+                    <div style="font-size: 14px; opacity: 0.8; letter-spacing: 1px;">CART TOTAL</div>
+                    <div id="grand-total" style="font-size: 26px; font-weight: bold;">UGX 0</div>
                 </div>
 
                 <div class="user-info">
-                    <label style="font-weight:bold; color:var(--blue);">Confirm Amount Paid (UGX):</label>
-                    <input type="number" name="amount_paid" placeholder="Enter amount sent" required>
+                    <label style="font-weight:bold; color:var(--blue); font-size:14px; display:block; margin-bottom:5px;">💵 Confirm Amount Paid (UGX):</label>
+                    <input type="number" name="amount_paid" placeholder="Enter amount sent via MM" required>
                 </div>
 
                 <button type="submit" class="order-btn">🚀 Place My Order</button>
@@ -89,7 +93,8 @@
 
     <div id="track-tab" style="display:none;">
         <div class="user-info">
-            <input type="tel" id="track-phone" placeholder="Enter Phone Number">
+            <p style="color:#666; font-size:14px; margin-bottom:15px;">Check the status of your latest order using your phone number.</p>
+            <input type="tel" id="track-phone" placeholder="Enter Registered Phone Number">
             <button class="track-btn" onclick="trackOrder()">🔍 Check My Status</button>
         </div>
         <div id="status-display" class="status-result" style="display:none;"></div>
@@ -100,7 +105,10 @@
     function showTab(tabId) {
         document.getElementById('order-tab').style.display = (tabId === 'order-tab') ? 'block' : 'none';
         document.getElementById('track-tab').style.display = (tabId === 'track-tab') ? 'block' : 'none';
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(tabId === 'order-tab' ? 'Place' : 'Track')));
+        
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons[0].classList.toggle('active', tabId === 'order-tab');
+        buttons[1].classList.toggle('active', tabId === 'track-tab');
     }
 
     function updateTotal() {
@@ -115,12 +123,20 @@
 
     async function trackOrder() {
         const phone = document.getElementById('track-phone').value;
-        if(!phone) return alert("Enter phone");
-        const res = await fetch(`/get_status?phone=${phone}`);
-        const data = await res.json();
-        const display = document.getElementById('status-display');
-        display.style.display = 'block';
-        display.innerText = "Status: " + data.status;
+        if(!phone) {
+            alert("Please enter a phone number.");
+            return;
+        }
+        
+        try {
+            const res = await fetch(`/get_status?phone=${phone}`);
+            const data = await res.json();
+            const display = document.getElementById('status-display');
+            display.style.display = 'block';
+            display.innerText = "Current Status: " + data.status;
+        } catch (error) {
+            alert("Error connecting to server. Please try again.");
+        }
     }
 </script>
 </body>
