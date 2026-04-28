@@ -24,6 +24,26 @@
             width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px;
         }
 
+        /* See Products Reveal Button */
+        .reveal-btn {
+            background: var(--blue);
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 0 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #inventory-list { display: none; } /* Hidden by default */
+
         /* Dropdown Category Styling */
         details {
             background: #fff;
@@ -34,8 +54,8 @@
         }
 
         summary {
-            background: var(--blue);
-            color: white;
+            background: #f8f9fa;
+            color: var(--blue);
             padding: 15px;
             font-weight: bold;
             cursor: pointer;
@@ -43,10 +63,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid #eee;
         }
 
         summary::-webkit-details-marker { display: none; }
         summary::after { content: "▼"; font-size: 12px; }
+        details[open] summary { background: var(--blue); color: white; }
         details[open] summary::after { content: "▲"; }
 
         /* Product Cards */
@@ -60,43 +82,17 @@
 
         .product-info { flex-grow: 1; }
         .product-info strong { display: block; color: #333; font-size: 14px; }
-        
-        /* Product Description Style */
         .product-desc { display: block; color: #666; font-size: 12px; margin: 2px 0 5px 0; line-height: 1.3; }
-        
         .product-price { color: var(--orange); font-weight: bold; font-size: 14px; }
-
         .qty-input { width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; text-align: center; }
 
         .total-box { background: var(--blue); color: white; text-align: center; padding: 18px; border-radius: 12px; margin: 20px 0; font-size: 1.2em; font-weight: bold; }
-
         .order-btn { background: var(--orange); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 102, 0, 0.3); }
 
-        /* Contact & Inquiries Section */
-        .contact-section {
-            margin-top: 30px;
-            padding: 20px;
-            background: #eef2f7;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid #ccd6e0;
-        }
+        .contact-section { margin-top: 30px; padding: 20px; background: #eef2f7; border-radius: 12px; text-align: center; border: 1px solid #ccd6e0; }
+        .track-section { margin-top: 20px; padding: 20px; background: #f9f9f9; border-radius: 12px; text-align: center; border: 1px dashed #ccc; }
 
-        /* Order Tracking Section */
-        .track-section {
-            margin-top: 20px;
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px dashed #ccc;
-        }
-
-        /* Image Modal (Zoom) */
-        .modal {
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9);
-            justify-content: center; align-items: center;
-        }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
         .modal-content { max-width: 90%; max-height: 80%; border-radius: 10px; }
         .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; }
     </style>
@@ -112,6 +108,10 @@
             <input type="tel" name="phone" placeholder="Phone Number" required>
             <input type="text" name="location" placeholder="Delivery Location" required>
         </div>
+
+        <button type="button" class="reveal-btn" id="revealBtn" onclick="showProducts()">
+            🛍️ See Products
+        </button>
 
         <div id="inventory-list">
             <p style="font-size: 12px; color: #666; text-align: center; margin-bottom: 15px;">Tap categories to browse. Tap photos to zoom.</p>
@@ -133,24 +133,21 @@
                 {% endfor %}
             </details>
             {% endfor %}
-        </div>
 
-        <div class="total-box">Total: <span id="display-total">UGX 0</span></div>
-        
-        <input type="number" name="amount_paid" placeholder="Amount Paid (UGX)" required style="width:100%; padding:14px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd; box-sizing: border-box;">
-        
-        <button type="submit" class="order-btn">🚀 Place My Order</button>
+            <div class="total-box">Total: <span id="display-total">UGX 0</span></div>
+            <input type="number" name="amount_paid" placeholder="Amount Paid (UGX)" required style="width:100%; padding:14px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd; box-sizing: border-box;">
+            <button type="submit" class="order-btn">🚀 Place My Order</button>
+        </div>
     </form>
 
     <div class="contact-section">
         <h4 style="margin: 0 0 5px; color: var(--blue);">Payments & Inquiries</h4>
-        <p style="margin: 0 0 10px; font-size: 14px; color: #333;">For payments and any questions, reach us at:</p>
+        <p style="margin: 0 0 10px; font-size: 14px; color: #333;">For payments and questions, contact us:</p>
         <a href="tel:+256703070193" style="font-size: 18px; font-weight: bold; color: var(--orange); text-decoration: none;">+256 703 070 193</a>
     </div>
 
     <div class="track-section">
         <h4 style="margin: 0 0 10px; color: var(--blue);">Track Your Order</h4>
-        <p style="margin: 0 0 15px; font-size: 13px; color: #666;">Enter your Order ID to check status</p>
         <form action="/track_order" method="POST" style="display: flex; gap: 10px;">
             <input type="number" name="order_id" placeholder="ID" required style="flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin: 0;">
             <button type="submit" style="background: var(--blue); color: white; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">Check</button>
@@ -164,6 +161,11 @@
 </div>
 
 <script>
+    function showProducts() {
+        document.getElementById('inventory-list').style.display = 'block';
+        document.getElementById('revealBtn').style.display = 'none';
+    }
+
     function updateTotal() {
         let total = 0;
         document.querySelectorAll('.qty-input').forEach(input => {
