@@ -18,7 +18,6 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/')
 def index():
-    """Renders the storefront with products grouped by category."""
     try:
         res = supabase.table("products").select("*").execute()
         products = res.data if res.data else []
@@ -30,57 +29,62 @@ def index():
             categories[cat].append(p)
         return render_template('index.html', categories=categories)
     except Exception as e:
-        print(f"Index Load Error: {e}")
+        print(f"Index Error: {e}")
         return "Store temporarily unavailable.", 500
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
-    """Matches EXACT Supabase columns: username, phone, location, item_name, total_price, amount_paid, status"""
+    """Matches EXACT Supabase columns: username, phone, location, item_name, total_price, amount_paid, balance, status"""
     try:
         username = request.form.get('username')
         phone = request.form.get('phone')
         location = request.form.get('location')
-        # Amount Paid is now collected from the user on index.html
-        user_amount_paid = request.form.get('amount_paid')
+        
+        try:
+            paid = int(request.form.get('amount_paid', 0))
+        except:
+            paid = 0
         
         res_prod = supabase.table("products").select("*").execute()
         selected_items = []
-        calculated_total = 0
+        calc_total = 0
         
         for p in res_prod.data:
             qty = int(request.form.get(f"qty_{p['id']}", 0))
             if qty > 0:
-                item_total = p['price'] * qty
-                calculated_total += item_total
+                calc_total += (p['price'] * qty)
                 selected_items.append(f"{p['name']} (x{qty})")
         
         if not selected_items:
             return redirect(url_for('index'))
 
-        # Mapping data to match constraints seen in logs
+        # Fixes the 'balance' column not-null constraint error
         order_data = {
             "username": username,
             "phone": phone,
             "location": location,
             "item_name": ", ".join(selected_items),
-            "total_price": calculated_total,  # Fixed 'total_price' constraint
-            "amount_paid": user_amount_paid,   # Fixed 'amount_paid' constraint
+            "total_price": calc_total,
+            "amount_paid": paid,
+            "balance": calc_total - paid,
             "status": "Pending"
         }
         
         supabase.table("orders").insert(order_data).execute()
         return redirect(url_for('index'))
     except Exception as e:
-        print(f"CRITICAL ORDER ERROR: {e}")
-        return f"Order failed: {str(e)}. Check Supabase columns.", 500
+        print(f"CRITICAL ERROR: {e}")
+        return f"Order failed: {str(e)}", 500
 
 @app.route('/get_status')
 def get_status():
     phone = request.args.get('phone')
     if not phone: return jsonify({"status": "Enter phone"}), 400
     try:
-        res = supabase.table("orders").select("status").eq("phone", phone).order("order_id", desc=True).limit(1).execute()
-        return jsonify({"status": res.data[0]['status'] if res.data else "No order found"})
+        res = supabase.table("orders").select("status").eq("phone", phone).order("created_at", desc=True).limit(1).execute()
+        if res.data:
+            return jsonify({"status": res.data[0]['status']})
+        return jsonify({"status": "No order found"})
     except Exception:
         return jsonify({"status": "System busy"}), 500
 
@@ -90,7 +94,7 @@ def get_status():
 def admin():
     if not session.get('logged_in'): return redirect(url_for('login'))
     try:
-        orders = supabase.table("orders").select("*").order("order_id", desc=True).execute().data
+        orders = supabase.table("orders").select("*").order("created_at", desc=True).execute().data
         prods = supabase.table("products").select("*").execute().data
         inv = {}
         for p in prods:
@@ -99,7 +103,7 @@ def admin():
             inv[cat].append(p)
         return render_template('admin.html', orders=orders, inventory_by_cat=inv)
     except Exception as e:
-        return f"Admin Access Error: {e}", 500
+        return f"Admin Error: {e}", 500
 
 @app.route('/add_product', methods=['POST'])
 def add_product():
@@ -111,48 +115,24 @@ def add_product():
         supabase.storage.from_("product-images").upload(path, file.read())
         img_url = supabase.storage.from_("product-images").get_public_url(path)
         
-        data = {
+        supabase.table("products").insert({
             "name": request.form.get('name'),
             "category": request.form.get('category'),
             "price": int(request.form.get('price')),
             "description": request.form.get('description', ''),
             "image_url": img_url
-        }
-        supabase.table("products").insert(data).execute()
-    return redirect(url_for('admin'))
-
-@app.route('/edit_product/<int:id>', methods=['POST'])
-def edit_product(id):
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    update_data = {
-        "name": request.form.get('name'),
-        "price": int(request.form.get('price')),
-        "category": request.form.get('category')
-    }
-    file = request.files.get('product_image')
-    if file and file.filename != '':
-        filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
-        path = f"products/{filename}"
-        supabase.storage.from_("product-images").upload(path, file.read())
-        update_data["image_url"] = supabase.storage.from_("product-images").get_public_url(path)
-    supabase.table("products").update(update_data).eq("id", id).execute()
-    return redirect(url_for('admin'))
-
-@app.route('/delete_product/<int:id>')
-def delete_product(id):
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    supabase.table("products").delete().eq("id", id).execute()
+        }).execute()
     return redirect(url_for('admin'))
 
 @app.route('/export_orders')
 def export_orders():
     if not session.get('logged_in'): return redirect(url_for('login'))
-    res = supabase.table("orders").select("*").order("order_id", desc=True).execute().data
+    res = supabase.table("orders").select("*").order("created_at", desc=True).execute().data
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['ID', 'Customer', 'Phone', 'Location', 'Items', 'Required Total', 'Paid', 'Status'])
+    writer.writerow(['ID', 'Customer', 'Phone', 'Location', 'Items', 'Total', 'Paid', 'Balance', 'Status'])
     for o in res:
-        writer.writerow([o.get('order_id'), o.get('username'), o.get('phone'), o.get('location'), o.get('item_name'), o.get('total_price'), o.get('amount_paid'), o.get('status')])
+        writer.writerow([o.get('order_id'), o.get('username'), o.get('phone'), o.get('location'), o.get('item_name'), o.get('total_price'), o.get('amount_paid'), o.get('balance'), o.get('status')])
     return Response(output.getvalue(), mimetype="text/csv", headers={"Content-disposition": "attachment; filename=orders.csv"})
 
 @app.route('/login', methods=['GET', 'POST'])
