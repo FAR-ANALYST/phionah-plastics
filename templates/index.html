@@ -3,60 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phionah's Shops | Order & Pay</title>
+    <title>GALPHY HOME ESSENTIALS | Quality for Your Home</title>
     <style>
         :root { --blue: #001f3f; --purple: #6a0dad; --gold: #ffd700; --grad: linear-gradient(135deg, #001f3f 0%, #6a0dad 50%, #ffd700 100%); }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; padding: 15px; margin: 0; }
         .container { max-width: 550px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid transparent; border-image: var(--grad) 1; }
         
+        .shop-header { text-align: center; margin-bottom: 25px; }
+        .shop-header h1 { margin: 0; color: var(--blue); font-size: 28px; letter-spacing: 1px; text-transform: uppercase; }
+        .shop-header p { margin: 5px 0 0; color: #666; font-size: 14px; font-style: italic; }
+
         .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 15px; border: none; background: none; cursor: pointer; font-weight: bold; color: #777; transition: 0.3s; }
         .tab-btn.active { color: var(--purple); border-bottom: 3px solid var(--purple); }
 
-        /* Payment Instructions Styling */
-        .pay-instructions { background: #fff9e6; border: 1.5px solid #ffeeba; padding: 18px; border-radius: 12px; margin-bottom: 20px; font-size: 15px; color: #856404; line-height: 1.5; }
-        .pay-instructions strong { color: #533f03; font-size: 16px; }
-        .pay-instructions ol { margin: 10px 0 0 20px; padding: 0; }
-        .pay-instructions li { margin-bottom: 8px; }
-        .highlight-num { background: var(--gold); color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-
-        .user-info input { width: 100%; padding: 14px; margin: 10px 0; border: 1.5px solid #ddd; border-radius: 12px; box-sizing: border-box; font-size: 16px; }
-        .order-btn, .track-btn { background: var(--grad); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px; transition: transform 0.2s; }
-        .order-btn:active, .track-btn:active { transform: scale(0.98); }
+        .user-info label { display: block; font-weight: bold; margin: 15px 0 5px; color: var(--blue); font-size: 14px; }
+        .user-info input, .user-info select { width: 100%; padding: 14px; margin-bottom: 10px; border: 1.5px solid #ddd; border-radius: 12px; box-sizing: border-box; font-size: 16px; background: white; }
         
         .product-card { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f9f9f9; }
-        .product-card img { width: 65px; height: 65px; border-radius: 10px; margin-right: 15px; object-fit: cover; border: 1px solid #eee; }
+        .product-card img { width: 70px; height: 70px; border-radius: 10px; margin-right: 15px; object-fit: cover; border: 1px solid #eee; }
         
         .summary-box { background: var(--blue); color: white; padding: 20px; border-radius: 15px; text-align: center; margin: 15px 0; }
+        .order-btn, .track-btn { background: var(--grad); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px; }
+
+        .payment-footer { background: #fcfcfc; border: 1.5px solid #eee; padding: 20px; border-radius: 15px; margin-top: 25px; text-align: center; }
+        .highlight-num { background: var(--gold); padding: 3px 8px; border-radius: 5px; font-weight: bold; color: #000; }
+        
         .status-result { margin-top: 20px; padding: 20px; border-radius: 12px; background: #eef; text-align: center; font-weight: bold; color: var(--blue); border: 1px solid var(--purple); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="text-align:center; color:var(--blue);">Phionah's Shops</h2>
+    <div class="shop-header">
+        <h1>GALPHY HOME ESSENTIALS</h1>
+        <p>Premium quality for your everyday living</p>
+    </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('order-tab')">🛍️ Place Order</button>
-        <button class="tab-btn" onclick="showTab('track-tab')">📍 Track Status</button>
+        <button class="tab-btn active" onclick="showTab('order-tab')">🛒 Shop Now</button>
+        <button class="tab-btn" onclick="showTab('track-tab')">📍 Track Order</button>
     </div>
 
     <div id="order-tab">
-        <div class="pay-instructions">
-            <strong>📋 How to Pay:</strong>
-            <ol>
-                <li>Select your items below to see the <strong>Cart Total</strong>.</li>
-                <li>Send the exact amount to <span class="highlight-num">0703070193</span> via Mobile Money (Phionah).</li>
-                <li>Enter the amount you sent in the <strong>Amount Paid</strong> box at the bottom.</li>
-                <li>Click "Place My Order" to finish.</li>
-            </ol>
-        </div>
-
         <form action="/place_order" method="POST">
             <div class="user-info">
-                <input type="text" name="username" placeholder="Your Full Name" required>
-                <input type="tel" name="phone" placeholder="Phone Number (e.g., 07XXXXXXXX)" required>
-                <input type="text" name="location" placeholder="Detailed Delivery Location" required>
+                <input type="text" name="username" placeholder="Customer Full Name" required>
+                <input type="tel" name="phone" placeholder="Phone Number (WhatsApp)" required>
+                <input type="text" name="location" placeholder="Delivery Address/Location" required>
             </div>
 
             <div id="catalog" style="margin-top:20px;">
@@ -77,25 +71,44 @@
                 {% endfor %}
 
                 <div class="summary-box">
-                    <div style="font-size: 14px; opacity: 0.8; letter-spacing: 1px;">CART TOTAL</div>
+                    <div style="font-size: 14px; opacity: 0.8; letter-spacing: 1px;">TOTAL AMOUNT DUE</div>
                     <div id="grand-total" style="font-size: 26px; font-weight: bold;">UGX 0</div>
                 </div>
 
                 <div class="user-info">
-                    <label style="font-weight:bold; color:var(--blue); font-size:14px; display:block; margin-bottom:5px;">💵 Confirm Amount Paid (UGX):</label>
-                    <input type="number" name="amount_paid" placeholder="Enter amount sent via MM" required>
+                    <label>Preferred Payment Method:</label>
+                    <select name="payment_method" required onchange="handlePaymentLogic(this.value)">
+                        <option value="" disabled selected>Select how you will pay...</option>
+                        <option value="Mobile Money">Mobile Money (Pre-paid)</option>
+                        <option value="Cash on Delivery">Cash on Delivery</option>
+                    </select>
+
+                    <div id="amount-area">
+                        <label>Confirm Amount Sent (UGX):</label>
+                        <input type="number" name="amount_paid" placeholder="Enter amount or 0 for Cash" required>
+                    </div>
                 </div>
 
-                <button type="submit" class="order-btn">🚀 Place My Order</button>
+                <button type="submit" class="order-btn">🚀 Confirm & Place Order</button>
             </div>
         </form>
+
+        <div class="payment-footer">
+            <h4>💳 Payment Information</h4>
+            <p style="font-size: 14px; color: #555;">For Mobile Money transfers:</p>
+            <p style="font-size: 18px; margin: 10px 0;">
+                <strong>Phionah</strong><br>
+                <span class="highlight-num">0703070193</span>
+            </p>
+            <p style="font-size: 12px; color: #888;">Please use your name as the reference.</p>
+        </div>
     </div>
 
     <div id="track-tab" style="display:none;">
         <div class="user-info">
-            <p style="color:#666; font-size:14px; margin-bottom:15px;">Check the status of your latest order using your phone number.</p>
-            <input type="tel" id="track-phone" placeholder="Enter Registered Phone Number">
-            <button class="track-btn" onclick="trackOrder()">🔍 Check My Status</button>
+            <p style="color:#666; font-size:14px; margin-bottom:15px;">Check status using your registered phone number.</p>
+            <input type="tel" id="track-phone" placeholder="Phone Number">
+            <button class="track-btn" onclick="trackOrder()">🔍 Search Order</button>
         </div>
         <div id="status-display" class="status-result" style="display:none;"></div>
     </div>
@@ -105,7 +118,6 @@
     function showTab(tabId) {
         document.getElementById('order-tab').style.display = (tabId === 'order-tab') ? 'block' : 'none';
         document.getElementById('track-tab').style.display = (tabId === 'track-tab') ? 'block' : 'none';
-        
         const buttons = document.querySelectorAll('.tab-btn');
         buttons[0].classList.toggle('active', tabId === 'order-tab');
         buttons[1].classList.toggle('active', tabId === 'track-tab');
@@ -121,21 +133,30 @@
         document.getElementById('grand-total').innerText = "UGX " + total.toLocaleString();
     }
 
+    function handlePaymentLogic(val) {
+        const paidInput = document.querySelector('input[name="amount_paid"]');
+        if (val === "Cash on Delivery") {
+            paidInput.value = 0;
+            paidInput.setAttribute('readonly', true);
+            paidInput.style.background = "#f0f0f0";
+        } else {
+            paidInput.value = "";
+            paidInput.removeAttribute('readonly');
+            paidInput.style.background = "white";
+        }
+    }
+
     async function trackOrder() {
         const phone = document.getElementById('track-phone').value;
-        if(!phone) {
-            alert("Please enter a phone number.");
-            return;
-        }
-        
+        if(!phone) return alert("Enter phone number");
         try {
             const res = await fetch(`/get_status?phone=${phone}`);
             const data = await res.json();
             const display = document.getElementById('status-display');
             display.style.display = 'block';
             display.innerText = "Current Status: " + data.status;
-        } catch (error) {
-            alert("Error connecting to server. Please try again.");
+        } catch (e) {
+            alert("Error loading status.");
         }
     }
 </script>
