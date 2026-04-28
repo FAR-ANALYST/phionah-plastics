@@ -12,6 +12,46 @@ SUPABASE_URL = "https://vzeznntgcqzdwnfqwtra.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6ZXpubnRnY3F6ZHduZnF3dHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5ODI5NTMsImV4cCI6MjA5MTU1ODk1M30.DgAjwuAOa46jXdVoq_BglmBiNNP2Rfa_N1Ja3wylhDk"
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+import io
+import csv
+from flask import Response
+
+@app.route('/export_orders')
+def export_orders():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    # 1. Fetch orders from Supabase
+    res = supabase.table("orders").select("*").order("order_id", desc=True).execute()
+    orders = res.data
+
+    # 2. Setup CSV in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # 3. Header Row (Matches your new 'Notes' column)
+    writer.writerow(['ID', 'Customer', 'Phone', 'Location', 'Items', 'Special Instructions', 'Total', 'Status'])
+
+    # 4. Fill rows
+    for o in orders:
+        writer.writerow([
+            o.get('order_id'),
+            o.get('username'),
+            o.get('phone'),
+            o.get('location'),
+            o.get('item_name'),
+            o.get('notes'), # The new instructions field
+            o.get('total_price'),
+            o.get('status')
+        ])
+
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-disposition": "attachment; filename=orders_export.csv"}
+    )
+
 # --- CUSTOMER ROUTES ---
 
 @app.route('/')
