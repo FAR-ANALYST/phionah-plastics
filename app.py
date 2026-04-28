@@ -1,71 +1,32 @@
+import io
+import csv
 import os
-from datetime import datetime  # Added for unique filename generation
-from flask import Flask, render_template, request, redirect, url_for, session
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, session, Response, jsonify
 from supabase import create_client, Client
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = "phionah-plastics-secure-key-2026"
+app.secret_key = "phionah-secure-key-2026"
 
-# Supabase Credentials
+# --- SUPABASE CONFIGURATION ---
 SUPABASE_URL = "https://vzeznntgcqzdwnfqwtra.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6ZXpubnRnY3F6ZHduZnF3dHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5ODI5NTMsImV4cCI6MjA5MTU1ODk1M30.DgAjwuAOa46jXdVoq_BglmBiNNP2Rfa_N1Ja3wylhDk"
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-import io
-import csv
-from flask import Response
-
-@app.route('/export_orders')
-def export_orders():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
-
-    # 1. Fetch orders from Supabase
-    res = supabase.table("orders").select("*").order("order_id", desc=True).execute()
-    orders = res.data
-
-    # 2. Setup CSV in memory
-    output = io.StringIO()
-    writer = csv.writer(output)
-
-    # 3. Header Row (Matches your new 'Notes' column)
-    writer.writerow(['ID', 'Customer', 'Phone', 'Location', 'Items', 'Special Instructions', 'Total', 'Status'])
-
-    # 4. Fill rows
-    for o in orders:
-        writer.writerow([
-            o.get('order_id'),
-            o.get('username'),
-            o.get('phone'),
-            o.get('location'),
-            o.get('item_name'),
-            o.get('notes'), # The new instructions field
-            o.get('total_price'),
-            o.get('status')
-        ])
-
-    output.seek(0)
-    return Response(
-        output.getvalue(),
-        mimetype="text/csv",
-        headers={"Content-disposition": "attachment; filename=orders_export.csv"}
-    )
+SUPABASE_KEY = "YOUR_SUPABASE_KEY" # Replace with your actual key
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # --- CUSTOMER ROUTES ---
 
 @app.route('/')
 def index():
-    try:
-        response = supabase.table("products").select("*").order("id").execute()
-        categories = {}
-        for p in response.data:
-            cat = p.get('category') or 'Other'
-            if cat not in categories: categories[cat] = []
-            categories[cat].append(p)
-        return render_template('index.html', categories=categories)
-    except Exception as e:
-        return f"Database Error: {e}"
+    # Fetch products and group by category for the shop display
+    res = supabase.table("products").select("*").execute()
+    categories = {}
+    for p in res.data:
+        cat = p.get('category', 'Other')
+        if cat not in categories:
+            categories[cat] = []
+        categories[cat].append(p)
+    return render_template('index.html', categories=categories)
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
@@ -74,142 +35,153 @@ def place_order():
         phone = request.form.get('phone')
         location = request.form.get('location')
         
-        try:
-            amount_paid = int(request.form.get('amount_paid', 0))
-        except (ValueError, TypeError):
-            amount_paid = 0
-
-        response = supabase.table("products").select("*").execute()
+        # Get selected items
+        res_prod = supabase.table("products").select("*").execute()
         selected_items = []
         total_price = 0
-
-        for p in response.data:
-            qty_val = request.form.get(f"qty_{p['id']}")
-            try:
-                item_qty = int(qty_val) if qty_val else 0
-            except ValueError:
-                item_qty = 0
-            
-            if item_qty > 0:
-                total_price += (p['price'] * item_qty)
-                selected_items.append(f"{p['name']} x{item_qty}")
         
-        if not selected_items:
-            return "Error: No items selected. Please go back.", 400
-
+        for p in res_prod.data:
+            qty = int(request.form.get(f"qty_{p['id']}", 0))
+            if qty > 0:
+                item_total = p['price'] * qty
+                total_price += item_total
+                selected_items.append(f"{p['name']} (x{qty})")
+        
         order_data = {
-            "username": username, 
-            "location": location, 
+            "username": username,
             "phone": phone,
-            "item_name": ", ".join(selected_items), 
+            "location": location,
+            "item_name": ", ".join(selected_items),
             "total_price": total_price,
-            "amount_paid": amount_paid, 
-            "balance": total_price - amount_paid, 
             "status": "Pending"
         }
         
-        res = supabase.table("orders").insert(order_data).execute()
-        return render_template('receipt.html', order=res.data[0])
+        supabase.table("orders").insert(order_data).execute()
+        return redirect(url_for('index')) # In a real app, redirect to a 'Thank You' page
     except Exception as e:
-        return f"Order Submission Error: {e}", 500
+        return str(e), 500
+
+@app.route('/get_status')
+def get_status():
+    """Route for customers to check order status via phone number"""
+    phone = request.args.get('phone')
+    if not phone:
+        return jsonify({"status": "Enter phone"}), 400
+    
+    res = supabase.table("orders").select("status")\
+        .eq("phone", phone)\
+        .order("order_id", desc=True)\
+        .limit(1).execute()
+        
+    if res.data:
+        return jsonify({"status": res.data[0]['status']})
+    return jsonify({"status": "No order found"})
 
 # --- ADMIN ROUTES ---
 
 @app.route('/admin')
 def admin():
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    
-    orders_res = supabase.table("orders").select("*").order("order_id", desc=True).execute()
-    prod_res = supabase.table("products").select("*").order("category").execute()
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+        
+    orders = supabase.table("orders").select("*").order("order_id", desc=True).execute()
+    prods = supabase.table("products").select("*").execute()
     
     inventory_by_cat = {}
-    for p in prod_res.data:
-        cat = p.get('category') or 'Other'
-        if cat not in inventory_by_cat: inventory_by_cat[cat] = []
+    for p in prods.data:
+        cat = p.get('category', 'Other')
+        if cat not in inventory_by_cat:
+            inventory_by_cat[cat] = []
         inventory_by_cat[cat].append(p)
         
-    return render_template('admin.html', orders=orders_res.data, inventory_by_cat=inventory_by_cat)
+    return render_template('admin.html', orders=orders.data, inventory_by_cat=inventory_by_cat)
 
 @app.route('/add_product', methods=['POST'])
 def add_product():
     if not session.get('logged_in'): return redirect(url_for('login'))
-    try:
-        name = request.form.get('name')
-        category = request.form.get('category')
-        description = request.form.get('description')
-        price = int(request.form.get('price'))
-
-        file = request.files.get('product_image')
-        if not file: return "Error: Image required", 400
-
-        # UNIQUE FILENAME FIX: Prevents "Duplicate Resource" error
-        filename = secure_filename(file.filename)
-        unique_filename = f"{datetime.now().timestamp()}_{filename}"
-        file_path = f"products/{unique_filename}"
+    
+    file = request.files.get('product_image')
+    if file:
+        filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
+        path = f"products/{filename}"
+        supabase.storage.from_("product-images").upload(path, file.read())
+        img_url = supabase.storage.from_("product-images").get_public_url(path)
         
-        supabase.storage.from_("product-images").upload(file_path, file.read())
-        image_url = supabase.storage.from_("product-images").get_public_url(file_path)
-
-        product_data = {"name": name, "category": category, "description": description, "price": price, "image_url": image_url}
-        supabase.table("products").insert(product_data).execute()
-        return redirect(url_for('admin'))
-    except Exception as e:
-        return f"Failed to add product: {e}", 500
-
-@app.route('/edit_product/<int:product_id>', methods=['POST'])
-def edit_product(product_id):
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    try:
-        update_data = {
+        data = {
             "name": request.form.get('name'),
             "category": request.form.get('category'),
+            "price": int(request.form.get('price')),
             "description": request.form.get('description'),
-            "price": int(request.form.get('price'))
+            "image_url": img_url
         }
-
-        file = request.files.get('product_image')
-        if file and file.filename != '':
-            # UNIQUE FILENAME FIX: Prevents "Duplicate Resource" error
-            filename = secure_filename(file.filename)
-            unique_filename = f"{datetime.now().timestamp()}_{filename}"
-            file_path = f"products/{unique_filename}"
-            
-            supabase.storage.from_("product-images").upload(file_path, file.read())
-            update_data["image_url"] = supabase.storage.from_("product-images").get_public_url(file_path)
-
-        supabase.table("products").update(update_data).eq("id", product_id).execute()
-        return redirect(url_for('admin'))
-    except Exception as e:
-        return f"Failed to edit: {e}", 500
-
-@app.route('/update_status/<int:order_id>')
-def update_status(order_id):
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    try:
-        supabase.table("orders").update({"status": "Shipped"}).eq("order_id", order_id).execute()
-        return redirect(url_for('admin'))
-    except Exception as e:
-        return f"Update Error: {e}", 500
-
-@app.route('/delete_product/<int:product_id>')
-def delete_product(product_id):
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    supabase.table("products").delete().eq("id", product_id).execute()
+        supabase.table("products").insert(data).execute()
     return redirect(url_for('admin'))
+
+@app.route('/edit_product/<int:id>', methods=['POST'])
+def edit_product(id):
+    """Route to update existing product details and/or image"""
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    
+    update_data = {
+        "name": request.form.get('name'),
+        "price": int(request.form.get('price')),
+        "category": request.form.get('category')
+    }
+    
+    # Handle optional image update
+    file = request.files.get('product_image')
+    if file and file.filename != '':
+        filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
+        path = f"products/{filename}"
+        supabase.storage.from_("product-images").upload(path, file.read())
+        update_data["image_url"] = supabase.storage.from_("product-images").get_public_url(path)
+    
+    supabase.table("products").update(update_data).eq("id", id).execute()
+    return redirect(url_for('admin'))
+
+@app.route('/delete_product/<int:id>')
+def delete_product(id):
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    supabase.table("products").delete().eq("id", id).execute()
+    return redirect(url_for('admin'))
+
+@app.route('/export_orders')
+def export_orders():
+    """Generates the CSV file for download in the Admin Panel"""
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    
+    res = supabase.table("orders").select("*").order("order_id", desc=True).execute()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Order ID', 'Customer', 'Phone', 'Location', 'Items', 'Total Price', 'Status'])
+    
+    for o in res.data:
+        writer.writerow([
+            o.get('order_id'), o.get('username'), o.get('phone'),
+            o.get('location'), o.get('item_name'), o.get('total_price'),
+            o.get('status')
+        ])
+    
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-disposition": "attachment; filename=phionah_orders.csv"}
+    )
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        if request.form.get('username') == "phiona" and request.form.get('password') == "phiona-plastics":
+        if request.form.get('username') == 'phiona' and request.form.get('password') == 'phiona-plastics':
             session['logged_in'] = True
             return redirect(url_for('admin'))
-        return "Invalid Credentials"
     return render_template('login.html')
 
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)
