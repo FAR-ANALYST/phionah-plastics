@@ -1,40 +1,41 @@
-/* Phionah's Shops - Theme Control */
+/* Phionah's Shops - Pure Color Theme */
 :root {
-    /* YOUR NEW COLOR PALETTE */
+    /* The exact gradient you requested: Dark Blue -> Purple -> Gold */
+    --royal-gradient: linear-gradient(135deg, #001f3f 0%, #6a0dad 50%, #ffd700 100%);
     --dark-blue: #001f3f;
     --royal-purple: #6a0dad;
-    --gold-gradient: linear-gradient(135deg, #001f3f 0%, #6a0dad 50%, #ffd700 100%);
-    
-    /* FUNCTIONAL COLORS */
-    --bg-light: #f4f7f6;
-    --white: #ffffff;
-    --text-main: #333333;
 }
 
-/* Apply the gradient to the top of containers like your index and admin panels */
-.container, .sidebar {
-    border-top: 10px solid;
-    border-image: var(--gold-gradient) 1;
+/* 1. Top Borders (The thin line at the top of your containers) */
+.container {
+    border-top: 8px solid transparent !important;
+    border-image: var(--royal-gradient) 1 !important;
 }
 
-/* Use the gradient for buttons to make them pop */
-.btn-add, .order-btn, .reveal-btn {
-    background: var(--gold-gradient) !important;
+/* 2. Primary Buttons (Place Order, Add Product, Reveal Products) */
+.order-btn, .btn-add, .reveal-btn, .btn-primary {
+    background: var(--royal-gradient) !important;
     color: white !important;
     border: none !important;
-    transition: transform 0.2s ease;
 }
 
-.btn-add:hover, .order-btn:hover {
-    transform: scale(1.02);
-    filter: brightness(1.1);
-}
-
-/* Update headers to match the dark blue theme */
+/* 3. Headers and Text Accents */
 h2, h3, .nav-item.active {
     color: var(--dark-blue) !important;
 }
 
+/* 4. Total Box background */
+.total-box {
+    background: var(--dark-blue) !important;
+}
+
+/* 5. Category Dropdowns (The clickable bars) */
+details[open] summary {
+    background: var(--dark-blue) !important;
+    color: white !important;
+}
+
 summary {
-    border-left: 5px solid var(--royal-purple);
+    color: var(--dark-blue) !important;
+    border-left: 5px solid var(--royal-purple) !important;
 }
