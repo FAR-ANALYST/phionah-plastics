@@ -6,173 +6,170 @@
     <title>GARPHY HOME ESSENTIALS</title>
     <style>
         :root { --blue: #001f3f; --purple: #6a0dad; --gold: #ffd700; --grad: linear-gradient(135deg, #001f3f 0%, #6a0dad 50%, #ffd700 100%); }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; padding: 15px; margin: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 15px; }
         .container { max-width: 550px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid transparent; border-image: var(--grad) 1; }
         
+        /* Header */
         .shop-header { text-align: center; margin-bottom: 20px; }
         .shop-header h1 { margin: 0; color: var(--blue); text-transform: uppercase; font-size: 24px; }
-
+        
+        /* Tabs */
         .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 15px; border: none; background: none; cursor: pointer; font-weight: bold; color: #777; }
         .tab-btn.active { color: var(--purple); border-bottom: 3px solid var(--purple); }
 
         /* Catalog & Images */
-        .catalog-toggle { background: #f8f9fa; color: var(--blue); border: 2px dashed #ddd; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin: 10px 0; }
-        .product-card { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f9f9f9; }
-        .product-card img { width: 65px; height: 65px; border-radius: 10px; margin-right: 15px; object-fit: cover; cursor: zoom-in; border: 1px solid #ddd; }
+        .catalog-toggle { background: #f8f9fa; color: var(--blue); border: 2px dashed #ddd; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
+        .product-card { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #f9f9f9; }
+        .product-card img { width: 60px; height: 60px; border-radius: 8px; margin-right: 15px; cursor: zoom-in; object-fit: cover; border: 1px solid #eee; }
         
-        /* Zoom Modal */
-        #imgModal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
+        /* Image Zoom Modal */
+        #imgModal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
         #modalImg { max-width: 90%; max-height: 80%; border-radius: 10px; }
         .close-modal { position: absolute; top: 30px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
 
-        .summary-box { background: var(--blue); color: white; padding: 20px; border-radius: 15px; text-align: center; margin: 15px 0; }
-        .order-btn { background: var(--grad); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        /* Success Overlay */
+        #success-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
 
-        /* Bottom Payment Box */
+        .summary-box { background: var(--blue); color: white; padding: 20px; border-radius: 15px; text-align: center; margin: 15px 0; }
+        .order-btn { background: var(--grad); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; }
+
+        /* Bottom Sections */
         .pay-instructions { background: #fffdf5; border: 2px solid var(--gold); padding: 18px; border-radius: 15px; margin-top: 25px; }
-        .contact-card { background: white; padding: 10px; border-radius: 10px; border: 1px solid #eee; margin: 8px 0; text-align: center; }
-        .highlight { color: var(--purple); font-weight: bold; font-size: 1.1em; }
-        
+        .highlight { color: var(--purple); font-weight: bold; }
         .delivery-note { background: #e7f3ff; color: #004085; padding: 12px; border-radius: 10px; font-size: 12px; margin-top: 15px; text-align: center; border: 1px solid #b8daff; }
     </style>
 </head>
 <body>
 
-<div id="imgModal" onclick="closeZoom()">
+<div id="imgModal" onclick="this.style.display='none'">
     <span class="close-modal">&times;</span>
     <img id="modalImg">
+</div>
+
+<div id="success-overlay">
+    <div style="font-size: 60px;">✅</div>
+    <h2 id="success-title">Order Received!</h2>
+    <p id="success-msg" style="max-width:400px; color:#555;"></p>
+    <a id="dl-btn" href="#" style="display:none; background:var(--grad); color:white; padding:18px 30px; border-radius:12px; text-decoration:none; font-weight:bold; margin-top:20px;">📥 Download Receipt</a>
+    <button onclick="window.location.href='/'" style="background:none; border:none; margin-top:30px; text-decoration:underline; cursor:pointer;">New Order</button>
 </div>
 
 <div class="container">
     <div class="shop-header">
         <h1>GALPHY HOME ESSENTIALS</h1>
-        <p>Quality for Your Everyday Living</p>
+        <p>Premium Home Quality</p>
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('order-tab')">🛍️ Shop</button>
-        <button class="tab-btn" onclick="showTab('track-tab')">📍 Track</button>
+        <button class="tab-btn active" onclick="showTab('order')">🛍️ Shop</button>
+        <button class="tab-btn" onclick="showTab('track')">📍 Status</button>
     </div>
 
     <div id="order-tab">
         <form action="/place_order" method="POST">
-            <div class="user-info">
-                <input type="text" name="username" placeholder="Customer Name" style="width:100%; padding:14px; margin-bottom:10px; border:1px solid #ddd; border-radius:12px;" required>
-                <input type="tel" name="phone" placeholder="Phone Number" style="width:100%; padding:14px; margin-bottom:10px; border:1px solid #ddd; border-radius:12px;" required>
-                <input type="text" name="location" placeholder="Delivery Location" style="width:100%; padding:14px; margin-bottom:10px; border:1px solid #ddd; border-radius:12px;" required>
-            </div>
+            <input type="text" name="username" placeholder="Name" style="width:100%; padding:14px; margin-bottom:10px; border-radius:12px; border:1px solid #ddd;" required>
+            <input type="tel" name="phone" placeholder="WhatsApp Number" style="width:100%; padding:14px; margin-bottom:10px; border-radius:12px; border:1px solid #ddd;" required>
+            <input type="text" name="location" placeholder="Location in Kampala" style="width:100%; padding:14px; margin-bottom:15px; border-radius:12px; border:1px solid #ddd;" required>
 
-            <button type="button" class="catalog-toggle" id="viewBtn" onclick="toggleCatalog()">✨ View Products (Tap Image to Zoom)</button>
+            <button type="button" class="catalog-toggle" onclick="toggleCatalog()">✨ Browse Products & Prices</button>
             
             <div id="catalog-area" style="display:none;">
                 {% for cat, items in categories.items() %}
-                <details style="margin-bottom:8px; border:1px solid #eee; border-radius:10px; overflow:hidden;">
-                    <summary style="padding:12px; background:#f9f9f9; cursor:pointer; font-weight:bold;">{{ cat }}</summary>
+                <details style="margin-bottom:8px; border:1px solid #eee; border-radius:10px;">
+                    <summary style="padding:12px; cursor:pointer; font-weight:bold;">{{ cat }}</summary>
                     {% for p in items %}
                     <div class="product-card">
-                        <img src="{{ p.image_url }}" onclick="openZoom(this.src)" alt="{{ p.name }}">
-                        <div style="flex-grow:1;">
-                            <strong>{{ p.name }}</strong><br>
-                            <span class="price-val" data-raw="{{ p.price }}">UGX {{ "{:,}".format(p.price) }}</span>
-                        </div>
-                        <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" style="width:50px; padding:5px; border-radius:8px; border:1px solid #ddd;" oninput="updateTotal()">
+                        <img src="{{ p.image_url }}" onclick="event.stopPropagation(); openZoom(this.src)">
+                        <div style="flex-grow:1;"><strong>{{ p.name }}</strong><br>UGX {{ "{:,}".format(p.price) }}</div>
+                        <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" data-price="{{ p.price }}" style="width:50px;" oninput="updateTotal()">
                     </div>
                     {% endfor %}
                 </details>
                 {% endfor %}
 
                 <div class="summary-box">
-                    <div style="font-size: 12px; opacity: 0.8;">TOTAL AMOUNT</div>
+                    <div style="font-size: 12px; opacity:0.8;">TOTAL AMOUNT</div>
                     <div id="grand-total" style="font-size: 24px; font-weight: bold;">UGX 0</div>
-                    <div id="delivery-alert" style="display:none; color:var(--gold); font-size:12px; font-weight:bold; margin-top:5px;">🎉 FREE DELIVERY APPLIED!</div>
+                    <div id="free-del" style="display:none; color:var(--gold); font-size:12px; margin-top:5px;">🎉 FREE DELIVERY AROUND KAMPALA!</div>
                 </div>
             </div>
 
-            <div style="margin-top:15px;">
-                <label style="font-weight:bold; font-size:13px; color:var(--blue);">Payment Method & Amount:</label>
-                <select name="payment_method" style="width:100%; padding:14px; margin-top:5px; border:1px solid #ddd; border-radius:12px; background:white;" required>
-                    <option value="Mobile Money">Mobile Money (Pre-paid)</option>
-                    <option value="Cash on Delivery">Cash on Delivery</option>
+            <div style="margin-top:10px;">
+                <label style="font-size:13px; font-weight:bold;">Payment Method:</label>
+                <select name="payment_method" style="width:100%; padding:14px; margin-top:5px; border-radius:12px; border:1px solid #ddd;" required>
+                    <option value="Mobile Money">Mobile Money (Download Receipt)</option>
+                    <option value="Cash on Delivery">Cash on Delivery (No Receipt)</option>
                 </select>
-                <input type="number" name="amount_paid" placeholder="Enter amount sent (or 0 for Cash)" style="width:100%; padding:14px; margin-top:10px; border:1px solid #ddd; border-radius:12px;" required>
+                <input type="number" name="amount_paid" placeholder="Enter amount sent (0 for Cash)" style="width:100%; padding:14px; margin-top:10px; border-radius:12px; border:1px solid #ddd;" required>
             </div>
 
-            <button type="submit" class="order-btn">🚀 Place Order & Download Receipt</button>
+            <button type="submit" class="order-btn" style="margin-top:20px;">🚀 Confirm Order</button>
         </form>
 
         <div class="pay-instructions">
-            <h4 style="margin:0; color:#856404; text-align:center;">💰 Official Payment Details</h4>
-            <p style="font-size:13px; margin:10px 0; text-align:center;">For Mobile Money transfers, pay to:</p>
-            <div class="contact-card">
-                <strong>Name:</strong> <span class="highlight">NAISANGA PHIONA</span><br>
-                <strong>Number:</strong> <span class="highlight">0703070193</span>
+            <h4 style="margin:0; text-align:center;">💰 Official Payment</h4>
+            <p style="font-size:13px; text-align:center; margin:8px 0;">Mobile Money to:</p>
+            <div style="background:white; padding:10px; border-radius:10px; text-align:center;">
+                <strong>NAISANGA PHIONA</strong><br>
+                <span class="highlight">0703070193</span>
             </div>
-            <p style="font-size: 11px; color: #666; text-align:center;"><em>Please use your full name as the payment reference.</em></p>
         </div>
 
         <div class="delivery-note">
-            🚚 <strong>Free delivery</strong> on orders above <strong>500,000 UGX</strong>!
+            🚚 Orders above <strong>500,000 UGX</strong> get <strong>FREE delivery</strong> around Kampala Region!
         </div>
     </div>
 
     <div id="track-tab" style="display:none; padding:20px; text-align:center;">
-        <input type="tel" id="track-phone" placeholder="Enter Registered Phone Number" style="width:100%; padding:14px; border:1px solid #ddd; border-radius:12px;">
-        <button onclick="trackOrder()" class="order-btn" style="margin-top:10px;">Check Status</button>
-        <div id="status-display" style="margin-top:20px; font-weight:bold; color:var(--blue);"></div>
+        <input type="tel" id="track-phone" placeholder="Enter Registered Phone" style="width:100%; padding:14px; border-radius:12px; border:1px solid #ddd;">
+        <button onclick="track()" class="order-btn" style="margin-top:10px;">Check Status</button>
+        <p id="track-res" style="margin-top:20px; font-weight:bold;"></p>
     </div>
 </div>
 
 <script>
+    // Handle Post-Order logic
     window.onload = function() {
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('success') === 'true') {
-            alert("Order Placed! Receipt is downloading...");
-            const user = params.get('user');
-            const items = params.get('items');
-            const total = params.get('total');
-            window.location.href = `/download_receipt?user=${user}&items=${items}&total=${total}`;
+        const p = new URLSearchParams(window.location.search);
+        if(p.get('success')){
+            const overlay = document.getElementById('success-overlay');
+            const msg = document.getElementById('success-msg');
+            const dl = document.getElementById('dl-btn');
+            overlay.style.display = 'flex';
+            
+            if(p.get('method') === 'Mobile Money'){
+                msg.innerText = "Thank you. Your pre-paid order is being processed. Download your receipt below.";
+                const url = `/download_receipt?user=${encodeURIComponent(p.get('user'))}&items=${encodeURIComponent(p.get('items'))}&total=${p.get('total')}`;
+                dl.href = url;
+                dl.style.display = 'inline-block';
+                window.location.href = url; // Auto-download
+            } else {
+                msg.innerText = "Order logged for Cash on Delivery. We will call you to confirm delivery details.";
+            }
         }
     };
 
-    function openZoom(src) {
-        document.getElementById('modalImg').src = src;
-        document.getElementById('imgModal').style.display = 'flex';
+    function openZoom(s) { document.getElementById('modalImg').src = s; document.getElementById('imgModal').style.display = 'flex'; }
+    function toggleCatalog() { 
+        const a = document.getElementById('catalog-area'); 
+        a.style.display = a.style.display === 'none' ? 'block' : 'none'; 
     }
-    function closeZoom() {
-        document.getElementById('imgModal').style.display = 'none';
-    }
-
-    function toggleCatalog() {
-        const area = document.getElementById('catalog-area');
-        area.style.display = (area.style.display === 'none') ? 'block' : 'none';
-        document.getElementById('viewBtn').innerText = (area.style.display === 'none') ? "✨ View Products (Tap Image to Zoom)" : "🔼 Hide Catalog";
-    }
-
     function updateTotal() {
-        let total = 0;
-        document.querySelectorAll('.product-card').forEach(card => {
-            const qty = parseInt(card.querySelector('.qty-input').value) || 0;
-            const price = parseInt(card.querySelector('.price-val').getAttribute('data-raw')) || 0;
-            total += (qty * price);
-        });
-        document.getElementById('grand-total').innerText = "UGX " + total.toLocaleString();
-        document.getElementById('delivery-alert').style.display = (total >= 500000) ? 'block' : 'none';
+        let t = 0;
+        document.querySelectorAll('.qty-input').forEach(i => t += (i.value * i.dataset.price));
+        document.getElementById('grand-total').innerText = "UGX " + t.toLocaleString();
+        document.getElementById('free-del').style.display = t >= 500000 ? 'block' : 'none';
     }
-
-    function showTab(tabId) {
-        document.getElementById('order-tab').style.display = (tabId === 'order-tab') ? 'block' : 'none';
-        document.getElementById('track-tab').style.display = (tabId === 'track-tab') ? 'block' : 'none';
-        const buttons = document.querySelectorAll('.tab-btn');
-        buttons[0].classList.toggle('active', tabId === 'order-tab');
-        buttons[1].classList.toggle('active', tabId === 'track-tab');
+    function showTab(t) {
+        document.getElementById('order-tab').style.display = t === 'order' ? 'block' : 'none';
+        document.getElementById('track-tab').style.display = t === 'track' ? 'block' : 'none';
     }
-
-    async function trackOrder() {
-        const phone = document.getElementById('track-phone').value;
-        const res = await fetch(`/get_status?phone=${phone}`);
-        const data = await res.json();
-        document.getElementById('status-display').innerText = "Order Status: " + data.status;
+    async function track() {
+        const ph = document.getElementById('track-phone').value;
+        const r = await fetch(`/get_status?phone=${ph}`);
+        const d = await r.json();
+        document.getElementById('track-res').innerText = "Status: " + d.status;
     }
 </script>
 </body>
