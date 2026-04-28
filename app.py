@@ -9,33 +9,40 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.secret_key = "phionah-secure-key-2026"
 
-# --- SUPABASE CONFIGURATION ---
+# --- SUPABASE CONFIGURATION (Updated with your provided Key) ---
 SUPABASE_URL = "https://vzeznntgcqzdwnfqwtra.supabase.co"
-SUPABASE_KEY = "YOUR_SUPABASE_KEY" # Replace with your actual key
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6ZXpubnRnY3F6ZHduZnF3dHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5ODI5NTMsImV4cCI6MjA5MTU1ODk1M30.DgAjwuAOa46jXdVoq_BglmBiNNP2Rfa_N1Ja3wylhDk"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # --- CUSTOMER ROUTES ---
 
 @app.route('/')
 def index():
-    # Fetch products and group by category for the shop display
-    res = supabase.table("products").select("*").execute()
-    categories = {}
-    for p in res.data:
-        cat = p.get('category', 'Other')
-        if cat not in categories:
-            categories[cat] = []
-        categories[cat].append(p)
-    return render_template('index.html', categories=categories)
+    """Main shop page showing products grouped by category"""
+    try:
+        res = supabase.table("products").select("*").execute()
+        products = res.data if res.data else []
+        
+        categories = {}
+        for p in products:
+            cat = p.get('category', 'Other')
+            if cat not in categories:
+                categories[cat] = []
+            categories[cat].append(p)
+        return render_template('index.html', categories=categories)
+    except Exception as e:
+        print(f"Error loading index: {e}")
+        return "Store temporarily unavailable. Please try again later.", 500
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
+    """Handles the submission of a new order from a customer"""
     try:
         username = request.form.get('username')
         phone = request.form.get('phone')
         location = request.form.get('location')
         
-        # Get selected items
+        # Process items from the form
         res_prod = supabase.table("products").select("*").execute()
         selected_items = []
         total_price = 0
@@ -47,6 +54,9 @@ def place_order():
                 total_price += item_total
                 selected_items.append(f"{p['name']} (x{qty})")
         
+        if not selected_items:
+            return redirect(url_for('index'))
+
         order_data = {
             "username": username,
             "phone": phone,
@@ -57,13 +67,14 @@ def place_order():
         }
         
         supabase.table("orders").insert(order_data).execute()
-        return redirect(url_for('index')) # In a real app, redirect to a 'Thank You' page
+        return redirect(url_for('index'))
     except Exception as e:
-        return str(e), 500
+        print(f"Order error: {e}")
+        return "Error placing order", 500
 
 @app.route('/get_status')
 def get_status():
-    """Route for customers to check order status via phone number"""
+    """Real-time status check for customers via phone number"""
     phone = request.args.get('phone')
     if not phone:
         return jsonify({"status": "Enter phone"}), 400
@@ -81,20 +92,26 @@ def get_status():
 
 @app.route('/admin')
 def admin():
+    """Admin Dashboard - Protected by login"""
     if not session.get('logged_in'):
         return redirect(url_for('login'))
         
-    orders = supabase.table("orders").select("*").order("order_id", desc=True).execute()
-    prods = supabase.table("products").select("*").execute()
-    
-    inventory_by_cat = {}
-    for p in prods.data:
-        cat = p.get('category', 'Other')
-        if cat not in inventory_by_cat:
-            inventory_by_cat[cat] = []
-        inventory_by_cat[cat].append(p)
+    try:
+        # Fetch data for dashboard
+        orders = supabase.table("orders").select("*").order("order_id", desc=True).execute()
+        prods = supabase.table("products").select("*").execute()
         
-    return render_template('admin.html', orders=orders.data, inventory_by_cat=inventory_by_cat)
+        inventory_by_cat = {}
+        for p in prods.data:
+            cat = p.get('category', 'Other')
+            if cat not in inventory_by_cat:
+                inventory_by_cat[cat] = []
+            inventory_by_cat[cat].append(p)
+            
+        return render_template('admin.html', orders=orders.data, inventory_by_cat=inventory_by_cat)
+    except Exception as e:
+        print(f"Admin load error: {e}")
+        return "Internal Error: Check Supabase Key and Table Columns.", 500
 
 @app.route('/add_product', methods=['POST'])
 def add_product():
@@ -119,7 +136,7 @@ def add_product():
 
 @app.route('/edit_product/<int:id>', methods=['POST'])
 def edit_product(id):
-    """Route to update existing product details and/or image"""
+    """Updates product info and handles optional new image uploads"""
     if not session.get('logged_in'): return redirect(url_for('login'))
     
     update_data = {
@@ -128,7 +145,6 @@ def edit_product(id):
         "category": request.form.get('category')
     }
     
-    # Handle optional image update
     file = request.files.get('product_image')
     if file and file.filename != '':
         filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
@@ -147,7 +163,7 @@ def delete_product(id):
 
 @app.route('/export_orders')
 def export_orders():
-    """Generates the CSV file for download in the Admin Panel"""
+    """Generates a CSV of all orders for the admin"""
     if not session.get('logged_in'): return redirect(url_for('login'))
     
     res = supabase.table("orders").select("*").order("order_id", desc=True).execute()
@@ -173,6 +189,7 @@ def export_orders():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        # Credentials based on your reminder
         if request.form.get('username') == 'phiona' and request.form.get('password') == 'phiona-plastics':
             session['logged_in'] = True
             return redirect(url_for('admin'))
