@@ -3,173 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GARPHY HOME ESSENTIALS</title>
+    <title>GALPHY HOME ESSENTIALS</title>
     <style>
-        :root { --blue: #001f3f; --purple: #6a0dad; --gold: #ffd700; --grad: linear-gradient(135deg, #001f3f 0%, #6a0dad 50%, #ffd700 100%); }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 15px; }
-        .container { max-width: 550px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid transparent; border-image: var(--grad) 1; }
+        :root { 
+            --blue: #001f3f; 
+            --purple: #6a0dad; 
+            --gold: #ffd700; 
+            --grad: linear-gradient(135deg, #001f3f 0%, #6a0dad 100%); 
+        }
         
-        /* Header */
-        .shop-header { text-align: center; margin-bottom: 20px; }
-        .shop-header h1 { margin: 0; color: var(--blue); text-transform: uppercase; font-size: 24px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; color: #333; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-top: 10px solid var(--purple); }
         
-        /* Tabs */
+        /* Header & Tabs */
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { margin: 0; color: var(--blue); font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
         .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: none; cursor: pointer; font-weight: bold; color: #777; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: none; font-weight: bold; cursor: pointer; color: #888; transition: 0.3s; }
         .tab-btn.active { color: var(--purple); border-bottom: 3px solid var(--purple); }
 
-        /* Catalog & Images */
-        .catalog-toggle { background: #f8f9fa; color: var(--blue); border: 2px dashed #ddd; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
-        .product-card { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #f9f9f9; }
-        .product-card img { width: 60px; height: 60px; border-radius: 8px; margin-right: 15px; cursor: zoom-in; object-fit: cover; border: 1px solid #eee; }
+        /* Form Elements */
+        input, select { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; font-size: 15px; }
         
-        /* Image Zoom Modal */
-        #imgModal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
-        #modalImg { max-width: 90%; max-height: 80%; border-radius: 10px; }
-        .close-modal { position: absolute; top: 30px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
+        /* Product Catalog */
+        .catalog-container { border: 1px solid #eee; border-radius: 15px; padding: 10px; background: #fafafa; margin-bottom: 15px; }
+        .category-title { font-weight: bold; padding: 10px; color: var(--blue); cursor: pointer; border-bottom: 1px solid #eee; display: block; }
+        .product-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #f0f0f0; }
+        .product-item img { width: 55px; height: 55px; border-radius: 10px; margin-right: 15px; object-fit: cover; cursor: zoom-in; border: 1px solid #ddd; }
+        .product-info { flex-grow: 1; }
+        .product-name { font-weight: 600; font-size: 14px; display: block; }
+        .product-price { color: #666; font-size: 13px; }
+        .qty-input { width: 60px !important; margin-bottom: 0 !important; text-align: center; }
+
+        /* Total & Delivery Badge */
+        .summary-card { background: var(--blue); color: white; padding: 20px; border-radius: 18px; text-align: center; margin: 20px 0; position: relative; overflow: hidden; }
+        .total-label { font-size: 12px; opacity: 0.8; text-transform: uppercase; }
+        .total-amount { font-size: 28px; font-weight: bold; margin: 5px 0; }
+        .delivery-badge { background: var(--gold); color: var(--blue); font-size: 11px; font-weight: bold; padding: 5px 10px; border-radius: 20px; display: none; margin-top: 5px; }
+
+        /* Payment Details Section */
+        .payment-info { background: #fffdf5; border: 2px dashed var(--gold); padding: 15px; border-radius: 15px; margin-top: 20px; }
+        .payment-info h4 { margin: 0 0 10px 0; color: #856404; text-align: center; }
+        .pay-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; border-bottom: 1px solid #f9eeb3; padding-bottom: 5px; }
+        .pay-row b { color: var(--purple); }
 
         /* Success Overlay */
-        #success-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-
-        .summary-box { background: var(--blue); color: white; padding: 20px; border-radius: 15px; text-align: center; margin: 15px 0; }
-        .order-btn { background: var(--grad); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; }
-
-        /* Bottom Sections */
-        .pay-instructions { background: #fffdf5; border: 2px solid var(--gold); padding: 18px; border-radius: 15px; margin-top: 25px; }
-        .highlight { color: var(--purple); font-weight: bold; }
-        .delivery-note { background: #e7f3ff; color: #004085; padding: 12px; border-radius: 10px; font-size: 12px; margin-top: 15px; text-align: center; border: 1px solid #b8daff; }
+        #success-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:3000; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+        .btn-main { background: var(--grad); color: white; border: none; padding: 18px; width: 100%; border-radius: 15px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 5px 15px rgba(106, 13, 173, 0.3); }
+        
+        /* Zoom Modal */
+        #zoom-modal { display:none; position:fixed; z-index:4000; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items:center; justify-content:center; }
+        #zoom-modal img { max-width: 90%; max-height: 80%; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<div id="imgModal" onclick="this.style.display='none'">
-    <span class="close-modal">&times;</span>
-    <img id="modalImg">
+<div id="zoom-modal" onclick="this.style.display='none'">
+    <img id="zoomed-img" src="">
+    <p style="color:white; margin-top:15px;">Tap anywhere to close</p>
 </div>
 
 <div id="success-overlay">
-    <div style="font-size: 60px;">✅</div>
-    <h2 id="success-title">Order Received!</h2>
-    <p id="success-msg" style="max-width:400px; color:#555;"></p>
-    <a id="dl-btn" href="#" style="display:none; background:var(--grad); color:white; padding:18px 30px; border-radius:12px; text-decoration:none; font-weight:bold; margin-top:20px;">📥 Download Receipt</a>
-    <button onclick="window.location.href='/'" style="background:none; border:none; margin-top:30px; text-decoration:underline; cursor:pointer;">New Order</button>
+    <div style="font-size: 70px;">🎉</div>
+    <h2 style="color: var(--blue);">Order Successfully Logged!</h2>
+    <p id="status-msg" style="padding: 0 40px; color: #555; line-height: 1.6;"></p>
+    <a id="receipt-btn" href="#" style="display:none; text-decoration:none; background:var(--purple); color:white; padding:15px 30px; border-radius:12px; font-weight:bold; margin-top:20px;">📥 Download Official Receipt</a>
+    <button onclick="window.location.href='/'" style="background:none; border:none; margin-top:30px; text-decoration:underline; cursor:pointer; color: #999;">Start New Order</button>
 </div>
 
 <div class="container">
-    <div class="shop-header">
-        <h1>GALPHY HOME ESSENTIALS</h1>
-        <p>Premium Home Quality</p>
+    <div class="header">
+        <h1>Galphy Home Essentials</h1>
+        <p style="font-size: 12px; color: #666;">Quality Plastic & Home Solutions</p>
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('order')">🛍️ Shop</button>
-        <button class="tab-btn" onclick="showTab('track')">📍 Status</button>
+        <button id="tab-shop" class="tab-btn active" onclick="switchTab('shop')">🛒 SHOP</button>
+        <button id="tab-track" class="tab-btn" onclick="switchTab('track')">📍 TRACK STATUS</button>
     </div>
 
-    <div id="order-tab">
+    <div id="content-shop">
         <form action="/place_order" method="POST">
-            <input type="text" name="username" placeholder="Name" style="width:100%; padding:14px; margin-bottom:10px; border-radius:12px; border:1px solid #ddd;" required>
-            <input type="tel" name="phone" placeholder="WhatsApp Number" style="width:100%; padding:14px; margin-bottom:10px; border-radius:12px; border:1px solid #ddd;" required>
-            <input type="text" name="location" placeholder="Location in Kampala" style="width:100%; padding:14px; margin-bottom:15px; border-radius:12px; border:1px solid #ddd;" required>
+            <input type="text" name="username" placeholder="Customer Name" required>
+            <input type="tel" name="phone" placeholder="Phone (WhatsApp Number)" required>
+            <input type="text" name="location" placeholder="Delivery Location in Kampala" required>
 
-            <button type="button" class="catalog-toggle" onclick="toggleCatalog()">✨ Browse Products & Prices</button>
-            
-            <div id="catalog-area" style="display:none;">
+            <div class="catalog-container">
+                <p style="font-size: 11px; font-weight: bold; margin-left: 10px; color: #999;">SELECT YOUR ITEMS:</p>
                 {% for cat, items in categories.items() %}
-                <details style="margin-bottom:8px; border:1px solid #eee; border-radius:10px;">
-                    <summary style="padding:12px; cursor:pointer; font-weight:bold;">{{ cat }}</summary>
+                <details style="margin-bottom: 5px;">
+                    <summary class="category-title">{{ cat }}</summary>
                     {% for p in items %}
-                    <div class="product-card">
-                        <img src="{{ p.image_url }}" onclick="event.stopPropagation(); openZoom(this.src)">
-                        <div style="flex-grow:1;"><strong>{{ p.name }}</strong><br>UGX {{ "{:,}".format(p.price) }}</div>
-                        <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" data-price="{{ p.price }}" style="width:50px;" oninput="updateTotal()">
+                    <div class="product-item">
+                        <img src="{{ p.image_url }}" onclick="zoomImg(this.src)">
+                        <div class="product-info">
+                            <span class="product-name">{{ p.name }}</span>
+                            <span class="product-price">UGX {{ "{:,}".format(p.price) }}</span>
+                        </div>
+                        <input type="number" name="qty_{{ p.id }}" class="qty-input" data-price="{{ p.price }}" value="0" min="0" oninput="calculateTotal()">
                     </div>
                     {% endfor %}
                 </details>
                 {% endfor %}
-
-                <div class="summary-box">
-                    <div style="font-size: 12px; opacity:0.8;">TOTAL AMOUNT</div>
-                    <div id="grand-total" style="font-size: 24px; font-weight: bold;">UGX 0</div>
-                    <div id="free-del" style="display:none; color:var(--gold); font-size:12px; margin-top:5px;">🎉 FREE DELIVERY AROUND KAMPALA!</div>
-                </div>
             </div>
 
-            <div style="margin-top:10px;">
-                <label style="font-size:13px; font-weight:bold;">Payment Method:</label>
-                <select name="payment_method" style="width:100%; padding:14px; margin-top:5px; border-radius:12px; border:1px solid #ddd;" required>
-                    <option value="Mobile Money">Mobile Money (Download Receipt)</option>
-                    <option value="Cash on Delivery">Cash on Delivery (No Receipt)</option>
-                </select>
-                <input type="number" name="amount_paid" placeholder="Enter amount sent (0 for Cash)" style="width:100%; padding:14px; margin-top:10px; border-radius:12px; border:1px solid #ddd;" required>
+            <div class="summary-card">
+                <div class="total-label">Grand Total</div>
+                <div id="display-total" class="total-amount">UGX 0</div>
+                <div id="free-delivery-badge" class="delivery-badge">FREE KAMPALA DELIVERY ACTIVE</div>
             </div>
 
-            <button type="submit" class="order-btn" style="margin-top:20px;">🚀 Confirm Order</button>
+            <label style="font-size: 12px; font-weight: bold; margin-left: 5px;">Payment Method:</label>
+            <select name="payment_method" required>
+                <option value="Mobile Money">Mobile Money (Download Receipt)</option>
+                <option value="Cash on Delivery">Cash on Delivery (No Receipt)</option>
+            </select>
+            
+            <input type="number" name="amount_paid" placeholder="Amount Sent (e.g. 50000)">
+
+            <button type="submit" class="btn-main">🚀 PLACE ORDER NOW</button>
         </form>
 
-        <div class="pay-instructions">
-            <h4 style="margin:0; text-align:center;">💰 Official Payment</h4>
-            <p style="font-size:13px; text-align:center; margin:8px 0;">Mobile Money to:</p>
-            <div style="background:white; padding:10px; border-radius:10px; text-align:center;">
-                <strong>NAISANGA PHIONA</strong><br>
-                <span class="highlight">0703070193</span>
-            </div>
-        </div>
-
-        <div class="delivery-note">
-            🚚 Orders above <strong>500,000 UGX</strong> get <strong>FREE delivery</strong> around Kampala Region!
+        <div class="payment-info">
+            <h4>💳 Official Payment Details</h4>
+            <div class="pay-row"><span>Account Name:</span><b>NAISANGA PHIONA</b></div>
+            <div class="pay-row"><span>MTN/Airtel:</span><b>0703070193</b></div>
+            <div class="pay-row"><span>GTBank Account:</span><b>211/154424/1/5003/0</b></div>
+            <p style="font-size: 10px; text-align: center; color: #999; margin-top: 10px;">Orders above 500,000 UGX qualify for free delivery in Kampala Region.</p>
         </div>
     </div>
 
-    <div id="track-tab" style="display:none; padding:20px; text-align:center;">
-        <input type="tel" id="track-phone" placeholder="Enter Registered Phone" style="width:100%; padding:14px; border-radius:12px; border:1px solid #ddd;">
-        <button onclick="track()" class="order-btn" style="margin-top:10px;">Check Status</button>
-        <p id="track-res" style="margin-top:20px; font-weight:bold;"></p>
+    <div id="content-track" style="display:none; text-align: center; padding: 20px 0;">
+        <h3 style="color: var(--blue);">Check Order Status</h3>
+        <p style="font-size: 13px; color: #666;">Enter the phone number used during checkout.</p>
+        <input type="tel" id="search-phone" placeholder="e.g. 0703070193" style="text-align: center;">
+        <button onclick="checkStatus()" class="btn-main" style="margin-top: 10px;">TRACK MY ORDER</button>
+        
+        <div id="status-result" style="margin-top: 30px; display: none;">
+            <div style="font-size: 12px; text-transform: uppercase;">Current Progress</div>
+            <div id="live-status" style="font-size: 24px; font-weight: bold; color: var(--purple); margin-top: 5px;"></div>
+        </div>
     </div>
 </div>
 
 <script>
-    // Handle Post-Order logic
+    function calculateTotal() {
+        let total = 0;
+        document.querySelectorAll('.qty-input').forEach(input => {
+            total += (parseInt(input.value) * parseInt(input.dataset.price));
+        });
+        document.getElementById('display-total').innerText = "UGX " + total.toLocaleString();
+        
+        // Kampala Region Free Delivery Logic
+        const badge = document.getElementById('free-delivery-badge');
+        if (total >= 500000) {
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    function switchTab(t) {
+        document.getElementById('content-shop').style.display = t === 'shop' ? 'block' : 'none';
+        document.getElementById('content-track').style.display = t === 'track' ? 'block' : 'none';
+        document.getElementById('tab-shop').className = t === 'shop' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('tab-track').className = t === 'track' ? 'tab-btn active' : 'tab-btn';
+    }
+
+    function zoomImg(src) {
+        document.getElementById('zoomed-img').src = src;
+        document.getElementById('zoom-modal').style.display = 'flex';
+    }
+
+    async function checkStatus() {
+        const phone = document.getElementById('search-phone').value;
+        if(!phone) return alert("Please enter a phone number");
+        
+        const res = await fetch(`/get_status?phone=${phone}`);
+        const data = await res.json();
+        
+        const resultDiv = document.getElementById('status-result');
+        const statusDiv = document.getElementById('live-status');
+        
+        resultDiv.style.display = 'block';
+        statusDiv.innerText = data.status; // Shows admin words like "ON THE WAY"
+    }
+
+    // Handle the redirect success view
     window.onload = function() {
-        const p = new URLSearchParams(window.location.search);
-        if(p.get('success')){
+        const params = new URLSearchParams(window.location.search);
+        if(params.get('success')) {
             const overlay = document.getElementById('success-overlay');
-            const msg = document.getElementById('success-msg');
-            const dl = document.getElementById('dl-btn');
+            const msg = document.getElementById('status-msg');
+            const btn = document.getElementById('receipt-btn');
+            
             overlay.style.display = 'flex';
             
-            if(p.get('method') === 'Mobile Money'){
-                msg.innerText = "Thank you. Your pre-paid order is being processed. Download your receipt below.";
-                const url = `/download_receipt?user=${encodeURIComponent(p.get('user'))}&items=${encodeURIComponent(p.get('items'))}&total=${p.get('total')}`;
-                dl.href = url;
-                dl.style.display = 'inline-block';
-                window.location.href = url; // Auto-download
+            if(params.get('method') === 'Mobile Money') {
+                msg.innerHTML = `Thank you <b>${params.get('user')}</b>! Your payment is being verified. You can download your receipt below.`;
+                btn.style.display = 'inline-block';
+                btn.href = `/download_receipt?user=${params.get('user')}&items=${params.get('items')}&total=${params.get('total')}`;
             } else {
-                msg.innerText = "Order logged for Cash on Delivery. We will call you to confirm delivery details.";
+                msg.innerHTML = `Order logged for <b>Cash on Delivery</b>. Our team will contact you shortly to confirm your delivery in Kampala.`;
             }
         }
-    };
-
-    function openZoom(s) { document.getElementById('modalImg').src = s; document.getElementById('imgModal').style.display = 'flex'; }
-    function toggleCatalog() { 
-        const a = document.getElementById('catalog-area'); 
-        a.style.display = a.style.display === 'none' ? 'block' : 'none'; 
-    }
-    function updateTotal() {
-        let t = 0;
-        document.querySelectorAll('.qty-input').forEach(i => t += (i.value * i.dataset.price));
-        document.getElementById('grand-total').innerText = "UGX " + t.toLocaleString();
-        document.getElementById('free-del').style.display = t >= 500000 ? 'block' : 'none';
-    }
-    function showTab(t) {
-        document.getElementById('order-tab').style.display = t === 'order' ? 'block' : 'none';
-        document.getElementById('track-tab').style.display = t === 'track' ? 'block' : 'none';
-    }
-    async function track() {
-        const ph = document.getElementById('track-phone').value;
-        const r = await fetch(`/get_status?phone=${ph}`);
-        const d = await r.json();
-        document.getElementById('track-res').innerText = "Status: " + d.status;
     }
 </script>
 </body>
