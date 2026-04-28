@@ -1,217 +1,178 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galphy Admin | Order & Inventory Control</title>
-    <style>
-        :root { --blue: #001f3f; --purple: #6a0dad; --sidebar-width: 260px; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; background: #f4f7f6; height: 100vh; overflow: hidden; }
+import io
+import os
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from supabase import create_client, Client
+from werkzeug.utils import secure_filename
 
-        /* Sidebar Styling */
-        .sidebar { width: var(--sidebar-width); background: var(--blue); color: white; display: flex; flex-direction: column; padding: 20px 0; box-shadow: 3px 0 10px rgba(0,0,0,0.1); z-index: 10; }
-        .sidebar h2 { font-size: 1.2rem; text-align: center; color: #ffd700; margin-bottom: 30px; letter-spacing: 1px; }
-        .nav-item { padding: 15px 25px; cursor: pointer; transition: 0.3s; font-weight: bold; color: #adb5bd; border-left: 5px solid transparent; display: flex; align-items: center; gap: 10px; }
-        .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
-        .nav-item.active { background: rgba(255,255,255,0.15); color: white; border-left: 5px solid var(--purple); }
-        .logout-link { margin-top: auto; padding: 20px 25px; color: #ff6b6b; text-decoration: none; font-size: 14px; font-weight: bold; }
+app = Flask(__name__)
+# Secure key for session management
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "phionah-secure-key-2026")
 
-        /* Main Content Styling */
-        .main-content { flex-grow: 1; overflow-y: auto; padding: 30px; }
-        .panel { display: none; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .panel.active { display: block; animation: fadeIn 0.3s ease-in; }
+# --- SUPABASE CONFIGURATION ---
+SUPABASE_URL = "https://vzeznntgcqzdwnfqwtra.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6ZXpubnRnY3F6ZHduZnF3dHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5ODI5NTMsImV4cCI6MjA5MTU1ODk1M30.DgAjwuAOa46jXdVoq_BglmBiNNP2Rfa_N1Ja3wylhDk"
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+# --- CUSTOMER STOREFRONT ROUTES ---
 
-        /* Order List - Expandable Cards */
-        .order-card { border: 1px solid #eee; margin-bottom: 15px; border-radius: 12px; transition: 0.2s; background: white; }
-        .order-card:hover { border-color: var(--purple); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .order-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .order-details { display: none; padding: 20px; background: #fafafa; border-top: 1px solid #eee; }
+@app.route('/')
+def index():
+    """Fetches and groups products for the shop home page."""
+    try:
+        res = supabase.table("products").select("*").execute()
+        products = res.data if res.data else []
+        categories = {}
+        for p in products:
+            cat = p.get('category', 'Other')
+            if cat not in categories:
+                categories[cat] = []
+            categories[cat].append(p)
+        return render_template('index.html', categories=categories)
+    except Exception as e:
+        print(f"Index Error: {e}")
+        return "Store temporarily offline.", 500
+
+@app.route('/place_order', methods=['POST'])
+def place_order():
+    """Handles order submission and calculates totals/balances."""
+    try:
+        username = request.form.get('username')
+        phone = request.form.get('phone')
+        location = request.form.get('location')
+        method = request.form.get('payment_method')
         
-        .item-row { display: flex; align-items: center; gap: 15px; padding: 10px 0; border-bottom: 1px solid #eee; }
-        .item-row:last-child { border-bottom: none; }
-        .item-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid #ddd; }
-
-        /* Inventory Table */
-        .inv-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .inv-table th { text-align: left; background: #f8f9fa; padding: 15px; color: var(--blue); }
-        .inv-table td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: middle; }
-        .inv-input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; width: 100%; box-sizing: border-box; }
+        try:
+            paid = int(request.form.get('amount_paid', 0))
+        except:
+            paid = 0
         
-        .action-btn { background: none; border: none; font-size: 1.3rem; cursor: pointer; transition: transform 0.1s; text-decoration: none; }
-        .action-btn:active { transform: scale(0.9); }
-
-        /* Add Product Form */
-        .add-form { margin-top: 30px; padding: 20px; background: #eef2f7; border-radius: 12px; border: 2px dashed #cbd5e0; }
-        .add-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; align-items: end; }
-        .add-grid input, .add-grid select { padding: 10px; border-radius: 6px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; }
-        .upload-btn { background: var(--purple); color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    </style>
-</head>
-<body>
-
-    <div class="sidebar">
-        <h2>GALPHY ADMIN</h2>
-        <div id="nav-orders" class="nav-item" onclick="switchTab('orders')">📦 Active Orders</div>
-        <div id="nav-inventory" class="nav-item" onclick="switchTab('inventory')">🛠️ Manage Inventory</div>
-        <a href="/" target="_blank" class="nav-item" style="color: #4dabf7; text-decoration: none;">🌐 View Shop</a>
-        <a href="/logout" class="logout-link">🔴 Logout Account</a>
-    </div>
-
-    <div class="main-content">
+        res_prod = supabase.table("products").select("*").execute()
+        selected_items, item_imgs, calc_total = [], [], 0
         
-        <div id="panel-orders" class="panel">
-            <h1 style="margin-top:0; color: var(--blue);">Customer Orders</h1>
-            <p style="color: #666; margin-bottom: 25px;">Tap an order to unveil specific items and images.</p>
+        for p in res_prod.data:
+            qty = int(request.form.get(f"qty_{p['id']}", 0))
+            if qty > 0:
+                calc_total += (p['price'] * qty)
+                selected_items.append(f"{p['name']} (x{qty})")
+                item_imgs.append(p['image_url'])
+        
+        if not selected_items:
+            return redirect(url_for('index'))
 
-            {% for o in orders %}
-            <div class="order-card">
-                <div class="order-header" onclick="toggleDetails('{{ o.id }}')">
-                    <div>
-                        <b style="font-size: 1.1rem; color: var(--blue);">{{ o.username }}</b><br>
-                        <small style="color: #555;">{{ o.phone }} | 📍 {{ o.location }}</small>
-                    </div>
-                    <div style="text-align: right;">
-                        <span style="background: #e9ecef; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; color: var(--purple);">{{ o.status }}</span>
-                        <div style="font-size: 11px; color: #999; margin-top: 5px;">UGX {{ "{:,}".format(o.total_price) }}</div>
-                    </div>
-                </div>
-
-                <div id="details-{{ o.id }}" class="order-details">
-                    <h4 style="margin-top:0;">Items Ordered:</h4>
-                    <div class="item-list">
-                        {% set names = o.item_name.split(', ') %}
-                        {% for i in range(names|length) %}
-                        <div class="item-row">
-                            {% if o.item_images and o.item_images[i] %}
-                                <img src="{{ o.item_images[i] }}" class="item-img" onerror="this.src='https://via.placeholder.com/60?text=Item'">
-                            {% endif %}
-                            <div>
-                                <b style="display: block;">{{ names[i] }}</b>
-                                <small style="color: #888;">Order Component</small>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-
-                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed #ddd; display: flex; justify-content: space-between; align-items: center;">
-                        <form action="/update_status/{{ o.id }}" method="POST">
-                            <label style="font-size: 13px; font-weight: bold;">Update Status: </label>
-                            <select name="status" onchange="this.form.submit()" style="padding: 5px; border-radius: 5px;">
-                                <option value="ORDER RECEIVED" {% if o.status == 'ORDER RECEIVED' %}selected{% endif %}>ORDER RECEIVED</option>
-                                <option value="ON THE WAY" {% if o.status == 'ON THE WAY' %}selected{% endif %}>ON THE WAY</option>
-                                <option value="DELIVERED" {% if o.status == 'DELIVERED' %}selected{% endif %}>DELIVERED</option>
-                            </select>
-                        </form>
-                        <div style="color: red; font-weight: bold;">Balance: UGX {{ "{:,}".format(o.balance) }}</div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <div id="panel-inventory" class="panel">
-            <h1 style="margin-top:0; color: var(--blue);">Shop Inventory</h1>
-            
-            <table class="inv-table">
-                <thead>
-                    <tr>
-                        <th style="width: 50%;">Product Details</th>
-                        <th style="width: 25%;">Price (UGX)</th>
-                        <th style="width: 25%; text-align: center;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for cat, items in inventory_by_cat.items() %}
-                        {% for p in items %}
-                        <tr>
-                            <form action="/edit_product/{{ p.id }}" method="POST" enctype="multipart/form-data">
-                                <td>
-                                    <div style="display: flex; align-items: center; gap: 12px;">
-                                        <img src="{{ p.image_url }}" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
-                                        <div style="flex-grow:1;">
-                                            <input type="text" name="name" value="{{ p.name }}" class="inv-input" style="font-weight: bold; margin-bottom: 4px;">
-                                            <input type="hidden" name="category" value="{{ p.category }}">
-                                            <div style="font-size: 11px; color: #999; padding-left: 8px;">Category: {{ cat }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <input type="number" name="price" value="{{ p.price }}" class="inv-input">
-                                </td>
-                                <td>
-                                    <div style="display: flex; gap: 20px; justify-content: center;">
-                                        <button type="submit" class="action-btn" title="Save Changes">✏️</button>
-                                        <a href="/delete_product/{{ p.id }}" class="action-btn" title="Delete Product" 
-                                           onclick="return confirm('Permanently remove this item from the shop?')">🗑️</a>
-                                    </div>
-                                </td>
-                            </form>
-                        </tr>
-                        {% endfor %}
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            <div class="add-form">
-                <h3 style="margin-top:0; color: var(--blue);">➕ Add New Product</h3>
-                <form action="/add_product" method="POST" enctype="multipart/form-data" class="add-grid">
-                    <div>
-                        <label style="font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px;">Product Name</label>
-                        <input type="text" name="name" placeholder="e.g. 20L Bucket" required>
-                    </div>
-                    <div>
-                        <label style="font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px;">Category</label>
-                        <input type="text" name="category" placeholder="Plastics" required>
-                    </div>
-                    <div>
-                        <label style="font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px;">Price (UGX)</label>
-                        <input type="number" name="price" placeholder="15000" required>
-                    </div>
-                    <div>
-                        <label style="font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px;">Product Image</label>
-                        <input type="file" name="product_image" required style="border:none; padding:0;">
-                    </div>
-                    <button type="submit" class="upload-btn">Upload to Store</button>
-                </form>
-            </div>
-        </div>
-
-    </div>
-
-    <script>
-        // Tab switching logic that stays on the correct tab after refresh
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const activeTab = urlParams.get('tab') || 'orders';
-            switchTab(activeTab);
-        };
-
-        function switchTab(tabId) {
-            // Hide all panels
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            // Show the selected panel
-            const panel = document.getElementById('panel-' + tabId);
-            if (panel) panel.classList.add('active');
-            
-            // Deactivate all nav items
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            // Activate current nav item
-            const nav = document.getElementById('nav-' + tabId);
-            if (nav) nav.classList.add('active');
+        order_data = {
+            "username": username, "phone": phone, "location": location,
+            "item_name": ", ".join(selected_items), "item_images": item_imgs,
+            "total_price": calc_total, "amount_paid": paid,
+            "balance": max(0, calc_total - paid), "status": "ORDER RECEIVED",
+            "payment_method": method
         }
+        
+        supabase.table("orders").insert(order_data).execute()
+        return redirect(url_for('index', success='true', user=username, total=calc_total))
+    except Exception as e:
+        return f"Order failed: {str(e)}", 500
 
-        function toggleDetails(orderId) {
-            const details = document.getElementById('details-' + orderId);
-            const isVisible = details.style.display === 'block';
+# --- ADMIN PANEL ROUTES ---
+
+@app.route('/admin')
+def admin():
+    """Dashboard that handles Tab Switching between Orders and Inventory."""
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    try:
+        orders = supabase.table("orders").select("*").order("created_at", desc=True).execute().data
+        prods = supabase.table("products").select("*").execute().data
+        
+        inv_by_cat = {}
+        for p in prods:
+            cat = p.get('category', 'Other')
+            if cat not in inv_by_cat: inv_by_cat[cat] = []
+            inv_by_cat[cat].append(p)
             
-            // Close all other details first for a clean view
-            document.querySelectorAll('.order-details').forEach(d => d.style.display = 'none');
-            
-            // Toggle the clicked one
-            details.style.display = isVisible ? 'none' : 'block';
+        return render_template('admin.html', orders=orders, inventory_by_cat=inv_by_cat)
+    except Exception as e:
+        return "Dashboard Error", 500
+
+@app.route('/edit_product/<int:p_id>', methods=['POST'])
+def edit_product(p_id):
+    """Updates product and returns specifically to the Inventory tab."""
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    try:
+        update_data = {
+            "name": request.form.get('name'),
+            "price": int(request.form.get('price')),
+            "category": request.form.get('category')
         }
-    </script>
-</body>
-</html>
+        
+        file = request.files.get('product_image')
+        if file and file.filename != '':
+            filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
+            path = f"products/{filename}"
+            supabase.storage.from_("product-images").upload(path, file.read())
+            update_data["image_url"] = supabase.storage.from_("product-images").get_public_url(path)
+
+        supabase.table("products").update(update_data).eq("id", p_id).execute()
+        return redirect(url_for('admin', tab='inventory'))
+    except Exception as e:
+        print(f"Edit Error: {e}")
+        return redirect(url_for('admin', tab='inventory'))
+
+@app.route('/delete_product/<int:p_id>')
+def delete_product(p_id):
+    """Removes product and returns specifically to the Inventory tab."""
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    try:
+        supabase.table("products").delete().eq("id", p_id).execute()
+        return redirect(url_for('admin', tab='inventory'))
+    except Exception as e:
+        print(f"Delete Error: {e}")
+        return redirect(url_for('admin', tab='inventory'))
+
+@app.route('/add_product', methods=['POST'])
+def add_product():
+    """Adds a new product and returns specifically to the Inventory tab."""
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    try:
+        file = request.files.get('product_image')
+        if file:
+            filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
+            path = f"products/{filename}"
+            supabase.storage.from_("product-images").upload(path, file.read())
+            img_url = supabase.storage.from_("product-images").get_public_url(path)
+            
+            supabase.table("products").insert({
+                "name": request.form.get('name'), 
+                "category": request.form.get('category'),
+                "price": int(request.form.get('price')), 
+                "image_url": img_url
+            }).execute()
+        return redirect(url_for('admin', tab='inventory'))
+    except:
+        return redirect(url_for('admin', tab='inventory'))
+
+@app.route('/update_status/<int:order_id>', methods=['POST'])
+def update_status(order_id):
+    """Updates order status and returns to the Orders tab."""
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    new_status = request.form.get('status')
+    supabase.table("orders").update({"status": new_status}).eq("id", order_id).execute()
+    return redirect(url_for('admin', tab='orders'))
+
+# --- AUTH ROUTES ---
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST' and request.form.get('password') == 'phiona-plastics':
+        session['logged_in'] = True
+        return redirect(url_for('admin'))
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+if __name__ == '__main__':
+    # Render uses environment variables for Port
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port, debug=False)
