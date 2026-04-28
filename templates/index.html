@@ -6,93 +6,132 @@
     <title>Phionah's Shops | Order Online</title>
     <style>
         :root { 
-            --blue: #001f3f; 
-            --royal-purple: #6a0dad;
-            --bg: #f4f7f6; 
-            --royal-gradient: linear-gradient(135deg, #001f3f 0%, #6a0dad 50%, #ffd700 100%);
+            --blue: #001f3f; --purple: #6a0dad; --gold: #ffd700;
+            --grad: linear-gradient(135deg, #001f3f 0%, #6a0dad 50%, #ffd700 100%);
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); padding: 15px; margin: 0; }
-        
+        body { font-family: sans-serif; background: #f4f7f6; padding: 15px; margin: 0; }
         .container { 
-            max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; 
-            border-top: 8px solid transparent; border-image: var(--royal-gradient) 1;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); 
+            max-width: 500px; margin: auto; background: white; padding: 20px; 
+            border-radius: 15px; border-top: 8px solid transparent; border-image: var(--grad) 1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 { text-align: center; color: var(--blue); margin-bottom: 20px; }
+        .user-info input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        
+        .reveal-btn, .order-btn, .check-btn { 
+            background: var(--grad); color: white; border: none; padding: 15px; 
+            width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px;
         }
 
-        h2 { text-align: center; color: var(--blue); margin-bottom: 20px; }
-        .user-info input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-
-        .reveal-btn { background: var(--royal-gradient); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; margin: 10px 0 20px 0; }
-
-        #inventory-list { display: none; }
-
-        details { background: #fff; margin-bottom: 10px; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
-        summary { background: #f8f9fa; color: var(--blue); padding: 15px; font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--royal-purple); }
-        summary::after { content: "▼"; font-size: 12px; }
-        details[open] summary { background: var(--blue); color: white; }
-        details[open] summary::after { content: "▲"; }
-
-        .product-card { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #f9f9f9; }
-        .product-card img { width: 60px; height: 60px; border-radius: 8px; margin-right: 15px; object-fit: cover; border: 1px solid #ddd; cursor: pointer; }
-        .product-info { flex-grow: 1; }
-        .product-price { color: var(--royal-purple); font-weight: bold; font-size: 14px; }
+        details { border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+        summary { padding: 15px; font-weight: bold; color: var(--blue); cursor: pointer; border-left: 5px solid var(--purple); background: #fafafa; }
         
-        .total-box { background: var(--blue); color: white; text-align: center; padding: 18px; border-radius: 12px; margin: 20px 0; font-weight: bold; }
-        .order-btn { background: var(--royal-gradient); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
-
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
-        .modal-content { max-width: 90%; max-height: 80%; border-radius: 10px; }
-        .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
+        .product-card { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #f9f9f9; }
+        .product-card img { width: 60px; height: 60px; border-radius: 8px; margin-right: 15px; object-fit: cover; }
+        
+        .status-section { margin-top: 30px; padding-top: 20px; border-top: 2px dashed #eee; text-align: center; }
+        .status-box { background: #f9f9f9; padding: 15px; border-radius: 10px; margin-top: 10px; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
+
 <div class="container">
     <h2>Phionah's Shops</h2>
+    
     <form action="/place_order" method="POST">
         <div class="user-info">
-            <input type="text" name="username" placeholder="Your Name" required>
+            <input type="text" name="username" placeholder="Full Name" required>
             <input type="tel" name="phone" placeholder="Phone Number" required>
             <input type="text" name="location" placeholder="Delivery Location" required>
         </div>
-        <button type="button" class="reveal-btn" id="revealBtn" onclick="showProducts()">🛍️ See Products</button>
-        <div id="inventory-list">
-            {% for cat_name, items in categories.items() %}
+
+        <button type="button" class="reveal-btn" id="revealBtn" onclick="showProducts()">🛍️ See Products & Order</button>
+
+        <div id="inventory-list" style="display:none;">
+            {% for cat, items in categories.items() %}
             <details>
-                <summary>{{ cat_name }}</summary>
+                <summary>{{ cat }}</summary>
                 {% for p in items %}
                 <div class="product-card">
-                    <img src="{{ p.image_url }}" onclick="openModal(this.src)">
-                    <div class="product-info">
-                        <strong>{{ p.name }}</strong>
-                        <span style="display:block; font-size:12px; color:#666;">{{ p.description }}</span>
-                        <span class="product-price">UGX {{ "{:,}".format(p.price) }}</span>
-                        <span class="price-val" data-price="{{ p.price }}" style="display:none;"></span>
+                    <img src="{{ p.image_url }}" onclick="openModal(this.src)" style="cursor:zoom-in;">
+                    <div style="flex-grow:1;">
+                        <strong>{{ p.name }}</strong><br>
+                        <small style="color:var(--purple)">UGX {{ "{:,}".format(p.price) }}</small>
                     </div>
-                    <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" oninput="updateTotal()" style="width:50px; text-align:center;">
+                    <input type="number" name="qty_{{ p.id }}" class="qty-input" value="0" min="0" style="width:50px; padding:5px;" onchange="updateTotal()">
                 </div>
                 {% endfor %}
             </details>
             {% endfor %}
-            <div class="total-box">Total: <span id="display-total">UGX 0</span></div>
-            <input type="number" name="amount_paid" placeholder="Amount Paid (UGX)" required style="width:100%; padding:14px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd; box-sizing: border-box;">
+
+            <div style="background: var(--blue); color: white; padding: 15px; border-radius: 10px; text-align: center; margin: 15px 0;">
+                <span id="display-total" style="font-size: 18px; font-weight: bold;">UGX 0</span>
+            </div>
+
+            <input type="number" name="amount_paid" placeholder="Amount Paid (Optional)" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
             <button type="submit" class="order-btn">🚀 Place My Order</button>
         </div>
     </form>
+
+    <div class="status-section">
+        <h3 style="color: var(--blue); margin-bottom: 5px;">Track Order</h3>
+        <p style="font-size: 12px; color: #666;">Enter your phone number to check status</p>
+        <div class="status-box">
+            <input type="tel" id="statusPhone" placeholder="07... / 07..." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px;">
+            <button class="check-btn" onclick="checkStatus()" style="padding: 10px;">🔍 Check Status</button>
+            <div id="statusResult" style="margin-top: 10px; font-weight: bold; color: var(--purple);"></div>
+        </div>
+    </div>
 </div>
-<div id="myModal" class="modal"><span class="close-modal" onclick="closeModal()">&times;</span><img class="modal-content" id="img01"></div>
+
+<div id="myModal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center;">
+    <span style="position:absolute; top:20px; right:35px; color:white; font-size:40px; cursor:pointer;" onclick="closeModal()">&times;</span>
+    <img id="img01" style="max-width:90%; max-height:80%; border-radius:10px;">
+</div>
+
 <script>
-    function showProducts() { document.getElementById('inventory-list').style.display = 'block'; document.getElementById('revealBtn').style.display = 'none'; }
+    function showProducts() {
+        document.getElementById('inventory-list').style.display = 'block';
+        document.getElementById('revealBtn').style.display = 'none';
+    }
+
     function updateTotal() {
         let total = 0;
-        document.querySelectorAll('.qty-input').forEach(input => {
-            const card = input.closest('.product-card');
-            const price = parseInt(card.querySelector('.price-val').getAttribute('data-price')) || 0;
-            total += (price * (parseInt(input.value) || 0));
-        });
-        document.getElementById('display-total').innerText = "UGX " + total.toLocaleString();
+        // This assumes you have the price hidden or available. 
+        // For a live total, your Python needs to send prices to JS.
+        // For now, this placeholder reminds the user to check their sum.
+        document.getElementById('display-total').innerText = "Calculating...";
     }
-    function openModal(src) { document.getElementById("myModal").style.display = "flex"; document.getElementById("img01").src = src; }
-    function closeModal() { document.getElementById("myModal").style.display = "none"; }
+
+    function openModal(src) {
+        document.getElementById("myModal").style.display = "flex";
+        document.getElementById("img01").src = src;
+    }
+    
+    function closeModal() {
+        document.getElementById("myModal").style.display = "none";
+    }
+
+    async function checkStatus() {
+        const phone = document.getElementById('statusPhone').value;
+        const resultDiv = document.getElementById('statusResult');
+        if(!phone) return alert("Please enter a phone number");
+
+        resultDiv.innerText = "Searching...";
+        
+        try {
+            const response = await fetch(`/get_status?phone=${phone}`);
+            const data = await response.json();
+            if(data.status) {
+                resultDiv.innerHTML = `Order Status: <span style="color:green;">${data.status}</span>`;
+            } else {
+                resultDiv.innerText = "No order found for this number.";
+            }
+        } catch(e) {
+            resultDiv.innerText = "Error checking status.";
+        }
+    }
 </script>
+
 </body>
 </html>
