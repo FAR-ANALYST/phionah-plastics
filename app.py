@@ -1,8 +1,6 @@
 import os
-import csv
-import io
-from datetime import datetime, timedelta, timezone
-from flask import Flask, render_template, request, redirect, url_for, session, make_response
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, session
 from supabase import create_client, Client
 from werkzeug.utils import secure_filename
 
@@ -17,67 +15,60 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 @app.route('/')
 def index():
     try:
-        # Fetch all products and group them by category
         response = supabase.table("products").select("*").order("id").execute()
         categories = {}
         for p in response.data:
             cat = p.get('category') or 'Other'
-            if cat not in categories:
-                categories[cat] = []
+            if cat not in categories: categories[cat] = []
             categories[cat].append(p)
         return render_template('index.html', categories=categories)
     except Exception as e:
         return f"Database Error: {e}"
 
-@app.route('/track_order', methods=['POST'])
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """FIX: Added explicit return for GET requests to prevent TypeError in logs."""
+    if request.method == 'POST':
+        user = request.form.get('username')
+        pwd = request.form.get('password')
+        if user == "phiona" and pwd == "phiona-plastics":
+            session['logged_in'] = True
+            return redirect(url_for('admin'))
+        return "Invalid Credentials. <a href='/login'>Try again</a>"
+    # This ensures the login page actually loads when you visit the URL
+    return render_template('login.html')
+
+@app.route('/admin')
+def admin():
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    
+    # Fetch data and group inventory by category for a cleaner Admin UI
+    orders = supabase.table("orders").select("*").order("order_id", desc=True).execute()
+    products_res = supabase.table("products").select("*").order("id").execute()
+    
+    inventory_by_cat = {}
+    for p in products_res.data:
+        cat = p.get('category') or 'Other'
+        if cat not in inventory_by_cat: inventory_by_cat[cat] = []
+        inventory_by_cat[cat].append(p)
+
+    return render_template('admin.html', orders=orders.data, inventory_by_cat=inventory_by_cat)
+
+@app.route('/track_order', methods=['GET', 'POST'])
 def track_order():
-    """Handles order status lookups."""
-    try:
+    """FIX: Supports both POST (form submission) and GET (page refresh)."""
+    if request.method == 'POST':
         order_id = request.form.get('order_id')
         res = supabase.table("orders").select("*").eq("order_id", order_id).execute()
         if res.data:
             return render_template('receipt.html', order=res.data[0])
         return "Order not found. <a href='/'>Go back</a>"
-    except Exception as e:
-        return f"Tracking Error: {e}"
-
-@app.route('/admin')
-def admin():
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    orders = supabase.table("orders").select("*").order("order_id", desc=True).execute()
-    products = supabase.table("products").select("*").order("id").execute()
-    return render_template('admin.html', orders=orders.data, products=products.data)
-
-@app.route('/add_product', methods=['POST'])
-def add_product():
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    try:
-        file = request.files.get('product_image')
-        image_url = ""
-        if file:
-            filename = secure_filename(file.filename)
-            file_path = f"inventory/{datetime.now().timestamp()}_{filename}"
-            supabase.storage.from_("product-images").upload(file_path, file.read())
-            image_url = supabase.storage.from_("product-images").get_public_url(file_path)
-
-        product_data = {
-            "name": request.form.get('name'), 
-            "category": request.form.get('category'),
-            "description": request.form.get('description'), 
-            "price": int(request.form.get('price')),
-            "image_url": image_url
-        }
-        supabase.table("products").insert(product_data).execute()
-        return redirect(url_for('admin'))
-    except Exception as e:
-        return f"Upload Error: {e}"
+    return redirect(url_for('index'))
 
 @app.route('/edit_product/<int:product_id>', methods=['POST'])
 def edit_product(product_id):
-    """Updates existing product details and optionally the image."""
     if not session.get('logged_in'): return redirect(url_for('login'))
     try:
-        # Get existing product to retain image if no new one is uploaded
         existing = supabase.table("products").select("*").eq("id", product_id).single().execute()
         image_url = existing.data.get('image_url')
 
@@ -100,51 +91,38 @@ def edit_product(product_id):
     except Exception as e:
         return f"Update Error: {e}"
 
+@app.route('/add_product', methods=['POST'])
+def add_product():
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    try:
+        file = request.files.get('product_image')
+        image_url = ""
+        if file:
+            filename = secure_filename(file.filename)
+            file_path = f"inventory/{datetime.now().timestamp()}_{filename}"
+            supabase.storage.from_("product-images").upload(file_path, file.read())
+            image_url = supabase.storage.from_("product-images").get_public_url(file_path)
+
+        product_data = {
+            "name": request.form.get('name'), "category": request.form.get('category'),
+            "description": request.form.get('description'), "price": int(request.form.get('price')),
+            "image_url": image_url
+        }
+        supabase.table("products").insert(product_data).execute()
+        return redirect(url_for('admin'))
+    except Exception as e:
+        return f"Upload Error: {e}"
+
 @app.route('/delete_product/<int:product_id>')
 def delete_product(product_id):
     if not session.get('logged_in'): return redirect(url_for('login'))
-    try:
-        supabase.table("products").delete().eq("id", product_id).execute()
-        return redirect(url_for('admin'))
-    except Exception as e:
-        return f"Delete Error: {e}"
-
-@app.route('/place_order', methods=['POST'])
-def place_order():
-    try:
-        username, location, phone = request.form.get('username'), request.form.get('location'), request.form.get('phone')
-        raw_amount = request.form.get('amount_paid', '0')
-        amount_paid = int(raw_amount) if raw_amount.isdigit() else 0
-        
-        products_req = supabase.table("products").select("*").execute()
-        selected_items, total_price = [], 0
-        
-        for p in products_req.data:
-            qtys = request.form.getlist(f"qty_{p['id']}")
-            total_qty = sum(int(q) if q.isdigit() else 0 for q in qtys)
-            if total_qty > 0:
-                total_price += (p['price'] * total_qty)
-                selected_items.append(f"{p['name']} x{total_qty}")
-        
-        order_data = {
-            "username": username, "location": location, "phone": phone,
-            "item_name": ", ".join(selected_items), "total_price": total_price,
-            "amount_paid": amount_paid, "balance": total_price - amount_paid, "status": "Pending"
-        }
-        res = supabase.table("orders").insert(order_data).execute()
-        return render_template('receipt.html', order=res.data[0])
-    except Exception as e:
-        return f"Order Error: {e}", 500
-
-@app.route('/update_status/<int:order_id>')
-def update_status(order_id):
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    supabase.table("orders").update({"status": "On the Way"}).eq("order_id", order_id).execute()
+    supabase.table("products").delete().eq("id", product_id).execute()
     return redirect(url_for('admin'))
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        if request.form.get('username') == "phiona" and request.form.get('password') == "phiona-plastics":
-            session['logged_in'] = True
-            return redirect(url_for('admin'))
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
