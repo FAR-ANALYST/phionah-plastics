@@ -1,135 +1,202 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Admin | Phionah's Shops</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galphy Admin | Order & Inventory Management</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    
     <style>
-        :root { --blue: #001f3f; --purple: #6a0dad; --grad: linear-gradient(135deg, #001f3f 0%, #6a0dad 50%, #ffd700 100%); }
-        body { display: flex; margin: 0; font-family: sans-serif; height: 100vh; background: #f4f7f6; }
-        .sidebar { width: 250px; background: white; border-right: 1px solid #ddd; padding: 20px; border-top: 8px solid transparent; border-image: var(--grad) 1; }
-        .nav-item { padding: 15px; cursor: pointer; border-radius: 8px; margin-bottom: 5px; color: #555; }
-        .nav-item.active { background: #eef2f7; color: var(--blue); font-weight: bold; border-left: 4px solid var(--purple); }
-        .main { flex-grow: 1; padding: 30px; overflow-y: auto; }
-        .dashboard-section { display: none; }
-        .dashboard-section.active { display: block; }
-        .box { background: white; padding: 20px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-        input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
-        .btn-submit { background: var(--grad); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
+        :root { --blue: #001f3f; --purple: #6a0dad; --success: #28a745; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .admin-container { max-width: 1100px; margin: auto; }
         
-        .zoom-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
-        .edit-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        /* Dashboard Cards */
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        h2 { color: var(--blue); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
+        
+        /* Product Form & Cropping */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        input, select { width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        .crop-area { background: #fafafa; border: 2px dashed #ccc; padding: 10px; margin-top: 15px; display: none; text-align: center; }
+        #crop-image { max-width: 100%; max-height: 400px; }
+        
+        /* Orders Table */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th { background: var(--blue); color: white; padding: 15px; text-align: left; font-size: 14px; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: middle; }
+        
+        /* Order Item Thumbnails */
+        .img-gallery { display: flex; gap: 4px; flex-wrap: wrap; max-width: 150px; }
+        .order-img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; border: 1px solid #ddd; cursor: pointer; }
+        .order-img:hover { transform: scale(2); transition: 0.2s; z-index: 10; }
+        
+        /* Status Badges */
+        .status-select { padding: 6px; border-radius: 6px; font-weight: bold; border: 1px solid #ddd; cursor: pointer; }
+        .status-received { background: #fff3cd; color: #856404; }
+        .status-way { background: #d1ecf1; color: #0c5460; }
+        .status-done { background: #d4edda; color: #155724; }
+        
+        .btn-save { background: var(--purple); color: white; border: none; padding: 15px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .btn-save:hover { opacity: 0.9; }
+        .nav-links { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <h3>Admin Panel</h3>
-    <div class="nav-item active" onclick="switchTab('orders-tab', this)">📦 Orders</div>
-    <div class="nav-item" onclick="switchTab('add-tab', this)">➕ Add Product</div>
-    <div class="nav-item" onclick="switchTab('manage-tab', this)">🛠️ Manage Inventory</div>
-    <a href="/logout" style="display:block; margin-top:20px; color:red; text-decoration:none;">Logout</a>
-</div>
-
-<div class="main">
-    <div id="orders-tab" class="dashboard-section active">
-        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
-            <h3>Customer Orders</h3>
-            <a href="/export_orders" style="text-decoration:none; background:#28a745; color:white; padding:10px 20px; border-radius:5px; font-weight:bold;">📥 Download CSV</a>
+<div class="admin-container">
+    <div class="nav-links">
+        <h1 style="color: var(--blue); margin: 0;">Galphy Admin Portal</h1>
+        <div>
+            <a href="/" target="_blank" style="margin-right: 15px; text-decoration: none; color: var(--purple); font-weight: bold;">🌐 View Store</a>
+            <a href="/logout" style="color: #d9534f; text-decoration: none;">Logout</a>
         </div>
-        <div class="box">
+    </div>
+
+    <div class="card">
+        <h2>✨ Add New Product</h2>
+        <form action="/add_product" method="POST" enctype="multipart/form-data">
+            <div class="form-grid">
+                <div>
+                    <label>Product Name</label>
+                    <input type="text" name="name" placeholder="e.g. 20L Water Bucket" required>
+                </div>
+                <div>
+                    <label>Price (UGX)</label>
+                    <input type="number" name="price" placeholder="e.g. 15000" required>
+                </div>
+                <div>
+                    <label>Category</label>
+                    <select name="category" required>
+                        <option value="Buckets & Basins">Buckets & Basins</option>
+                        <option value="Kitchenware">Kitchenware</option>
+                        <option value="Furniture">Furniture</option>
+                        <option value="Cleaning Tools">Cleaning Tools</option>
+                        <option value="Other Essentials">Other Essentials</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Product Image</label>
+                    <input type="file" id="imageInput" accept="image/*" required onchange="prepareCrop(event)">
+                </div>
+            </div>
+
+            <div id="cropWrapper" class="crop-area">
+                <img id="crop-image" src="">
+                <p style="font-size: 12px; color: #666; margin-top: 10px;">Drag the box to crop the product. We use square (1:1) images for a clean shop look.</p>
+            </div>
+
+            <button type="submit" class="btn-save">➕ Add to Catalog</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>📦 Customer Orders</h2>
+        <p style="font-size: 12px; color: #666;">Status updates here reflect instantly on the customer's tracking page.</p>
+        <div class="table-wrap">
             <table>
-                <thead><tr><th>ID</th><th>Customer</th><th>Items</th><th>Status</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Customer / Location</th>
+                        <th>Items Ordered</th>
+                        <th>Item Images</th>
+                        <th>Financials</th>
+                        <th>Live Status</th>
+                    </tr>
+                </thead>
                 <tbody>
                     {% for o in orders %}
                     <tr>
-                        <td>#{{ o.order_id }}</td>
-                        <td>{{ o.username }}<br><small>{{ o.phone }}</small></td>
-                        <td>{{ o.item_name }}</td>
-                        <td><span style="background:#fff3cd; padding:4px 8px; border-radius:4px;">{{ o.status }}</span></td>
+                        <td>{{ o.created_at[:10] }}<br><small>{{ o.created_at[11:16] }}</small></td>
+                        <td>
+                            <b>{{ o.username }}</b><br>
+                            <small>{{ o.phone }}</small><br>
+                            <span style="color: var(--purple); font-size: 11px;">📍 {{ o.location }}</span>
+                        </td>
+                        <td style="max-width: 200px;">{{ o.item_name }}</td>
+                        <td>
+                            <div class="img-gallery">
+                                {% if o.item_images %}
+                                    {% for img in o.item_images %}
+                                    <img src="{{ img }}" class="order-img" title="View larger">
+                                    {% endfor %}
+                                {% else %}
+                                    <span style="color: #ccc;">No images</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <small>Total: {{ "{:,}".format(o.total_price) }}</small><br>
+                            <small>Paid: {{ "{:,}".format(o.amount_paid) }}</small><br>
+                            <b style="color: {% if o.balance > 0 %}red{% else %}green{% endif %};">
+                                Bal: {{ "{:,}".format(o.balance) }}
+                            </b>
+                        </td>
+                        <td>
+                            <form action="/update_status/{{ o.id }}" method="POST">
+                                <select name="status" class="status-select 
+                                    {% if o.status == 'ORDER RECEIVED' %}status-received{% elif o.status == 'ON THE WAY' %}status-way{% else %}status-done{% endif %}" 
+                                    onchange="this.form.submit()">
+                                    <option value="ORDER RECEIVED" {% if o.status == 'ORDER RECEIVED' %}selected{% endif %}>ORDER RECEIVED</option>
+                                    <option value="ON THE WAY" {% if o.status == 'ON THE WAY' %}selected{% endif %}>ON THE WAY</option>
+                                    <option value="DELIVERED" {% if o.status == 'DELIVERED' %}selected{% endif %}>DELIVERED</option>
+                                </select>
+                            </form>
+                            <div style="font-size: 10px; margin-top: 5px; color: #999;">Method: {{ o.payment_method }}</div>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
-
-    <div id="add-tab" class="dashboard-section">
-        <h3>Add New Product</h3>
-        <div class="box" style="max-width: 500px;">
-            <form action="/add_product" method="POST" enctype="multipart/form-data">
-                <input type="text" name="name" placeholder="Product Name" required>
-                <input type="text" name="category" placeholder="Category (e.g., Kitchenware)" required>
-                <input type="number" name="price" placeholder="Price (UGX)" required>
-                <input type="text" name="description" placeholder="Short Description" required>
-                <label style="font-size: 12px; color: #666;">Product Image:</label>
-                <input type="file" name="product_image" required>
-                <button type="submit" class="btn-submit">🚀 Publish Product</button>
-            </form>
+        <div style="margin-top: 20px; text-align: right;">
+            <a href="/download_orders_csv" style="font-size: 13px; color: var(--blue);">📥 Download Data (CSV)</a>
         </div>
-    </div>
-
-    <div id="manage-tab" class="dashboard-section">
-        <h3>Inventory Management</h3>
-        {% for cat, items in inventory_by_cat.items() %}
-        <details style="margin-bottom:10px; background:white; border-radius:8px; border:1px solid #ddd;">
-            <summary style="padding:15px; cursor:pointer; font-weight:bold; color:var(--blue);">{{ cat }} ({{ items|length }})</summary>
-            <table>
-                {% for p in items %}
-                <tr>
-                    <td width="60"><img src="{{ p.image_url }}" style="width:50px; height:50px; object-fit:cover; border-radius:5px; cursor:zoom-in;" onclick="zoom(this.src)"></td>
-                    <td>{{ p.name }}<br><small>UGX {{ p.price }}</small></td>
-                    <td width="100">
-                        <button onclick="openEdit('{{p.id}}', '{{p.name}}', '{{p.category}}', '{{p.price}}')" style="border:none; background:none; cursor:pointer; font-size:16px;">✏️</button>
-                        <a href="/delete_product/{{ p.id }}" style="color:red; margin-left:15px; text-decoration:none;" onclick="return confirm('Delete this item?')">🗑️</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </table>
-        </details>
-        {% endfor %}
-    </div>
-</div>
-
-<div id="zoomModal" class="zoom-modal" onclick="this.style.display='none'">
-    <img id="zoomedImg" style="max-width:90%; max-height:80%; border-radius:10px;">
-</div>
-
-<div id="editModal" class="edit-modal">
-    <div class="box" style="width: 400px;">
-        <h4 style="margin-top:0;">Edit Product</h4>
-        <form id="editForm" method="POST" enctype="multipart/form-data">
-            <input type="text" name="name" id="eName" required>
-            <input type="text" name="category" id="eCat" required>
-            <input type="number" name="price" id="ePrice" required>
-            <label style="font-size:12px;">Change Image (Optional):</label>
-            <input type="file" name="product_image">
-            <button type="submit" class="btn-submit">Save Changes</button>
-            <button type="button" onclick="document.getElementById('editModal').style.display='none'" style="width:100%; margin-top:10px; border:none; background:none; cursor:pointer; color:#666;">Cancel</button>
-        </form>
     </div>
 </div>
 
 <script>
-    function switchTab(id, el) {
-        document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('active');
+    let cropper;
+    function prepareCrop(event) {
+        const reader = new FileReader();
+        reader.onload = function(){
+            const wrapper = document.getElementById('cropWrapper');
+            const imgElement = document.getElementById('crop-image');
+            
+            imgElement.src = reader.result;
+            wrapper.style.display = 'block';
+            
+            if (cropper) {
+                cropper.destroy();
+            }
+            
+            // Initializing Cropper for a clean 1:1 square aspect ratio
+            cropper = new Cropper(imgElement, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 1,
+                responsive: true
+            });
+        };
+        reader.readAsDataURL(event.target.files[0]);
     }
 
-    function zoom(src) {
-        document.getElementById('zoomModal').style.display = 'flex';
-        document.getElementById('zoomedImg').src = src;
-    }
-
-    function openEdit(id, name, cat, price) {
-        document.getElementById('editModal').style.display = 'flex';
-        document.getElementById('editForm').action = '/edit_product/' + id;
-        document.getElementById('eName').value = name;
-        document.getElementById('eCat').value = cat;
-        document.getElementById('ePrice').value = price;
-    }
+    // Confirmation for status changes
+    document.querySelectorAll('.status-select').forEach(select => {
+        select.addEventListener('focus', function() {
+            this.oldValue = this.value;
+        });
+        select.addEventListener('change', function() {
+            if(!confirm(`Update order status to "${this.value}"?`)) {
+                this.value = this.oldValue;
+            }
+        });
+    });
 </script>
+
 </body>
 </html>
