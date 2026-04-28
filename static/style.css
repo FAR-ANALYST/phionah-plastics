@@ -1,38 +1,32 @@
-/* Phionah's Shops - Pure Color Theme */
+/* Phionah's Shops - The Royal Theme */
 :root {
-    /* The exact gradient you requested: Dark Blue -> Purple -> Gold */
     --royal-gradient: linear-gradient(135deg, #001f3f 0%, #6a0dad 50%, #ffd700 100%);
     --dark-blue: #001f3f;
     --royal-purple: #6a0dad;
 }
 
-/* 1. Top Borders (The thin line at the top of your containers) */
-.container {
+/* Color Overrides */
+.container, .sidebar {
     border-top: 8px solid transparent !important;
     border-image: var(--royal-gradient) 1 !important;
 }
 
-/* 2. Primary Buttons (Place Order, Add Product, Reveal Products) */
-.order-btn, .btn-add, .reveal-btn, .btn-primary {
+.order-btn, .btn-add, .reveal-btn, .btn-primary, .btn-csv {
     background: var(--royal-gradient) !important;
     color: white !important;
     border: none !important;
 }
 
-/* 3. Headers and Text Accents */
 h2, h3, .nav-item.active {
     color: var(--dark-blue) !important;
 }
 
-/* 4. Total Box background */
 .total-box {
     background: var(--dark-blue) !important;
 }
 
-/* 5. Category Dropdowns (The clickable bars) */
 details[open] summary {
     background: var(--dark-blue) !important;
-    color: white !important;
 }
 
 summary {
