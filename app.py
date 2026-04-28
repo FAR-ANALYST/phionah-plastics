@@ -1,4 +1,5 @@
 import os
+from datetime import datetime  # Added for unique filename generation
 from flask import Flask, render_template, request, redirect, url_for, session
 from supabase import create_client, Client
 from werkzeug.utils import secure_filename
@@ -42,7 +43,6 @@ def place_order():
         selected_items = []
         total_price = 0
 
-        # STABILITY FIX: Safe quantity parsing
         for p in response.data:
             qty_val = request.form.get(f"qty_{p['id']}")
             try:
@@ -71,7 +71,6 @@ def place_order():
         res = supabase.table("orders").insert(order_data).execute()
         return render_template('receipt.html', order=res.data[0])
     except Exception as e:
-        print(f"ORDER ERROR: {e}")
         return f"Order Submission Error: {e}", 500
 
 # --- ADMIN ROUTES ---
@@ -103,9 +102,11 @@ def add_product():
         file = request.files.get('product_image')
         if not file: return "Error: Image required", 400
 
-        # STABILITY FIX: Secure upload handling
+        # UNIQUE FILENAME FIX: Prevents "Duplicate Resource" error
         filename = secure_filename(file.filename)
-        file_path = f"products/{filename}"
+        unique_filename = f"{datetime.now().timestamp()}_{filename}"
+        file_path = f"products/{unique_filename}"
+        
         supabase.storage.from_("product-images").upload(file_path, file.read())
         image_url = supabase.storage.from_("product-images").get_public_url(file_path)
 
@@ -113,7 +114,6 @@ def add_product():
         supabase.table("products").insert(product_data).execute()
         return redirect(url_for('admin'))
     except Exception as e:
-        print(f"ADD ERROR: {e}")
         return f"Failed to add product: {e}", 500
 
 @app.route('/edit_product/<int:product_id>', methods=['POST'])
@@ -127,25 +127,25 @@ def edit_product(product_id):
             "price": int(request.form.get('price'))
         }
 
-        # STABILITY FIX: Optional image update logic
         file = request.files.get('product_image')
         if file and file.filename != '':
+            # UNIQUE FILENAME FIX: Prevents "Duplicate Resource" error
             filename = secure_filename(file.filename)
-            file_path = f"products/{filename}"
+            unique_filename = f"{datetime.now().timestamp()}_{filename}"
+            file_path = f"products/{unique_filename}"
+            
             supabase.storage.from_("product-images").upload(file_path, file.read())
             update_data["image_url"] = supabase.storage.from_("product-images").get_public_url(file_path)
 
         supabase.table("products").update(update_data).eq("id", product_id).execute()
         return redirect(url_for('admin'))
     except Exception as e:
-        print(f"EDIT ERROR: {e}")
         return f"Failed to edit: {e}", 500
 
 @app.route('/update_status/<int:order_id>')
 def update_status(order_id):
     if not session.get('logged_in'): return redirect(url_for('login'))
     try:
-        # STABILITY FIX: Match DB constraint for 'Shipped'
         supabase.table("orders").update({"status": "Shipped"}).eq("order_id", order_id).execute()
         return redirect(url_for('admin'))
     except Exception as e:
@@ -172,4 +172,4 @@ def logout():
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)
