@@ -14,21 +14,17 @@
         .box { background: white; padding: 20px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-        .btn-add { background: var(--grad); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+        .btn-submit { background: var(--grad); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
         
-        /* Zoom Modal Styling */
         .zoom-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
-        .zoom-content { max-width: 90%; max-height: 80%; border-radius: 10px; }
-        
-        /* Edit Modal Styling */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal-box { background: white; padding: 20px; border-radius: 12px; width: 400px; }
+        .edit-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h3>Phionah Admin</h3>
+    <h3>Admin Panel</h3>
     <div class="nav-item active" onclick="switchTab('orders-tab', this)">📦 Orders</div>
     <div class="nav-item" onclick="switchTab('add-tab', this)">➕ Add Product</div>
     <div class="nav-item" onclick="switchTab('manage-tab', this)">🛠️ Manage Inventory</div>
@@ -37,9 +33,9 @@
 
 <div class="main">
     <div id="orders-tab" class="dashboard-section active">
-        <div style="display:flex; justify-content: space-between; align-items:center;">
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
             <h3>Customer Orders</h3>
-            <a href="/export_orders" style="text-decoration:none; background:#28a745; color:white; padding:10px; border-radius:5px;">📥 Download CSV</a>
+            <a href="/export_orders" style="text-decoration:none; background:#28a745; color:white; padding:10px 20px; border-radius:5px; font-weight:bold;">📥 Download CSV</a>
         </div>
         <div class="box">
             <table>
@@ -50,7 +46,7 @@
                         <td>#{{ o.order_id }}</td>
                         <td>{{ o.username }}<br><small>{{ o.phone }}</small></td>
                         <td>{{ o.item_name }}</td>
-                        <td>{{ o.status }}</td>
+                        <td><span style="background:#fff3cd; padding:4px 8px; border-radius:4px;">{{ o.status }}</span></td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -58,23 +54,34 @@
         </div>
     </div>
 
+    <div id="add-tab" class="dashboard-section">
+        <h3>Add New Product</h3>
+        <div class="box" style="max-width: 500px;">
+            <form action="/add_product" method="POST" enctype="multipart/form-data">
+                <input type="text" name="name" placeholder="Product Name" required>
+                <input type="text" name="category" placeholder="Category (e.g., Kitchenware)" required>
+                <input type="number" name="price" placeholder="Price (UGX)" required>
+                <input type="text" name="description" placeholder="Short Description" required>
+                <label style="font-size: 12px; color: #666;">Product Image:</label>
+                <input type="file" name="product_image" required>
+                <button type="submit" class="btn-submit">🚀 Publish Product</button>
+            </form>
+        </div>
+    </div>
+
     <div id="manage-tab" class="dashboard-section">
-        <h3>Manage Inventory</h3>
+        <h3>Inventory Management</h3>
         {% for cat, items in inventory_by_cat.items() %}
-        <details style="margin-bottom:10px;">
-            <summary style="padding:15px; background:#eee; cursor:pointer; border-radius:5px; font-weight:bold;">{{ cat }}</summary>
-            <table style="background:white;">
+        <details style="margin-bottom:10px; background:white; border-radius:8px; border:1px solid #ddd;">
+            <summary style="padding:15px; cursor:pointer; font-weight:bold; color:var(--blue);">{{ cat }} ({{ items|length }})</summary>
+            <table>
                 {% for p in items %}
                 <tr>
-                    <td width="60">
-                        <img src="{{ p.image_url }}" style="width:50px; height:50px; object-fit:cover; border-radius:5px; cursor:zoom-in;" 
-                             onclick="zoomImg(this.src)">
-                    </td>
-                    <td>{{ p.name }}</td>
-                    <td>UGX {{ p.price }}</td>
-                    <td>
+                    <td width="60"><img src="{{ p.image_url }}" style="width:50px; height:50px; object-fit:cover; border-radius:5px; cursor:zoom-in;" onclick="zoom(this.src)"></td>
+                    <td>{{ p.name }}<br><small>UGX {{ p.price }}</small></td>
+                    <td width="100">
                         <button onclick="openEdit('{{p.id}}', '{{p.name}}', '{{p.category}}', '{{p.price}}')" style="border:none; background:none; cursor:pointer; font-size:16px;">✏️</button>
-                        <a href="/delete_product/{{ p.id }}" style="color:red; margin-left:10px;">🗑️</a>
+                        <a href="/delete_product/{{ p.id }}" style="color:red; margin-left:15px; text-decoration:none;" onclick="return confirm('Delete this item?')">🗑️</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -85,19 +92,20 @@
 </div>
 
 <div id="zoomModal" class="zoom-modal" onclick="this.style.display='none'">
-    <img id="zoomedImg" class="zoom-content">
+    <img id="zoomedImg" style="max-width:90%; max-height:80%; border-radius:10px;">
 </div>
 
-<div id="editModal" class="modal">
-    <div class="modal-box">
-        <h4>Edit Product</h4>
+<div id="editModal" class="edit-modal">
+    <div class="box" style="width: 400px;">
+        <h4 style="margin-top:0;">Edit Product</h4>
         <form id="editForm" method="POST" enctype="multipart/form-data">
-            <input type="text" name="name" id="eName" style="width:100%; margin-bottom:10px;">
-            <input type="number" name="price" id="ePrice" style="width:100%; margin-bottom:10px;">
-            <input type="text" name="category" id="eCat" style="width:100%; margin-bottom:10px;">
+            <input type="text" name="name" id="eName" required>
+            <input type="text" name="category" id="eCat" required>
+            <input type="number" name="price" id="ePrice" required>
+            <label style="font-size:12px;">Change Image (Optional):</label>
             <input type="file" name="product_image">
-            <button type="submit" class="btn-add" style="width:100%; margin-top:10px;">Save Changes</button>
-            <button type="button" onclick="document.getElementById('editModal').style.display='none'" style="width:100%; margin-top:5px; border:none; background:none;">Cancel</button>
+            <button type="submit" class="btn-submit">Save Changes</button>
+            <button type="button" onclick="document.getElementById('editModal').style.display='none'" style="width:100%; margin-top:10px; border:none; background:none; cursor:pointer; color:#666;">Cancel</button>
         </form>
     </div>
 </div>
@@ -110,7 +118,7 @@
         el.classList.add('active');
     }
 
-    function zoomImg(src) {
+    function zoom(src) {
         document.getElementById('zoomModal').style.display = 'flex';
         document.getElementById('zoomedImg').src = src;
     }
