@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garphy Home Essentials | Quality Home Plastics</title>
+    <title>Galphy Essentials | Quality Home Plastics</title>
     <style>
         :root {
             --blue:   #001f3f;
@@ -22,178 +22,118 @@
         /* ── Header ── */
         .header {
             background: var(--blue);
-            padding: 40px 20px 28px;
+            padding: 40px 20px;
             text-align: center;
-            position: relative;
         }
         .header h1 {
             font-size: 2rem;
-            font-weight: 900;
             color: var(--gold);
             letter-spacing: 3px;
             margin-bottom: 6px;
         }
-        .header p { color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 20px; }
+        .header p { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
 
-        /* ── Success Banner ── */
-        .success-receipt-banner {
-            background: #d4edda;
-            border: 2px solid #28a745;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            margin: 20px auto;
-            max-width: 600px;
-            animation: slideIn 0.5s ease-out;
-        }
-        @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        .receipt-btn {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 12px 25px;
-            background: var(--blue);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        /* ── Store Layout ── */
         .container { max-width: 900px; margin: auto; padding: 20px; }
 
+        /* ── Product Section ── */
         .toggle-section { text-align: center; margin: 25px 0; }
         #toggle-btn {
-            width: 100%; max-width: 450px; padding: 18px;
+            width: 100%; max-width: 400px; padding: 18px;
             background: var(--purple); color: white;
             border: none; border-radius: 12px;
-            font-size: 1.1rem; font-weight: 800;
-            cursor: pointer; transition: 0.3s;
-            box-shadow: 0 6px 15px rgba(106, 13, 173, 0.2);
+            font-size: 1.1rem; font-weight: 800; cursor: pointer;
         }
 
-        #product-grid-container { display: none; margin-top: 20px; }
-
-        .cat-title {
-            color: var(--blue); font-size: 1.4rem; font-weight: 900;
-            margin: 40px 0 15px; padding-left: 10px; border-left: 5px solid var(--purple);
-        }
-
+        #product-grid-container { display: none; }
         .product-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px;
         }
-
         .card {
             background: white; border-radius: 15px; padding: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center;
-            position: relative; border: 1px solid #eee;
         }
-        .card img {
-            width: 100%; height: 160px; object-fit: cover;
-            border-radius: 10px; margin-bottom: 10px;
-        }
-        .card h4 { font-size: 0.95rem; margin-bottom: 5px; color: #444; }
-        .card .price { font-weight: 900; color: var(--purple); font-size: 1.1rem; margin-bottom: 10px; }
+        .card img { width: 100%; height: 160px; object-fit: cover; border-radius: 10px; }
+        .card h4 { margin: 10px 0 5px; font-size: 0.9rem; }
+        .card .price { font-weight: 900; color: var(--purple); margin-bottom: 10px; }
 
         /* ── Order Form ── */
         .order-form {
             background: white; padding: 30px; border-radius: 20px;
-            margin-top: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-top: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
-        .form-section { margin-bottom: 25px; }
-        .form-section h3 { margin-bottom: 15px; color: var(--blue); border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; }
-
         input, select, textarea {
-            width: 100%; padding: 14px; margin-top: 8px;
-            border: 1px solid #ddd; border-radius: 10px; font-size: 1rem;
+            width: 100%; padding: 12px; margin-top: 10px;
+            border: 1px solid #ddd; border-radius: 8px;
+        }
+        .submit-btn {
+            width: 100%; padding: 20px; background: var(--blue);
+            color: white; border: none; border-radius: 12px;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 20px;
         }
 
         /* Payment Box */
         #pay-instructions {
             background: #f8faff; border: 1px solid #e0e8f5;
-            padding: 20px; border-radius: 12px; margin: 15px 0;
-            display: none;
+            padding: 20px; border-radius: 12px; margin-top: 15px; display: none;
         }
-        .pay-step { display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start; }
-        .pay-num { background: var(--blue); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; flex-shrink: 0; margin-top: 2px; }
+        .pay-step { display: flex; gap: 10px; margin-bottom: 8px; align-items: flex-start; }
+        .pay-num { background: var(--blue); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; }
         .pay-highlight { color: var(--purple); font-weight: bold; }
-
-        .submit-btn {
-            width: 100%; padding: 20px; background: var(--blue);
-            color: white; border: none; border-radius: 12px;
-            font-size: 1.2rem; font-weight: bold; cursor: pointer;
-            margin-top: 20px; box-shadow: 0 8px 20px rgba(0, 31, 63, 0.3);
-        }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>GARPHY HOME ESSENTIALS</h1>
+    <h1>GALPHY ESSENTIALS</h1>
     <p>Uganda's Home of Quality Plastics</p>
 </div>
 
 <div class="container">
-    
     {% if success %}
-    <div class="success-receipt-banner">
-        <h2 style="color: #155724; margin-bottom: 8px;">Order Confirmed! ✅</h2>
-        <p>Thank you for shopping with us. Your Order ID is <strong>#{{ order_id }}</strong></p>
-        <a href="/receipt/{{ order_id }}" target="_blank" class="receipt-btn">
-            📥 View & Download Receipt
-        </a>
+    <div style="background: #d4edda; color: #155724; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px;">
+        ✅ Order placed successfully! We will contact you shortly.
     </div>
     {% endif %}
 
     <form action="/place_order" method="POST">
         <div class="order-form">
-            <div class="form-section">
-                <h3>1. Delivery Information</h3>
-                <input type="text" name="username" placeholder="Your Full Name" required>
-                <input type="tel" name="phone" placeholder="Phone Number (Mobile Money)" required>
-                <input type="text" name="location" placeholder="Delivery Location (e.g., Banda, Kyambogo)" required>
-            </div>
+            <h3>1. Delivery Details</h3>
+            <input type="text" name="username" placeholder="Full Name" required>
+            <input type="tel" name="phone" placeholder="Phone (Mobile Money)" required>
+            <input type="text" name="location" placeholder="Location" required>
 
             <div class="toggle-section">
-                <button type="button" id="toggle-btn" onclick="toggleProducts()">🛒 Tap to See Our Products</button>
+                <button type="button" id="toggle-btn" onclick="toggleProducts()">🛒 Tap to See Products</button>
             </div>
 
             <div id="product-grid-container">
                 {% for cat, items in categories.items() %}
-                <h3 class="cat-title">{{ cat }}</h3>
+                <h3 style="margin-top: 20px;">{{ cat }}</h3>
                 <div class="product-grid">
                     {% for p in items %}
                     <div class="card">
-                        <img src="{{ p.image_url }}" alt="{{ p.name }}">
+                        <img src="{{ p.image_url }}">
                         <h4>{{ p.name }}</h4>
                         <div class="price">UGX {{ "{:,}".format(p.price) }}</div>
-                        <input type="number" name="qty_{{ p.id }}" value="0" min="0" 
-                               style="width: 70px; margin: auto; text-align: center; border: 2px solid #eee;">
+                        <input type="number" name="qty_{{ p.id }}" value="0" min="0" style="width: 60px; margin: auto;">
                     </div>
                     {% endfor %}
                 </div>
                 {% endfor %}
             </div>
 
-            <div class="form-section" style="margin-top: 30px;">
-                <h3>2. Payment Method</h3>
-                <select name="payment_method" id="payment-method" onchange="showPaymentInstructions()" required>
-                    <option value="">-- Select Payment Method --</option>
-                    <option value="MTN Mobile Money">MTN Mobile Money</option>
-                    <option value="Airtel Money">Airtel Money</option>
-                    <option value="Cash on Delivery">Cash on Delivery</option>
-                </select>
+            <h3 style="margin-top: 30px;">2. Payment</h3>
+            <select name="payment_method" id="payment-method" onchange="showPaymentInstructions()" required>
+                <option value="">-- Choose Payment --</option>
+                <option value="MTN Mobile Money">MTN Mobile Money</option>
+                <option value="Airtel Money">Airtel Money</option>
+                <option value="Cash on Delivery">Cash on Delivery</option>
+            </select>
 
-                <div id="pay-instructions"></div>
+            <div id="pay-instructions"></div>
+            <input type="number" name="amount_paid" placeholder="Amount Paid Now (UGX)">
 
-                <div style="margin-top: 15px;">
-                    <label style="font-weight: bold; font-size: 0.9rem;">Amount to Pay Now (UGX)</label>
-                    <input type="number" name="amount_paid" placeholder="Leave 0 if paying on delivery">
-                </div>
-            </div>
-
-            <button type="submit" class="submit-btn">✅ Place My Order</button>
+            <button type="submit" class="submit-btn">✅ Submit Order</button>
         </div>
     </form>
 </div>
@@ -207,56 +147,44 @@
             btn.innerText = "🔼 Hide Products";
         } else {
             grid.style.display = "none";
-            btn.innerText = "🛒 Tap to See Our Products";
+            btn.innerText = "🛒 Tap to See Products";
         }
     }
 
-    // Payment Instructions Logic
     const instructions = {
         "MTN Mobile Money": {
-            icon: "🟡", title: "Pay via MTN MoMo",
+            icon: "🟡", title: "Pay via MTN",
             steps: [
-                { num: "1", text: "Dial <span class='pay-highlight'>*165#</span> on your phone." },
-                { num: "2", text: "Choose 'Payments', then 'Merchant Code'." },
-                { num: "3", text: "Enter Code: <span class='pay-highlight'>675544</span> (Galphy Essentials)." },
-                { num: "4", text: "Enter the amount and your PIN to confirm." }
+                { num: "1", text: "Dial <span class='pay-highlight'>*165#</span>" },
+                { num: "2", text: "Select Payments > Merchant Code" },
+                { num: "3", text: "Enter Code: <span class='pay-highlight'>675544</span>" }
             ]
         },
         "Airtel Money": {
-            icon: "🔴", title: "Pay via Airtel Money",
+            icon: "🔴", title: "Pay via Airtel",
             steps: [
-                { num: "1", text: "Dial <span class='pay-highlight'>*185#</span>." },
-                { num: "2", text: "Select 'Pay Merchant'." },
-                { num: "3", text: "Enter Merchant ID: <span class='pay-highlight'>1223344</span>." },
-                { num: "4", text: "Confirm payment with your PIN." }
+                { num: "1", text: "Dial <span class='pay-highlight'>*185#</span>" },
+                { num: "2", text: "Select Pay Merchant" },
+                { num: "3", text: "Enter ID: <span class='pay-highlight'>1223344</span>" }
             ]
         },
         "Cash on Delivery": {
-            icon: "💵", title: "Cash on Delivery",
-            steps: [
-                { num: "1", text: "Pay our rider <span class='pay-highlight'>when the items arrive</span>." },
-                { num: "2", text: "Please have the exact amount ready if possible." },
-                { num: "3", text: "The rider will provide a physical receipt upon payment." }
-            ]
+            icon: "💵", title: "Cash",
+            steps: [{ num: "1", text: "Pay our rider when the items arrive." }]
         }
     };
 
     function showPaymentInstructions() {
         var method = document.getElementById("payment-method").value;
         var box = document.getElementById("pay-instructions");
-        if (!method || !instructions[method]) {
-            box.style.display = "none";
-            return;
-        }
+        if (!method || !instructions[method]) { box.style.display = "none"; return; }
         var info = instructions[method];
-        var html = `<h4 style='margin-bottom:15px;'>${info.icon} ${info.title}</h4>`;
-        info.steps.forEach(step => {
-            html += `<div class="pay-step"><span class="pay-num">${step.num}</span><span class="pay-text">${step.text}</span></div>`;
+        var html = '<h4>' + info.icon + ' ' + info.title + '</h4>';
+        info.steps.forEach(s => {
+            html += '<div class="pay-step"><span class="pay-num">'+s.num+'</span><span>'+s.text+'</span></div>';
         });
-        box.innerHTML = html;
-        box.style.display = "block";
+        box.innerHTML = html; box.style.display = "block";
     }
 </script>
-
 </body>
 </html>
