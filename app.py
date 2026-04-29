@@ -25,7 +25,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 # ─────────────────────────────────────────────
 
 def parse_images(raw):
-    """Normalise item_images — Supabase may return list, JSON string, or None."""
+    """Normalise item_images regardless of how Supabase returns it."""
     if raw is None:
         return []
     if isinstance(raw, list):
@@ -50,7 +50,7 @@ def safe_int(val, default=0):
 
 
 def prepare_orders(raw_list):
-    """Sanitise every order dict so the template never throws a KeyError / TypeError."""
+    """Sanitise every order dict so the template never throws."""
     out = []
     for o in (raw_list or []):
         o['item_images']    = parse_images(o.get('item_images'))
@@ -68,13 +68,19 @@ def prepare_orders(raw_list):
     return out
 
 
+def make_ref():
+    """Generate a simple human-readable order reference."""
+    return "GHE-" + datetime.now().strftime("%Y%m%d-%H%M%S")
+
+
 # ─────────────────────────────────────────────
 #  CUSTOMER STOREFRONT
 # ─────────────────────────────────────────────
 
 @app.route('/')
 def index():
-    """Shop home page — products grouped by category."""
+    """Shop home page — products grouped by category.
+       Pops the last_order receipt from session if present."""
     try:
         res      = supabase.table("products").select("*").execute()
         products = res.data if res.data is not None else []
@@ -86,10 +92,13 @@ def index():
                 categories[cat] = []
             categories[cat].append(p)
 
+        # Receipt data (set by place_order, consumed once here)
+        receipt = session.pop('last_order', None)
+
         return render_template(
             'index.html',
             categories=categories,
-            success=request.args.get('success'),
+            receipt=receipt,            # None or dict with order details
         )
     except Exception as e:
         print(f"[INDEX ERROR] {e}")
@@ -98,15 +107,14 @@ def index():
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
-    """Submit an order — saves all fields including notes."""
+    """Submit an order — saves to Supabase and stores receipt in session."""
     try:
         username = request.form.get('username', '').strip()
         phone    = request.form.get('phone',    '').strip()
         location = request.form.get('location', '').strip()
         method   = request.form.get('payment_method', '')
         notes    = request.form.get('notes',    '').strip()
-
-        paid = safe_int(request.form.get('amount_paid', 0))
+        paid     = safe_int(request.form.get('amount_paid', 0))
 
         res_prod = supabase.table("products").select("*").execute()
         products = res_prod.data if res_prod.data is not None else []
@@ -122,6 +130,9 @@ def place_order():
         if not selected_items:
             return redirect(url_for('index'))
 
+        balance = max(0, calc_total - paid)
+        ref     = make_ref()
+
         supabase.table("orders").insert({
             "username":       username,
             "phone":          phone,
@@ -130,13 +141,29 @@ def place_order():
             "item_images":    item_imgs,
             "total_price":    calc_total,
             "amount_paid":    paid,
-            "balance":        max(0, calc_total - paid),
+            "balance":        balance,
             "status":         "ORDER RECEIVED",
             "payment_method": method,
             "notes":          notes,
         }).execute()
 
-        return redirect(url_for('index', success='true'))
+        # Store receipt in session — index will pop it once
+        session['last_order'] = {
+            "ref":      ref,
+            "username": username,
+            "phone":    phone,
+            "location": location,
+            "items":    selected_items,      # list of strings
+            "total":    calc_total,
+            "paid":     paid,
+            "balance":  balance,
+            "method":   method,
+            "notes":    notes,
+            "date":     datetime.now().strftime("%d %b %Y, %H:%M"),
+        }
+
+        return redirect(url_for('index'))
+
     except Exception as e:
         print(f"[PLACE ORDER ERROR] {e}")
         return f"Order failed: {str(e)}", 500
@@ -144,23 +171,37 @@ def place_order():
 
 @app.route('/get_status')
 def get_status():
-    phone = request.args.get('phone', '').strip()
-    if not phone:
-        return jsonify({"status": "Please enter your phone number."})
+    """AJAX endpoint — returns latest order status for a phone number.
+       Always returns JSON, never crashes."""
     try:
+        phone = (request.args.get('phone') or '').strip()
+        if not phone:
+            return jsonify({"ok": False, "status": "Please enter your phone number."})
+
         res = (
             supabase.table("orders")
-            .select("status")
+            .select("status, item_name, total_price, created_at")
             .eq("phone", phone)
             .order("created_at", desc=True)
             .limit(1)
             .execute()
         )
-        status = res.data[0]['status'] if res.data else "No order found for this number."
-        return jsonify({"status": status})
+
+        if not res.data:
+            return jsonify({"ok": False, "status": "No order found for this number."})
+
+        row = res.data[0]
+        return jsonify({
+            "ok":        True,
+            "status":    row.get("status",      "—"),
+            "items":     row.get("item_name",   "—"),
+            "total":     safe_int(row.get("total_price")),
+            "date":      row.get("created_at",  "")[:10],
+        })
+
     except Exception as e:
         print(f"[GET STATUS ERROR] {e}")
-        return jsonify({"status": "Check failed — try again."})
+        return jsonify({"ok": False, "status": "Status check failed — please try again."})
 
 
 # ─────────────────────────────────────────────
@@ -174,7 +215,6 @@ def admin():
 
     load_error = None
 
-    # Orders
     try:
         order_res = supabase.table("orders").select("*").order("created_at", desc=True).execute()
         orders    = prepare_orders(order_res.data)
@@ -184,7 +224,6 @@ def admin():
         orders     = []
         print(f"[ADMIN ORDER ERROR] {e}")
 
-    # Products
     try:
         prod_res = supabase.table("products").select("*").execute()
         prods    = prod_res.data if prod_res.data is not None else []
@@ -237,7 +276,6 @@ def edit_product(p_id):
             path     = f"products/{filename}"
             supabase.storage.from_("product-images").upload(path, file.read())
             update_data["image_url"] = supabase.storage.from_("product-images").get_public_url(path)
-
         supabase.table("products").update(update_data).eq("id", p_id).execute()
         print(f"[EDIT] Product {p_id} updated.")
     except Exception as e:
