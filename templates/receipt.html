@@ -1,37 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Receipt - Galphy Essentials</title>
+    <meta charset="UTF-8">
+    <title>Receipt #{{ order.id }} - Galphy Essentials</title>
     <style>
-        body { font-family: sans-serif; padding: 40px; background: #eee; }
-        .receipt-card { background: white; max-width: 500px; margin: auto; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .header { text-align: center; border-bottom: 2px solid #001f3f; padding-bottom: 10px; }
-        .details { margin: 20px 0; line-height: 1.6; }
-        .total { font-size: 1.2rem; font-weight: bold; color: #6a0dad; border-top: 1px dashed #ccc; padding-top: 10px; }
-        .btn-print { background: #001f3f; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 20px; }
-        @media print { .btn-print { display: none; } body { background: white; padding: 0; } }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        .receipt-box { max-width: 600px; margin: auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid #001f3f; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: #001f3f; margin: 0; letter-spacing: 2px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; padding: 20px; background: #f9f9f9; border-radius: 10px; }
+        .items-list { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .items-list th { text-align: left; border-bottom: 2px solid #eee; padding: 10px; }
+        .items-list td { padding: 12px 10px; border-bottom: 1px solid #f0f0f0; }
+        .total-section { text-align: right; font-size: 1.1rem; }
+        .balance { color: #dc3545; font-weight: bold; font-size: 1.3rem; }
+        .footer { text-align: center; margin-top: 40px; color: #888; font-size: 0.9rem; }
+        .btn-download { display: block; width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 20px; }
+        @media print { .btn-download { display: none; } body { background: white; padding: 0; } .receipt-box { box-shadow: none; border: 1px solid #eee; } }
     </style>
 </head>
 <body>
-    <div class="receipt-card">
+    <div class="receipt-box">
         <div class="header">
-            <h2>GALPHY ESSENTIALS</h2>
-            <p>Official Purchase Receipt</p>
+            <h1>GALPHY ESSENTIALS</h1>
+            <p>Kampala, Uganda | Quality Home Plastics</p>
         </div>
-        <div class="details">
-            <p><strong>Order ID:</strong> #{{ order.id }}</p>
-            <p><strong>Customer:</strong> {{ order.username }}</p>
-            <p><strong>Date:</strong> {{ order.created_at }}</p>
-            <hr>
-            <p><strong>Items:</strong><br>{{ order.item_name }}</p>
-            <p><strong>Status:</strong> {{ order.status }}</p>
+        
+        <div class="info-grid">
+            <div>
+                <strong>Customer:</strong><br>{{ order.username }}<br>
+                <strong>Phone:</strong> {{ order.phone }}
+            </div>
+            <div style="text-align: right;">
+                <strong>Order ID:</strong> #{{ order.id }}<br>
+                <strong>Date:</strong> {{ order.created_at.split('T')[0] }}<br>
+                <strong>Status:</strong> <span style="color: #6a0dad;">{{ order.status }}</span>
+            </div>
         </div>
-        <div class="total">
-            Total Price: UGX {{ "{:,}".format(order.total_price) }}<br>
-            Paid: UGX {{ "{:,}".format(order.amount_paid) }}<br>
-            <span style="color:red">Balance: UGX {{ "{:,}".format(order.balance) }}</span>
+
+        <table class="items-list">
+            <thead><tr><th>Description</th><th style="text-align: right;">Amount</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>{{ order.item_name }}</td>
+                    <td style="text-align: right;">UGX {{ "{:,}".format(order.total_price) }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="total-section">
+            <p>Total: UGX {{ "{:,}".format(order.total_price) }}</p>
+            <p>Paid via {{ order.payment_method }}: UGX {{ "{:,}".format(order.amount_paid) }}</p>
+            <p class="balance">Balance Due: UGX {{ "{:,}".format(order.balance) }}</p>
         </div>
-        <button class="btn-print" onclick="window.print()">📥 Download / Print Receipt</button>
+
+        <div class="footer">
+            <p>Thank you for choosing Galphy Essentials!</p>
+            <p>Please present this receipt upon delivery.</p>
+        </div>
+
+        <button class="btn-download" onclick="window.print()">📥 Download Receipt as PDF</button>
     </div>
 </body>
 </html>
