@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garphy Home Admin | Control Panel</title>
+    <title>Galphy Admin | Control Panel</title>
     <style>
         :root {
             --blue:   #001f3f;
@@ -78,9 +78,8 @@
             padding: 40px;
             overflow-y: auto;
         }
-        .panel { display: none; animation: fadeIn 0.4s ease-out; }
+        .panel { display: none; }
         .panel.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         h1 { color: var(--blue); margin-bottom: 25px; font-weight: 800; }
 
@@ -99,9 +98,7 @@
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            transition: 0.2s;
         }
-        .order-header:hover { background: #fcfcfc; }
         .order-details {
             display: none;
             padding: 20px;
@@ -109,9 +106,9 @@
             border-top: 1px solid #eee;
         }
         .status-badge {
-            padding: 6px 12px;
+            padding: 5px 10px;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 800;
             background: #e9ecef;
             color: var(--purple);
@@ -136,54 +133,39 @@
         }
         .inv-table td { padding: 15px 18px; border-bottom: 1px solid #eee; }
         .category-row { background: #f0f4f8; font-weight: 800; color: var(--blue); }
-        
-        /* ✏️ Pencil-to-Edit Inputs */
-        .inv-input, .inv-textarea {
+        .inv-input {
             width: 100%;
             padding: 8px;
-            border: 1px solid transparent;
-            background: transparent;
-            border-radius: 4px;
-            font-size: 0.95rem;
-            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
-        .editing .inv-input, .editing .inv-textarea {
-            border-color: var(--purple);
-            background: white;
-        }
-
-        .prod-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; }
-        .action-btn {
-            background: none; border: none; font-size: 1.2rem; cursor: pointer;
-            transition: 0.2s; text-decoration: none;
-        }
-        .action-btn:hover { transform: scale(1.1); }
+        .prod-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+        .action-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>Garphy Home Essentials Admin</h2>
+            <h2>Galphy Admin</h2>
         </div>
-        <div id="nav-orders" class="nav-item active" onclick="switchTab('orders')">📦 Customer Orders</div>
-        <div id="nav-inventory" class="nav-item" onclick="switchTab('inventory')">🛠️ Manage Inventory</div>
-        <a href="/" target="_blank" class="nav-item" style="color: var(--gold); border: none;">🌐 Visit Shop</a>
-        <a href="/logout" class="logout-link">🔴 Logout Session</a>
+        <div id="nav-orders" class="nav-item" onclick="switchTab('orders')">📦 Orders</div>
+        <div id="nav-inventory" class="nav-item" onclick="switchTab('inventory')">🛠️ Inventory</div>
+        <a href="/logout" class="logout-link">🔴 Logout</a>
     </div>
 
     <div class="main-content">
         
         <div id="panel-orders" class="panel active">
-            <h1>Customer Orders</h1>
+            <h1>Active Orders</h1>
             {% for o in orders %}
             <div class="order-card">
                 <div class="order-header" onclick="toggleDetails('{{ o.id }}')">
                     <div>
                         <span class="status-badge">{{ o.status }}</span>
                         <div style="margin-top: 8px;">
-                            <strong style="font-size: 1.1rem;">{{ o.username }}</strong>
-                            <div style="color: #666; font-size: 0.85rem;">📍 {{ o.location }} | 📞 {{ o.phone }}</div>
+                            <strong>{{ o.username }}</strong>
+                            <div style="color: #666; font-size: 0.8rem;">📍 {{ o.location }}</div>
                         </div>
                     </div>
                     <div style="text-align: right;">
@@ -193,30 +175,21 @@
                 </div>
 
                 <div id="details-{{ o.id }}" class="order-details">
-                    <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
-                        <h4 style="margin-bottom: 10px; color: var(--purple);">Ordered Items</h4>
-                        <p style="line-height: 1.6;">{{ o.item_name }}</p>
-                        
-                        <div style="margin-top: 15px; display: flex; gap: 10px;">
-                            {% for img in o.item_images %}
-                            <img src="{{ img }}" class="prod-img" onerror="this.style.display='none'">
-                            {% endfor %}
-                        </div>
+                    <p><strong>Items:</strong> {{ o.item_name }}</p>
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        {% for img in o.item_images %}
+                        <img src="{{ img }}" class="prod-img" onerror="this.style.display='none'">
+                        {% endfor %}
                     </div>
-
-                    <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
                         <form action="/update_status/{{ o.id }}" method="POST">
-                            <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 5px;">UPDATE TRACKING STATUS</label>
-                            <select name="status" onchange="this.form.submit()" style="padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                            <select name="status" onchange="this.form.submit()" style="padding: 5px; border-radius: 5px;">
                                 <option value="ORDER RECEIVED" {% if o.status == 'ORDER RECEIVED' %}selected{% endif %}>ORDER RECEIVED</option>
                                 <option value="ON THE WAY" {% if o.status == 'ON THE WAY' %}selected{% endif %}>ON THE WAY</option>
                                 <option value="DELIVERED" {% if o.status == 'DELIVERED' %}selected{% endif %}>DELIVERED</option>
                             </select>
+                            <span style="float: right; color: var(--red); font-weight: bold;">Balance: UGX {{ "{:,}".format(o.balance) }}</span>
                         </form>
-                        <div style="text-align: right;">
-                            <div style="color: #666; font-size: 0.8rem;">Paid: UGX {{ "{:,}".format(o.amount_paid) }}</div>
-                            <div style="color: var(--red); font-weight: 800;">Balance: UGX {{ "{:,}".format(o.balance) }}</div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -224,41 +197,30 @@
         </div>
 
         <div id="panel-inventory" class="panel">
-            <h1>Shop Inventory</h1>
+            <h1>Manage Products</h1>
             <table class="inv-table">
                 <thead>
                     <tr>
-                        <th>Product</th>
+                        <th>Img</th>
                         <th>Name</th>
-                        <th>Price (UGX)</th>
-                        <th>Description</th>
-                        <th style="text-align: center;">Actions</th>
+                        <th>Price</th>
+                        <th>Category</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for cat, items in inventory_by_cat.items() %}
-                    <tr class="category-row">
-                        <td colspan="5">{{ cat }}</td>
-                    </tr>
+                    <tr class="category-row"><td colspan="5">{{ cat }}</td></tr>
                     {% for p in items %}
-                    <tr id="row-{{ p.id }}">
-                        <form action="/edit_product/{{ p.id }}" method="POST" enctype="multipart/form-data">
+                    <tr>
+                        <form action="/edit_product/{{ p.id }}" method="POST">
                             <td><img src="{{ p.image_url }}" class="prod-img"></td>
+                            <td><input type="text" name="name" value="{{ p.name }}" class="inv-input"></td>
+                            <td><input type="number" name="price" value="{{ p.price }}" class="inv-input"></td>
+                            <td><input type="text" name="category" value="{{ p.category }}" class="inv-input"></td>
                             <td>
-                                <input type="text" name="name" value="{{ p.name }}" class="inv-input" disabled required>
-                            </td>
-                            <td>
-                                <input type="number" name="price" value="{{ p.price }}" class="inv-input" disabled required>
-                            </td>
-                            <td>
-                                <textarea name="description" class="inv-textarea" disabled rows="1">{{ p.description }}</textarea>
-                            </td>
-                            <td style="text-align: center;">
-                                <div style="display: flex; gap: 15px; justify-content: center;">
-                                    <button type="button" class="action-btn unlock-btn" onclick="enableRow('{{ p.id }}')">✏️</button>
-                                    <button type="submit" class="action-btn save-btn" style="display:none;">💾</button>
-                                    <a href="/delete_product/{{ p.id }}" class="action-btn" onclick="return confirm('Delete this product?')">🗑️</a>
-                                </div>
+                                <button type="submit" class="action-btn">✏️</button>
+                                <a href="/delete_product/{{ p.id }}" class="action-btn" onclick="return confirm('Delete?')">🗑️</a>
                             </td>
                         </form>
                     </tr>
@@ -267,21 +229,20 @@
                 </tbody>
             </table>
 
-            <div style="margin-top: 40px; background: white; padding: 25px; border-radius: 12px; border: 2px dashed #ddd;">
-                <h3 style="margin-bottom: 20px;">➕ Add New Product</h3>
-                <form action="/add_product" method="POST" enctype="multipart/form-data" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <input type="text" name="name" placeholder="Product Name" style="padding: 12px; border-radius: 8px; border: 1px solid #ddd;" required>
-                    <input type="text" name="category" placeholder="Category (e.g. Buckets)" style="padding: 12px; border-radius: 8px; border: 1px solid #ddd;" required>
-                    <input type="number" name="price" placeholder="Price (UGX)" style="padding: 12px; border-radius: 8px; border: 1px solid #ddd;" required>
-                    <input type="file" name="product_image" style="font-size: 0.8rem;" required>
-                    <button type="submit" style="background: var(--blue); color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Upload Product</button>
+            <div style="margin-top: 30px; background: white; padding: 20px; border-radius: 12px; border: 2px dashed #ddd;">
+                <h3>➕ Add Product</h3>
+                <form action="/add_product" method="POST" enctype="multipart/form-data" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; margin-top: 15px;">
+                    <input type="text" name="name" placeholder="Name" required>
+                    <input type="text" name="category" placeholder="Category" required>
+                    <input type="number" name="price" placeholder="Price" required>
+                    <input type="file" name="product_image" required>
+                    <button type="submit" style="background: var(--blue); color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">Upload</button>
                 </form>
             </div>
         </div>
     </div>
 
     <script>
-        // Tab switching logic
         window.onload = function () {
             const params = new URLSearchParams(window.location.search);
             switchTab(params.get('tab') || 'orders');
@@ -290,32 +251,16 @@
         function switchTab(tabId) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
-            const panel = document.getElementById('panel-' + tabId);
-            const nav   = document.getElementById('nav-'   + tabId);
-            if (panel) panel.classList.add('active');
-            if (nav)   nav.classList.add('active');
+            document.getElementById('panel-' + tabId).classList.add('active');
+            document.getElementById('nav-' + tabId).classList.add('active');
         }
 
-        // ✏️ Enable Row Logic
-        function enableRow(id) {
-            const row = document.getElementById('row-' + id);
-            row.classList.add('editing');
-            row.querySelectorAll('input, textarea').forEach(el => el.disabled = false);
-            row.querySelector('.unlock-btn').style.display = 'none';
-            row.querySelector('.save-btn').style.display = 'inline-block';
-            row.style.background = "#fff9e6";
-        }
-
-        // Tap-to-unveil logic
         function toggleDetails(id) {
-            const target    = document.getElementById('details-' + id);
-            const chevron   = document.getElementById('chev-'    + id);
+            const target = document.getElementById('details-' + id);
+            const chevron = document.getElementById('chev-' + id);
             const isVisible = target.style.display === 'block';
-
             document.querySelectorAll('.order-details').forEach(d => d.style.display = 'none');
             document.querySelectorAll('[id^="chev-"]').forEach(c => c.textContent = '▼');
-
             if (!isVisible) {
                 target.style.display = 'block';
                 chevron.textContent = '▲';
