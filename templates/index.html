@@ -3,188 +3,698 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galphy Essentials | Quality Home Plastics</title>
+    <title>Garphy Home Essentials</title>
     <style>
+        /* ═══════════════════════════════
+           ROOT VARIABLES & RESET
+        ════════════════════════════════ */
         :root {
-            --blue:   #001f3f;
-            --purple: #6a0dad;
-            --gold:   #ffd700;
-            --light:  #f4f7f6;
+            --navy:    #001f3f;
+            --purple:  #5c0e91;
+            --gold:    #e8a800;
+            --green:   #1a7f37;
+            --light:   #f5f6fa;
+            --white:   #ffffff;
+            --border:  #e2e6ea;
+            --text:    #2c3e50;
+            --muted:   #7f8c8d;
+            --radius:  14px;
+            --shadow:  0 4px 20px rgba(0,0,0,0.08);
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--light); color: var(--text); }
+        a { text-decoration: none; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--light);
-            color: #333;
-        }
-
-        /* ── Header ── */
+        /* ═══════════════════════════════
+           HEADER
+        ════════════════════════════════ */
         .header {
-            background: var(--blue);
-            padding: 40px 20px;
+            background: linear-gradient(135deg, var(--navy) 0%, #0a3d6b 100%);
+            padding: 36px 20px 28px;
             text-align: center;
         }
-        .header h1 {
-            font-size: 2rem;
+        .header-badge {
+            display: inline-block;
+            background: rgba(232,168,0,0.15);
+            border: 1px solid rgba(232,168,0,0.4);
             color: var(--gold);
-            letter-spacing: 3px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+        .header h1 {
+            font-size: clamp(1.5rem, 5vw, 2.4rem);
+            font-weight: 900;
+            color: var(--white);
+            letter-spacing: 1px;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+        .header h1 span { color: var(--gold); }
+        .header p { color: rgba(255,255,255,0.55); font-size: 0.88rem; }
+
+        /* ═══════════════════════════════
+           CONTAINER
+        ════════════════════════════════ */
+        .container { max-width: 860px; margin: auto; padding: 24px 16px 80px; }
+
+        /* ═══════════════════════════════
+           SUCCESS BANNER
+        ════════════════════════════════ */
+        .success-banner {
+            background: #d1f7e0;
+            border: 1.5px solid #52c97a;
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 22px;
+            font-weight: 700;
+            color: #0d5c2e;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        /* ═══════════════════════════════
+           SECTION CARDS
+        ════════════════════════════════ */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, var(--purple), transparent);
+            border-radius: 2px;
+            margin-left: 8px;
+        }
+
+        /* ═══════════════════════════════
+           FORM FIELDS
+        ════════════════════════════════ */
+        .field { margin-bottom: 15px; }
+        .field label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
             margin-bottom: 6px;
         }
-        .header p { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
-
-        .container { max-width: 900px; margin: auto; padding: 20px; }
-
-        /* ── Product Section ── */
-        .toggle-section { text-align: center; margin: 25px 0; }
-        #toggle-btn {
-            width: 100%; max-width: 400px; padding: 18px;
-            background: var(--purple); color: white;
-            border: none; border-radius: 12px;
-            font-size: 1.1rem; font-weight: 800; cursor: pointer;
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            font-size: 0.93rem;
+            font-family: inherit;
+            color: var(--text);
+            background: #fafbfc;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: var(--purple);
+            box-shadow: 0 0 0 3px rgba(92,14,145,0.1);
+            background: var(--white);
+        }
+        .field textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
 
-        #product-grid-container { display: none; }
+        /* ═══════════════════════════════
+           CATEGORY ACCORDION
+        ════════════════════════════════ */
+        .cat-toggle {
+            width: 100%;
+            background: linear-gradient(135deg, var(--navy), #0d3460);
+            color: var(--white);
+            border: none;
+            border-radius: 11px;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            transition: opacity 0.2s;
+            text-align: left;
+        }
+        .cat-toggle:hover { opacity: 0.9; }
+        .cat-toggle .cat-left { display: flex; align-items: center; gap: 10px; }
+        .cat-count {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 9px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .cat-arrow { font-size: 0.75rem; transition: transform 0.3s; }
+        .cat-arrow.open { transform: rotate(180deg); }
+
+        .cat-section { margin-bottom: 14px; }
+        .cat-products {
+            display: none;
+            padding: 14px 0 4px;
+        }
+        .cat-products.open { display: block; }
+
+        /* ═══════════════════════════════
+           PRODUCT GRID
+        ════════════════════════════════ */
         .product-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 13px;
         }
-        .card {
-            background: white; border-radius: 15px; padding: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center;
-        }
-        .card img { width: 100%; height: 160px; object-fit: cover; border-radius: 10px; }
-        .card h4 { margin: 10px 0 5px; font-size: 0.9rem; }
-        .card .price { font-weight: 900; color: var(--purple); margin-bottom: 10px; }
+        @media (min-width: 520px) { .product-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 720px) { .product-grid { grid-template-columns: repeat(4, 1fr); } }
 
-        /* ── Order Form ── */
-        .order-form {
-            background: white; padding: 30px; border-radius: 20px;
-            margin-top: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        .product-card {
+            background: var(--white);
+            border: 1.5px solid var(--border);
+            border-radius: 13px;
+            padding: 12px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            cursor: default;
         }
-        input, select, textarea {
-            width: 100%; padding: 12px; margin-top: 10px;
-            border: 1px solid #ddd; border-radius: 8px;
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(92,14,145,0.13);
+            border-color: var(--purple);
         }
+        .product-img-wrap {
+            position: relative;
+            width: 100%;
+            padding-top: 90%;
+            border-radius: 9px;
+            overflow: hidden;
+            margin-bottom: 9px;
+            cursor: zoom-in;
+        }
+        .product-img-wrap img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        .product-img-wrap:hover img { transform: scale(1.07); }
+        .zoom-icon {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            background: rgba(0,0,0,0.45);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 7px;
+            border-radius: 6px;
+            pointer-events: none;
+        }
+        .product-name {
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: var(--navy);
+            margin-bottom: 3px;
+            line-height: 1.3;
+        }
+        .product-desc {
+            font-size: 0.72rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+            line-height: 1.4;
+            min-height: 22px;
+        }
+        .product-price {
+            font-weight: 800;
+            color: var(--purple);
+            font-size: 0.88rem;
+            margin-bottom: 9px;
+        }
+        .qty-label { font-size: 0.65rem; color: var(--muted); display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .qty-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .qty-btn {
+            background: var(--light);
+            border: none;
+            width: 30px;
+            height: 32px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--navy);
+            cursor: pointer;
+            transition: background 0.15s;
+            flex-shrink: 0;
+        }
+        .qty-btn:hover { background: #dde2e9; }
+        .qty-input {
+            width: 44px;
+            height: 32px;
+            text-align: center;
+            border: none;
+            border-left: 1.5px solid var(--border);
+            border-right: 1.5px solid var(--border);
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--navy);
+            background: var(--white);
+            -moz-appearance: textfield;
+        }
+        .qty-input::-webkit-outer-spin-button,
+        .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+        /* ═══════════════════════════════
+           CART SUMMARY
+        ════════════════════════════════ */
+        .cart-summary {
+            background: linear-gradient(135deg, var(--navy), #0a3460);
+            color: var(--white);
+            border-radius: var(--radius);
+            padding: 18px 22px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .cart-label { font-size: 0.82rem; color: rgba(255,255,255,0.6); margin-bottom: 2px; }
+        .cart-total { font-size: 1.5rem; font-weight: 900; color: var(--gold); }
+        .cart-items-count { font-size: 0.8rem; color: rgba(255,255,255,0.7); }
+
+        /* ═══════════════════════════════
+           PAYMENT INSTRUCTIONS
+        ════════════════════════════════ */
+        .pay-instructions {
+            display: none;
+            background: #eef7ff;
+            border: 1.5px solid #b6d9f7;
+            border-radius: 11px;
+            padding: 16px 18px;
+            margin-top: 14px;
+        }
+        .pay-instructions h4 {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .pay-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 11px;
+            padding: 8px 0;
+            border-bottom: 1px solid #d0e8f8;
+        }
+        .pay-step:last-child { border-bottom: none; }
+        .pay-num {
+            background: var(--navy);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 900;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .pay-text { font-size: 0.84rem; color: #2c3e50; line-height: 1.55; }
+        .pay-text b { color: var(--purple); }
+
+        /* ═══════════════════════════════
+           SUBMIT BUTTON
+        ════════════════════════════════ */
         .submit-btn {
-            width: 100%; padding: 20px; background: var(--blue);
-            color: white; border: none; border-radius: 12px;
-            font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 20px;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--green), #22a44a);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 1.05rem;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: opacity 0.2s, transform 0.1s;
+            margin-top: 8px;
+            box-shadow: 0 4px 15px rgba(26,127,55,0.3);
         }
+        .submit-btn:hover { opacity: 0.9; }
+        .submit-btn:active { transform: scale(0.98); }
 
-        /* Payment Box */
-        #pay-instructions {
-            background: #f8faff; border: 1px solid #e0e8f5;
-            padding: 20px; border-radius: 12px; margin-top: 15px; display: none;
+        /* ═══════════════════════════════
+           LIGHTBOX (image magnification)
+        ════════════════════════════════ */
+        .lightbox-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.88);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            cursor: zoom-out;
         }
-        .pay-step { display: flex; gap: 10px; margin-bottom: 8px; align-items: flex-start; }
-        .pay-num { background: var(--blue); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; }
-        .pay-highlight { color: var(--purple); font-weight: bold; }
+        .lightbox-overlay.active { display: flex; }
+        .lightbox-img {
+            max-width: 94vw;
+            max-height: 88vh;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            object-fit: contain;
+            animation: zoomIn 0.2s ease;
+        }
+        @keyframes zoomIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .lightbox-close {
+            position: fixed;
+            top: 18px;
+            right: 22px;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            line-height: 1;
+            background: rgba(255,255,255,0.15);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .lightbox-close:hover { background: rgba(255,255,255,0.3); }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>GALPHY ESSENTIALS</h1>
-    <p>Uganda's Home of Quality Plastics</p>
+<!-- ═════════════════════════════════
+     LIGHTBOX
+════════════════════════════════= -->
+<div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+    <span class="lightbox-close" onclick="closeLightbox()">✕</span>
+    <img class="lightbox-img" id="lightbox-img" src="" alt="Product Image">
 </div>
 
+
+<!-- ═════════════════════════════════
+     HEADER
+════════════════════════════════= -->
+<div class="header">
+    <div class="header-badge">Quality You Can Trust</div>
+    <h1><span>Garphy</span> Home Essentials</h1>
+    <p>Premium Plastics &amp; Home Products — Delivered to Your Door in Kampala</p>
+</div>
+
+
 <div class="container">
+
     {% if success %}
-    <div style="background: #d4edda; color: #155724; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px;">
-        ✅ Order placed successfully! We will contact you shortly.
+    <div class="success-banner">
+        ✅ Order placed successfully! We'll call you shortly to confirm delivery.
     </div>
     {% endif %}
 
-    <form action="/place_order" method="POST">
-        <div class="order-form">
-            <h3>1. Delivery Details</h3>
-            <input type="text" name="username" placeholder="Full Name" required>
-            <input type="tel" name="phone" placeholder="Phone (Mobile Money)" required>
-            <input type="text" name="location" placeholder="Location" required>
+    <form action="/place_order" method="POST" id="order-form">
 
-            <div class="toggle-section">
-                <button type="button" id="toggle-btn" onclick="toggleProducts()">🛒 Tap to See Products</button>
+        <!-- ═══ STEP 1: YOUR DETAILS ═══ -->
+        <div class="card">
+            <div class="card-title">📋 Step 1 — Your Details</div>
+
+            <div class="field">
+                <label>Full Name</label>
+                <input type="text" name="username" placeholder="Enter your full name" required>
             </div>
+            <div class="field">
+                <label>Phone Number (Mobile Money)</label>
+                <input type="tel" name="phone" placeholder="07XX XXX XXX" required>
+            </div>
+            <div class="field">
+                <label>Delivery Location</label>
+                <input type="text" name="location" placeholder="e.g. Kyambogo, Banda, Ntinda…" required>
+            </div>
+            <div class="field">
+                <label>📝 Notes / Special Request <em style="font-weight:400; text-transform:none; color:#aaa;">(optional)</em></label>
+                <textarea name="notes" placeholder="Any specific details — preferred colour, size, quantity notes, delivery time, or anything else you want us to know…"></textarea>
+            </div>
+        </div>
 
-            <div id="product-grid-container">
+        <!-- ═══ STEP 2: CHOOSE PRODUCTS ═══ -->
+        <div class="card">
+            <div class="card-title">🛒 Step 2 — Choose Products</div>
+            <p style="font-size:0.83rem; color:var(--muted); margin-bottom:16px;">
+                Tap a category to browse its products. Use <strong>+</strong> and <strong>−</strong> to add quantities.
+            </p>
+
+            {% if categories %}
                 {% for cat, items in categories.items() %}
-                <h3 style="margin-top: 20px;">{{ cat }}</h3>
-                <div class="product-grid">
-                    {% for p in items %}
-                    <div class="card">
-                        <img src="{{ p.image_url }}">
-                        <h4>{{ p.name }}</h4>
-                        <div class="price">UGX {{ "{:,}".format(p.price) }}</div>
-                        <input type="number" name="qty_{{ p.id }}" value="0" min="0" style="width: 60px; margin: auto;">
+                <div class="cat-section">
+                    <button type="button"
+                            class="cat-toggle"
+                            onclick="toggleCategory('cat-{{ loop.index }}', this)">
+                        <span class="cat-left">
+                            🏷️ {{ cat }}
+                            <span class="cat-count">{{ items|length }} item{{ 's' if items|length != 1 }}</span>
+                        </span>
+                        <span class="cat-arrow" id="arrow-cat-{{ loop.index }}">▼</span>
+                    </button>
+
+                    <div class="cat-products" id="cat-{{ loop.index }}">
+                        <div class="product-grid">
+                            {% for p in items %}
+                            <div class="product-card">
+                                <div class="product-img-wrap" onclick="openLightbox('{{ p.image_url }}', '{{ p.name }}')">
+                                    <img src="{{ p.image_url }}"
+                                         alt="{{ p.name }}"
+                                         onerror="this.src='https://via.placeholder.com/200?text=No+Image'">
+                                    <span class="zoom-icon">🔍 Zoom</span>
+                                </div>
+                                <div class="product-name">{{ p.name }}</div>
+                                <div class="product-desc">{{ p.description or '' }}</div>
+                                <div class="product-price">UGX {{ "{:,}".format(p.price) }}</div>
+                                <span class="qty-label">Quantity</span>
+                                <div class="qty-wrap">
+                                    <button type="button" class="qty-btn"
+                                            onclick="changeQty('qty_{{ p.id }}', -1)">−</button>
+                                    <input type="number"
+                                           class="qty-input"
+                                           id="qty_{{ p.id }}"
+                                           name="qty_{{ p.id }}"
+                                           value="0" min="0"
+                                           data-price="{{ p.price }}"
+                                           onchange="updateTotal()">
+                                    <button type="button" class="qty-btn"
+                                            onclick="changeQty('qty_{{ p.id }}', 1)">+</button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
-                    {% endfor %}
                 </div>
                 {% endfor %}
+            {% else %}
+            <p style="text-align:center; color:var(--muted); padding:30px 0;">No products available yet. Check back soon!</p>
+            {% endif %}
+        </div>
+
+        <!-- ═══ CART TOTAL ═══ -->
+        <div class="cart-summary" id="cart-summary">
+            <div>
+                <div class="cart-label">Your Cart Total</div>
+                <div class="cart-total" id="cart-total-display">UGX 0</div>
+            </div>
+            <div style="text-align:right;">
+                <div class="cart-items-count" id="cart-items-count">No items selected</div>
+            </div>
+        </div>
+
+        <!-- ═══ STEP 3: PAYMENT ═══ -->
+        <div class="card">
+            <div class="card-title">💳 Step 3 — Payment Details</div>
+
+            <div class="field">
+                <label>Payment Method</label>
+                <select name="payment_method" id="payment-method" required onchange="showPayInstructions()">
+                    <option value="">— Select a method —</option>
+                    <option value="MTN Mobile Money">MTN Mobile Money</option>
+                    <option value="Airtel Money">Airtel Money</option>
+                    <option value="GTBank Transfer">GTBank Transfer</option>
+                    <option value="Cash on Delivery">Cash on Delivery</option>
+                </select>
             </div>
 
-            <h3 style="margin-top: 30px;">2. Payment</h3>
-            <select name="payment_method" id="payment-method" onchange="showPaymentInstructions()" required>
-                <option value="">-- Choose Payment --</option>
-                <option value="MTN Mobile Money">MTN Mobile Money</option>
-                <option value="Airtel Money">Airtel Money</option>
-                <option value="Cash on Delivery">Cash on Delivery</option>
-            </select>
+            <!-- Dynamic payment instructions -->
+            <div class="pay-instructions" id="pay-instructions"></div>
 
-            <div id="pay-instructions"></div>
-            <input type="number" name="amount_paid" placeholder="Amount Paid Now (UGX)">
+            <div class="field" style="margin-top:16px;">
+                <label>Amount Paying Now (UGX) <em style="font-weight:400; text-transform:none; color:#aaa;">— leave blank for Cash on Delivery</em></label>
+                <input type="number" name="amount_paid" id="amount-paid" placeholder="0" min="0">
+            </div>
 
-            <button type="submit" class="submit-btn">✅ Submit Order</button>
+            <button type="submit" class="submit-btn">✅ Place My Order Now</button>
         </div>
+
     </form>
 </div>
 
+
+<!-- ═════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════= -->
 <script>
-    function toggleProducts() {
-        var grid = document.getElementById("product-grid-container");
-        var btn = document.getElementById("toggle-btn");
-        if (grid.style.display === "none" || grid.style.display === "") {
-            grid.style.display = "block";
-            btn.innerText = "🔼 Hide Products";
-        } else {
-            grid.style.display = "none";
-            btn.innerText = "🛒 Tap to See Products";
-        }
-    }
+/* ── Category accordion ── */
+function toggleCategory(id, btn) {
+    var panel  = document.getElementById(id);
+    var arrow  = document.getElementById('arrow-' + id);
+    var isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open', !isOpen);
+    if (arrow) arrow.classList.toggle('open', !isOpen);
+}
 
-    const instructions = {
-        "MTN Mobile Money": {
-            icon: "🟡", title: "Pay via MTN",
-            steps: [
-                { num: "1", text: "Dial <span class='pay-highlight'>*165#</span>" },
-                { num: "2", text: "Select Payments > Merchant Code" },
-                { num: "3", text: "Enter Code: <span class='pay-highlight'>675544</span>" }
-            ]
-        },
-        "Airtel Money": {
-            icon: "🔴", title: "Pay via Airtel",
-            steps: [
-                { num: "1", text: "Dial <span class='pay-highlight'>*185#</span>" },
-                { num: "2", text: "Select Pay Merchant" },
-                { num: "3", text: "Enter ID: <span class='pay-highlight'>1223344</span>" }
-            ]
-        },
-        "Cash on Delivery": {
-            icon: "💵", title: "Cash",
-            steps: [{ num: "1", text: "Pay our rider when the items arrive." }]
-        }
-    };
+/* ── Quantity stepper ── */
+function changeQty(id, delta) {
+    var input = document.getElementById(id);
+    var val   = parseInt(input.value || 0) + delta;
+    input.value = Math.max(0, val);
+    updateTotal();
+}
 
-    function showPaymentInstructions() {
-        var method = document.getElementById("payment-method").value;
-        var box = document.getElementById("pay-instructions");
-        if (!method || !instructions[method]) { box.style.display = "none"; return; }
-        var info = instructions[method];
-        var html = '<h4>' + info.icon + ' ' + info.title + '</h4>';
-        info.steps.forEach(s => {
-            html += '<div class="pay-step"><span class="pay-num">'+s.num+'</span><span>'+s.text+'</span></div>';
-        });
-        box.innerHTML = html; box.style.display = "block";
+/* ── Auto price calculation ── */
+function updateTotal() {
+    var inputs   = document.querySelectorAll('.qty-input');
+    var total    = 0;
+    var itemCount = 0;
+    inputs.forEach(function(inp) {
+        var qty   = parseInt(inp.value || 0);
+        var price = parseInt(inp.dataset.price || 0);
+        if (qty > 0) {
+            total     += qty * price;
+            itemCount += qty;
+        }
+    });
+
+    document.getElementById('cart-total-display').textContent =
+        'UGX ' + total.toLocaleString('en-UG');
+
+    document.getElementById('cart-items-count').textContent =
+        itemCount > 0
+            ? itemCount + ' item' + (itemCount !== 1 ? 's' : '') + ' selected'
+            : 'No items selected';
+}
+
+/* ── Payment instructions ── */
+var payData = {
+    "MTN Mobile Money": {
+        icon: "📱", title: "How to Pay via MTN Mobile Money",
+        steps: [
+            "Dial <b>*165#</b> on your MTN line.",
+            "Select <b>1 → Send Money</b>.",
+            "Enter our number: <b>0772 XXX XXX</b> (Garphy Home Essentials).",
+            "Enter the total shown in your cart above.",
+            "Enter your PIN and confirm. <b>Screenshot the SMS!</b>",
+            "Paste your <b>transaction ID</b> in the Notes field so we can verify payment."
+        ]
+    },
+    "Airtel Money": {
+        icon: "📲", title: "How to Pay via Airtel Money",
+        steps: [
+            "Dial <b>*185#</b> on your Airtel line.",
+            "Select <b>1 → Send Money</b>.",
+            "Enter our number: <b>0752 XXX XXX</b> (Garphy Home Essentials).",
+            "Enter the exact cart total.",
+            "Confirm with your PIN and keep the SMS confirmation.",
+            "Paste your <b>transaction ID</b> in the Notes field above."
+        ]
+    },
+    "GTBank Transfer": {
+        icon: "🏦", title: "Bank Transfer — GTBank Uganda",
+        steps: [
+            "Account Name: <b>Garphy Home Essentials</b>",
+            "Account Number: <b>XXX XXXX XXXX</b>",
+            "Bank: <b>Guaranty Trust Bank Uganda</b>",
+            "Use your <b>phone number</b> as the payment reference.",
+            "Screenshot or save the receipt.",
+            "Add the reference in the Notes field so we can match your payment."
+        ]
+    },
+    "Cash on Delivery": {
+        icon: "💵", title: "Pay Cash on Delivery — No Upfront Payment Needed",
+        steps: [
+            "No payment needed right now — <b>pay our delivery person on arrival</b>.",
+            "Please have the <b>exact total amount</b> ready to speed things up.",
+            "Our rider will call you <b>30 minutes before arriving</b>.",
+            "You can also pay a deposit now — just enter the amount in the field below."
+        ]
     }
+};
+
+function showPayInstructions() {
+    var method = document.getElementById('payment-method').value;
+    var box    = document.getElementById('pay-instructions');
+    if (!method || !payData[method]) { box.style.display = 'none'; return; }
+    var d = payData[method];
+    var html = '<h4>' + d.icon + ' ' + d.title + '</h4>';
+    d.steps.forEach(function(s, i) {
+        html += '<div class="pay-step"><span class="pay-num">' + (i+1) + '</span>'
+              + '<span class="pay-text">' + s + '</span></div>';
+    });
+    box.innerHTML = html;
+    box.style.display = 'block';
+}
+
+/* ── Lightbox ── */
+function openLightbox(src, name) {
+    if (!src || src.includes('placeholder')) return;
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox-img').alt = name;
+    document.getElementById('lightbox').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+});
 </script>
+
 </body>
 </html>
