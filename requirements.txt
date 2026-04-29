@@ -1,4 +1,5 @@
 flask
 supabase
 werkzeug
+pdfkit
 gunicorn
