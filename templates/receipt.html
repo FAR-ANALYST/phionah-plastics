@@ -1,33 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Receipt - Phionah's Shops</title>
+    <title>Receipt - Galphy Essentials</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; display: flex; justify-content: center; }
-        .receipt-card { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 10px solid #004a99; }
-        .status-box { background: #fff5ee; border: 2px dashed #ff6600; padding: 15px; margin: 15px 0; border-radius: 10px; text-align: center; }
-        .item-list { background: #f9f9f9; padding: 15px; border-radius: 10px; font-size: 14px; }
-        .btn-print { background: #004a99; color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; }
+        body { font-family: sans-serif; padding: 40px; background: #eee; }
+        .receipt-card { background: white; max-width: 500px; margin: auto; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 2px solid #001f3f; padding-bottom: 10px; }
+        .details { margin: 20px 0; line-height: 1.6; }
+        .total { font-size: 1.2rem; font-weight: bold; color: #6a0dad; border-top: 1px dashed #ccc; padding-top: 10px; }
+        .btn-print { background: #001f3f; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 20px; }
+        @media print { .btn-print { display: none; } body { background: white; padding: 0; } }
     </style>
 </head>
 <body>
     <div class="receipt-card">
-        <h2 style="text-align: center; color: #004a99; margin: 0;">Order Receipt</h2>
-        <div class="status-box">
-            <small style="color: #666; text-transform: uppercase;">Delivery Status</small><br>
-            <strong style="color: #ff6600; font-size: 1.4em;">{{ order.status }}</strong>
+        <div class="header">
+            <h2>GALPHY ESSENTIALS</h2>
+            <p>Official Purchase Receipt</p>
         </div>
-        <p><strong>Order ID:</strong> #{{ order.order_id }}</p>
-        <p><strong>Customer:</strong> {{ order.username }}</p>
-        <p><strong>Phone:</strong> {{ order.phone }}</p>
-        <div class="item-list"><strong>Purchased Items:</strong><br>{{ order.item_name }}</div>
-        <hr>
-        <p><strong>Total:</strong> UGX {{ "{:,}".format(order.total_price) }}</p>
-        <p><strong>Paid:</strong> UGX {{ "{:,}".format(order.amount_paid) }}</p>
-        <p style="color: red;"><strong>Balance:</strong> UGX {{ "{:,}".format(order.balance) }}</p>
-        <button class="btn-print" onclick="window.print()">Print Receipt</button>
-        <a href="/" style="display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none;">Return to Shop</a>
+        <div class="details">
+            <p><strong>Order ID:</strong> #{{ order.id }}</p>
+            <p><strong>Customer:</strong> {{ order.username }}</p>
+            <p><strong>Date:</strong> {{ order.created_at }}</p>
+            <hr>
+            <p><strong>Items:</strong><br>{{ order.item_name }}</p>
+            <p><strong>Status:</strong> {{ order.status }}</p>
+        </div>
+        <div class="total">
+            Total Price: UGX {{ "{:,}".format(order.total_price) }}<br>
+            Paid: UGX {{ "{:,}".format(order.amount_paid) }}<br>
+            <span style="color:red">Balance: UGX {{ "{:,}".format(order.balance) }}</span>
+        </div>
+        <button class="btn-print" onclick="window.print()">📥 Download / Print Receipt</button>
     </div>
 </body>
 </html>
