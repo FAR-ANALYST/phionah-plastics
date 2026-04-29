@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galphy Admin | Control Panel</title>
+    <title>Galphy Essentials | Quality Home Plastics</title>
     <style>
         :root {
-            --blue:    #001f3f;
-            --purple:  #6a0dad;
-            --gold:    #ffd700;
-            --light:   #f4f7f6;
-            --sidebar: 260px;
+            --blue:   #001f3f;
+            --purple: #6a0dad;
+            --gold:   #ffd700;
+            --light:  #f4f7f6;
         }
 
         * { box-sizing: border-box; }
@@ -18,470 +17,291 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            display: flex;
             background: var(--light);
-            height: 100vh;
-            overflow: hidden;
+            color: #333;
         }
 
-        /* ── Sidebar ── */
-        .sidebar {
-            width: var(--sidebar);
+        /* ── Header ── */
+        .header {
             background: var(--blue);
             color: white;
-            display: flex;
-            flex-direction: column;
-            padding: 20px 0;
-            box-shadow: 3px 0 12px rgba(0,0,0,0.15);
-            z-index: 10;
-            flex-shrink: 0;
-        }
-        .sidebar h2 {
-            font-size: 1.1rem;
+            padding: 40px 20px 30px;
             text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 6px;
+            font-size: 2rem;
+            letter-spacing: 2px;
             color: var(--gold);
-            margin: 0 0 30px 0;
-            letter-spacing: 1px;
-            padding: 0 10px;
         }
-        .nav-item {
-            padding: 15px 25px;
-            cursor: pointer;
-            font-weight: bold;
-            color: #adb5bd;
-            border-left: 5px solid transparent;
-            transition: all 0.25s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            font-size: 0.95rem;
-        }
-        .nav-item:hover { background: rgba(255,255,255,0.08); color: white; }
-        .nav-item.active {
-            background: rgba(255,255,255,0.13);
-            color: white;
-            border-left-color: var(--purple);
-        }
-        .logout-link {
-            margin-top: auto;
-            padding: 20px 25px;
-            color: #ff6b6b;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
+        .header p { margin: 0; color: #ccc; font-size: 0.95rem; }
 
-        /* ── Main Content ── */
-        .main-content {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 30px;
-        }
-        .panel {
-            display: none;
+        /* ── Container ── */
+        .container { max-width: 820px; margin: auto; padding: 24px 16px 60px; }
+
+        /* ── Section card ── */
+        .card-section {
             background: white;
-            padding: 28px;
+            padding: 24px;
             border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+            margin-bottom: 20px;
         }
-        .panel.active {
-            display: block;
-            animation: fadeIn 0.3s ease-in;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0);   }
-        }
-        .panel h1 {
+        .card-section h3 {
             margin-top: 0;
             color: var(--blue);
-            font-size: 1.5rem;
+            font-size: 1.1rem;
         }
 
-        /* ── Order Cards ── */
-        .order-card {
-            border: 1px solid #e8e8e8;
-            margin-bottom: 14px;
-            border-radius: 12px;
-            background: white;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            overflow: hidden;
-        }
-        .order-card:hover {
-            border-color: var(--purple);
-            box-shadow: 0 4px 14px rgba(0,0,0,0.07);
-        }
-        .order-header {
-            padding: 18px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-        }
-        .order-header b { color: var(--blue); font-size: 1rem; }
-        .status-badge {
-            background: #eee;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 11px;
+        /* ── Form inputs ── */
+        .input-group { margin-bottom: 16px; }
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
             font-weight: bold;
-            color: var(--purple);
-        }
-        .order-details {
-            display: none;
-            padding: 20px;
-            background: #fafafa;
-            border-top: 1px solid #eee;
-        }
-        .item-row {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .item-row:last-child { border-bottom: none; }
-        .item-img {
-            width: 55px;
-            height: 55px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid #ddd;
-            flex-shrink: 0;
-        }
-        .order-footer {
-            margin-top: 18px;
-            padding-top: 14px;
-            border-top: 1px dashed #ddd;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        /* ── Inventory Table ── */
-        .inv-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 8px;
-        }
-        .inv-table th {
-            text-align: left;
-            background: #f1f4f8;
-            padding: 13px 15px;
-            color: var(--blue);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .inv-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-            vertical-align: middle;
-        }
-        .inv-input {
-            padding: 8px 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            width: 100%;
             font-size: 0.9rem;
+            color: #444;
+        }
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95rem;
             transition: border-color 0.2s;
         }
-        .inv-input:focus {
+        .input-group input:focus,
+        .input-group select:focus {
             outline: none;
             border-color: var(--purple);
         }
-        .action-btn {
-            background: none;
-            border: none;
-            font-size: 1.25rem;
-            cursor: pointer;
-            transition: transform 0.1s;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .action-btn:active { transform: scale(0.88); }
 
-        /* ── Add Product Form ── */
-        .add-form {
-            margin-top: 32px;
-            background: #eef2f7;
-            padding: 22px;
-            border-radius: 12px;
-            border: 2px dashed #c5cfe0;
-        }
-        .add-form h3 { margin-top: 0; color: var(--blue); }
-        .add-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 14px;
-            align-items: end;
-        }
-        .add-grid label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px; }
-        .add-grid input {
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
+        /* ── Product toggle button ── */
+        .toggle-wrap { text-align: center; margin: 10px 0 20px; }
+        #toggle-btn {
             width: 100%;
-        }
-        .upload-btn {
+            max-width: 420px;
+            padding: 16px;
             background: var(--purple);
             color: white;
-            padding: 11px 18px;
             border: none;
-            border-radius: 6px;
+            border-radius: 12px;
             font-weight: bold;
+            font-size: 1rem;
             cursor: pointer;
-            font-size: 0.9rem;
             transition: opacity 0.2s;
         }
-        .upload-btn:hover { opacity: 0.87; }
+        #toggle-btn:hover { opacity: 0.88; }
 
-        /* ── Status dropdown ── */
-        .status-select {
-            padding: 6px 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            cursor: pointer;
-            font-size: 0.85rem;
+        /* ── Product section (hidden by default) ── */
+        #product-section { display: none; }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0);    }
+        }
+        .section-revealed { animation: slideDown 0.35s ease-out; }
+
+        /* ── Category heading ── */
+        .category-title {
+            color: var(--blue);
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 8px;
+            margin: 28px 0 14px;
+            font-size: 1.1rem;
         }
 
-        /* ── Responsive ── */
-        @media (max-width: 640px) {
-            .sidebar { width: 60px; }
-            .nav-item span { display: none; }
-            .sidebar h2 { font-size: 0; }
+        /* ── Product grid ── */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        @media (min-width: 560px) {
+            .product-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .product-card {
+            background: white;
+            border: 1px solid #eee;
+            padding: 14px;
+            border-radius: 14px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+        }
+        .product-card img {
+            width: 100%;
+            height: 130px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .product-card h4 {
+            margin: 6px 0 4px;
+            font-size: 0.9rem;
+            color: var(--blue);
+        }
+        .product-price {
+            color: var(--purple);
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .qty-input {
+            width: 70px;
+            padding: 6px;
+            text-align: center;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 0.9rem;
+        }
+
+        /* ── Submit button ── */
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.05rem;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: opacity 0.2s;
+        }
+        .submit-btn:hover { opacity: 0.88; }
+
+        /* ── Success banner ── */
+        .success-banner {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════
-     SIDEBAR
-════════════════════════════════════════ -->
-<div class="sidebar">
-    <h2>🏪 GALPHY ADMIN</h2>
+<!-- ── HEADER ── -->
+<div class="header">
+    <h1>GALPHY ESSENTIALS</h1>
+    <p>Quality Plastics &amp; Home Essentials — Delivered to You</p>
+</div>
 
-    <div id="nav-orders"    class="nav-item" onclick="switchTab('orders')">
-        📦 <span>Active Orders</span>
-    </div>
-    <div id="nav-inventory" class="nav-item" onclick="switchTab('inventory')">
-        🛠️ <span>Manage Inventory</span>
-    </div>
-    <a href="/" target="_blank" class="nav-item" style="color:#4dabf7; text-decoration:none;">
-        🌐 <span>View Shop</span>
-    </a>
+<div class="container">
 
-    <a href="/logout" class="logout-link">🔴 Logout Account</a>
+    <!-- ── Success message after order ── -->
+    {% if success %}
+    <div class="success-banner">
+        ✅ Order placed successfully! We will contact you shortly to confirm delivery.
+    </div>
+    {% endif %}
+
+    <form action="/place_order" method="POST">
+
+        <!-- ── STEP 1: Delivery Details ── -->
+        <div class="card-section">
+            <h3>1️⃣ Your Delivery Details</h3>
+
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" name="username" placeholder="Enter your full name" required>
+            </div>
+            <div class="input-group">
+                <label>Phone Number (Mobile Money)</label>
+                <input type="tel" name="phone" placeholder="07XX XXX XXX" required>
+            </div>
+            <div class="input-group">
+                <label>Delivery Location</label>
+                <input type="text" name="location" placeholder="e.g. Kyambogo, Banda, Ntinda…" required>
+            </div>
+        </div>
+
+        <!-- ── STEP 2: Browse Products ── -->
+        <div class="toggle-wrap">
+            <button type="button" id="toggle-btn" onclick="toggleProducts()">
+                🛒 Tap to See Our Products
+            </button>
+        </div>
+
+        <div id="product-section">
+            {% if categories %}
+                {% for cat, items in categories.items() %}
+                <h2 class="category-title">{{ cat }}</h2>
+                <div class="product-grid">
+                    {% for p in items %}
+                    <div class="product-card">
+                        <img src="{{ p.image_url }}" alt="{{ p.name }}"
+                             onerror="this.src='https://via.placeholder.com/130?text=No+Image'">
+                        <h4>{{ p.name }}</h4>
+                        <div class="product-price">UGX {{ "{:,}".format(p.price) }}</div>
+                        <label style="font-size:11px; display:block; margin-bottom:4px; color:#777;">Qty</label>
+                        <input type="number" name="qty_{{ p.id }}"
+                               class="qty-input" value="0" min="0">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            {% else %}
+            <p style="text-align:center; color:#999; padding:30px 0;">
+                No products available right now. Check back soon!
+            </p>
+            {% endif %}
+        </div>
+
+        <!-- ── STEP 3: Payment ── -->
+        <div class="card-section" style="margin-top:20px;">
+            <h3>2️⃣ Payment Details</h3>
+
+            <div class="input-group">
+                <label>Payment Method</label>
+                <select name="payment_method" required>
+                    <option value="">— Select a method —</option>
+                    <option value="MTN Mobile Money">MTN Mobile Money</option>
+                    <option value="Airtel Money">Airtel Money</option>
+                    <option value="GTBank Transfer">GTBank Transfer</option>
+                    <option value="Cash on Delivery">Cash on Delivery</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Amount You're Paying Now (UGX) — leave blank for Cash on Delivery</label>
+                <input type="number" name="amount_paid" placeholder="e.g. 20000" min="0">
+            </div>
+
+            <button type="submit" class="submit-btn">✅ Place My Order</button>
+        </div>
+
+    </form>
 </div>
 
 
-<!-- ═══════════════════════════════════════
-     MAIN CONTENT
-════════════════════════════════════════ -->
-<div class="main-content">
-
-    <!-- ── ORDERS PANEL ── -->
-    <div id="panel-orders" class="panel">
-        <h1>Customer Orders</h1>
-        <p style="color:#666; margin-bottom:24px;">Tap any order to reveal the full breakdown.</p>
-
-        {% for o in orders %}
-        <div class="order-card">
-
-            <!-- Collapsed header — click to expand -->
-            <div class="order-header" onclick="toggleDetails('{{ o.id }}')">
-                <div>
-                    <b>{{ o.username }}</b><br>
-                    <small style="color:#555;">{{ o.phone }} &nbsp;|&nbsp; 📍 {{ o.location }}</small>
-                </div>
-                <div style="text-align:right;">
-                    <span class="status-badge">{{ o.status }}</span>
-                    <div style="font-size:11px; color:#999; margin-top:5px;">
-                        UGX {{ "{:,}".format(o.total_price) }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Expanded details -->
-            <div id="details-{{ o.id }}" class="order-details">
-                <h4 style="margin-top:0;">🛒 Items Ordered</h4>
-
-                {% set names = o.item_name.split(', ') %}
-                {% for i in range(names|length) %}
-                <div class="item-row">
-                    {% if o.item_images and i < o.item_images|length and o.item_images[i] %}
-                        <img src="{{ o.item_images[i] }}" class="item-img"
-                             onerror="this.src='https://via.placeholder.com/55?text=Item'">
-                    {% endif %}
-                    <div>
-                        <b style="display:block;">{{ names[i] }}</b>
-                        <small style="color:#888;">Galphy Essential</small>
-                    </div>
-                </div>
-                {% endfor %}
-
-                <div class="order-footer">
-                    <form action="/update_status/{{ o.id }}" method="POST">
-                        <label style="font-size:13px; font-weight:bold;">Update Status:</label>
-                        <select name="status" class="status-select" onchange="this.form.submit()">
-                            <option value="ORDER RECEIVED" {% if o.status == 'ORDER RECEIVED' %}selected{% endif %}>ORDER RECEIVED</option>
-                            <option value="ON THE WAY"     {% if o.status == 'ON THE WAY'     %}selected{% endif %}>ON THE WAY</option>
-                            <option value="DELIVERED"      {% if o.status == 'DELIVERED'      %}selected{% endif %}>DELIVERED</option>
-                        </select>
-                    </form>
-                    <div style="color:crimson; font-weight:bold;">
-                        Balance: UGX {{ "{:,}".format(o.balance) }}
-                    </div>
-                </div>
-            </div>
-
-        </div>
-        {% else %}
-        <p style="color:#999; text-align:center; padding:40px 0;">No orders yet. They'll appear here when customers start buying! 🎉</p>
-        {% endfor %}
-    </div>
-
-
-    <!-- ── INVENTORY PANEL ── -->
-    <div id="panel-inventory" class="panel">
-        <h1>Shop Inventory</h1>
-
-        <table class="inv-table">
-            <thead>
-                <tr>
-                    <th style="width:45%;">Product Details</th>
-                    <th style="width:25%;">Price (UGX)</th>
-                    <th style="width:30%; text-align:center;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for cat, items in inventory_by_cat.items() %}
-                    <!-- Category sub-header -->
-                    <tr>
-                        <td colspan="3" style="background:#f8f0ff; color:var(--purple);
-                                               font-size:11px; font-weight:bold; padding:8px 15px;
-                                               text-transform:uppercase; letter-spacing:0.5px;">
-                            {{ cat }}
-                        </td>
-                    </tr>
-
-                    {% for p in items %}
-                    <tr>
-                        <form action="/edit_product/{{ p.id }}" method="POST" enctype="multipart/form-data">
-
-                            <!-- Product image + editable name -->
-                            <td>
-                                <div style="display:flex; align-items:center; gap:12px;">
-                                    <img src="{{ p.image_url }}"
-                                         style="width:48px; height:48px; border-radius:6px; object-fit:cover; flex-shrink:0;"
-                                         onerror="this.src='https://via.placeholder.com/48?text=Img'">
-                                    <div style="flex-grow:1;">
-                                        <input type="text" name="name" value="{{ p.name }}"
-                                               class="inv-input" style="font-weight:bold; margin-bottom:4px;">
-                                        <input type="hidden" name="category" value="{{ p.category }}">
-                                    </div>
-                                </div>
-                            </td>
-
-                            <!-- Editable price -->
-                            <td>
-                                <input type="number" name="price" value="{{ p.price }}" class="inv-input">
-                            </td>
-
-                            <!-- Save ✏️ and Delete 🗑️ -->
-                            <td>
-                                <div style="display:flex; gap:18px; justify-content:center; align-items:center;">
-                                    <button type="submit" class="action-btn" title="Save Changes">✏️</button>
-                                    <a href="/delete_product/{{ p.id }}" class="action-btn" title="Delete Product"
-                                       onclick="return confirm('Remove this product from the shop permanently?')">🗑️</a>
-                                </div>
-                            </td>
-
-                        </form>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                <tr>
-                    <td colspan="3" style="text-align:center; color:#999; padding:30px;">
-                        No products yet. Add your first one below!
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <!-- ── Add New Product ── -->
-        <div class="add-form">
-            <h3>➕ Add New Product</h3>
-            <form action="/add_product" method="POST" enctype="multipart/form-data" class="add-grid">
-                <div>
-                    <label>Product Name</label>
-                    <input type="text" name="name" placeholder="e.g. 20L Bucket" required>
-                </div>
-                <div>
-                    <label>Category</label>
-                    <input type="text" name="category" placeholder="e.g. Plastics" required>
-                </div>
-                <div>
-                    <label>Price (UGX)</label>
-                    <input type="number" name="price" placeholder="15000" required>
-                </div>
-                <div>
-                    <label>Product Image</label>
-                    <input type="file" name="product_image" accept="image/*" required style="border:none; padding:4px 0;">
-                </div>
-                <div>
-                    <label>&nbsp;</label>
-                    <button type="submit" class="upload-btn">📤 Upload to Store</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-</div><!-- end .main-content -->
-
-
-<!-- ═══════════════════════════════════════
-     JAVASCRIPT
-════════════════════════════════════════ -->
+<!-- ── JAVASCRIPT ── -->
 <script>
-    // On every page load, read the ?tab= param so we stay on the right tab
-    // after saving/deleting/updating — default to 'orders' if no param
-    window.onload = function () {
-        const params  = new URLSearchParams(window.location.search);
-        const tabId   = params.get('tab') || 'orders';
-        switchTab(tabId);
-    };
+    function toggleProducts() {
+        var section = document.getElementById("product-section");
+        var btn     = document.getElementById("toggle-btn");
 
-    function switchTab(tabId) {
-        // Hide all panels
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-        // De-highlight all nav items
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
-        // Show the selected panel
-        const panel = document.getElementById('panel-' + tabId);
-        if (panel) panel.classList.add('active');
-
-        // Highlight the matching nav item
-        const nav = document.getElementById('nav-' + tabId);
-        if (nav) nav.classList.add('active');
-    }
-
-    // Tap-to-unveil accordion for order cards
-    function toggleDetails(orderId) {
-        const target    = document.getElementById('details-' + orderId);
-        const isVisible = target.style.display === 'block';
-
-        // Close all open cards first (accordion effect)
-        document.querySelectorAll('.order-details').forEach(d => d.style.display = 'none');
-
-        // Toggle the clicked card
-        target.style.display = isVisible ? 'none' : 'block';
+        if (section.style.display === "none" || section.style.display === "") {
+            section.style.display = "block";
+            section.classList.add("section-revealed");
+            btn.innerText = "🔼 Hide Products";
+        } else {
+            section.style.display = "none";
+            section.classList.remove("section-revealed");
+            btn.innerText = "🛒 Tap to See Our Products";
+        }
     }
 </script>
 
