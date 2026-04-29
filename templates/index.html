@@ -11,12 +11,10 @@
             --gold:   #ffd700;
             --light:  #f4f7f6;
         }
-
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
             background: var(--light);
             color: #333;
         }
@@ -24,143 +22,221 @@
         /* ── Header ── */
         .header {
             background: var(--blue);
-            color: white;
-            padding: 40px 20px 30px;
+            padding: 40px 20px 28px;
             text-align: center;
+            position: relative;
         }
         .header h1 {
-            margin: 0 0 6px;
             font-size: 2rem;
-            letter-spacing: 2px;
+            font-weight: 900;
             color: var(--gold);
+            letter-spacing: 3px;
+            margin-bottom: 6px;
         }
-        .header p { margin: 0; color: #ccc; font-size: 0.95rem; }
+        .header p { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
 
         /* ── Container ── */
-        .container { max-width: 820px; margin: auto; padding: 24px 16px 60px; }
+        .container { max-width: 820px; margin: auto; padding: 24px 16px 70px; }
 
-        /* ── Section card ── */
-        .card-section {
+        /* ── Card wrapper ── */
+        .card {
             background: white;
-            padding: 24px;
             border-radius: 16px;
             box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+            padding: 24px;
             margin-bottom: 20px;
         }
-        .card-section h3 {
-            margin-top: 0;
+        .card h3 {
             color: var(--blue);
-            font-size: 1.1rem;
+            font-size: 1.05rem;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* ── Form inputs ── */
-        .input-group { margin-bottom: 16px; }
-        .input-group label {
+        /* ── Form fields ── */
+        .field { margin-bottom: 16px; }
+        .field label {
             display: block;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #555;
             margin-bottom: 6px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
         }
-        .input-group input,
-        .input-group select {
+        .field input,
+        .field select,
+        .field textarea {
             width: 100%;
             padding: 12px 14px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 9px;
             font-size: 0.95rem;
-            transition: border-color 0.2s;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #fafafa;
         }
-        .input-group input:focus,
-        .input-group select:focus {
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
             outline: none;
             border-color: var(--purple);
+            box-shadow: 0 0 0 3px rgba(106,13,173,0.1);
+            background: white;
         }
+        .field textarea { min-height: 90px; resize: vertical; }
 
-        /* ── Product toggle button ── */
-        .toggle-wrap { text-align: center; margin: 10px 0 20px; }
+        /* ── Toggle button ── */
+        .toggle-wrap { text-align: center; margin: 6px 0 20px; }
         #toggle-btn {
             width: 100%;
-            max-width: 420px;
-            padding: 16px;
+            max-width: 440px;
+            padding: 16px 24px;
             background: var(--purple);
             color: white;
             border: none;
             border-radius: 12px;
-            font-weight: bold;
+            font-weight: 800;
             font-size: 1rem;
             cursor: pointer;
-            transition: opacity 0.2s;
+            letter-spacing: 0.5px;
+            transition: opacity 0.2s, transform 0.1s;
         }
         #toggle-btn:hover { opacity: 0.88; }
+        #toggle-btn:active { transform: scale(0.98); }
 
-        /* ── Product section (hidden by default) ── */
+        /* ── Product section ── */
         #product-section { display: none; }
-
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-8px); }
-            to   { opacity: 1; transform: translateY(0);    }
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-        .section-revealed { animation: slideDown 0.35s ease-out; }
+        .revealed { animation: slideDown 0.3s ease-out; }
 
-        /* ── Category heading ── */
         .category-title {
             color: var(--blue);
-            border-bottom: 2px solid #e0e0e0;
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin: 26px 0 12px;
             padding-bottom: 8px;
-            margin: 28px 0 14px;
-            font-size: 1.1rem;
+            border-bottom: 2px solid #e8e0f5;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         /* ── Product grid ── */
         .product-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
+            gap: 14px;
         }
-        @media (min-width: 560px) {
+        @media (min-width: 540px) {
             .product-grid { grid-template-columns: repeat(3, 1fr); }
         }
 
         .product-card {
             background: white;
-            border: 1px solid #eee;
-            padding: 14px;
+            border: 1.5px solid #ede8f5;
             border-radius: 14px;
+            padding: 14px;
             text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
         }
         .product-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 22px rgba(106,13,173,0.12);
+            border-color: var(--purple);
         }
         .product-card img {
             width: 100%;
-            height: 130px;
+            height: 120px;
             object-fit: cover;
             border-radius: 10px;
             margin-bottom: 10px;
+            background: #f0f0f0;
         }
-        .product-card h4 {
-            margin: 6px 0 4px;
-            font-size: 0.9rem;
+        .product-name {
+            font-weight: 700;
+            font-size: 0.88rem;
             color: var(--blue);
+            margin-bottom: 4px;
+        }
+        .product-desc {
+            font-size: 0.75rem;
+            color: #888;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            min-height: 30px;
         }
         .product-price {
+            font-weight: 800;
             color: var(--purple);
-            font-weight: bold;
-            font-size: 0.9rem;
+            font-size: 0.92rem;
             margin-bottom: 10px;
         }
+        .qty-label { font-size: 10px; color: #aaa; display: block; margin-bottom: 4px; text-transform: uppercase; }
         .qty-input {
-            width: 70px;
-            padding: 6px;
+            width: 72px;
+            padding: 7px;
             text-align: center;
-            border-radius: 6px;
-            border: 1px solid #ccc;
+            border-radius: 7px;
+            border: 1.5px solid #ddd;
             font-size: 0.9rem;
+            transition: border-color 0.2s;
         }
+        .qty-input:focus { outline: none; border-color: var(--purple); }
+
+        /* ── Payment instructions ── */
+        .payment-instructions {
+            display: none;
+            margin-top: 14px;
+            background: #f0f8ff;
+            border: 1.5px solid #b8d9f5;
+            border-radius: 12px;
+            padding: 16px 18px;
+        }
+        .payment-instructions h4 {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--blue);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .payment-instructions p {
+            font-size: 0.88rem;
+            color: #444;
+            line-height: 1.7;
+        }
+        .pay-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddeef8;
+        }
+        .pay-step:last-child { border-bottom: none; }
+        .pay-num {
+            background: var(--blue);
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .pay-text { font-size: 0.85rem; color: #333; line-height: 1.5; }
+        .pay-highlight { color: var(--purple); font-weight: 700; }
 
         /* ── Submit button ── */
         .submit-btn {
@@ -170,65 +246,73 @@
             color: white;
             border: none;
             border-radius: 12px;
-            font-weight: bold;
+            font-weight: 800;
             font-size: 1.05rem;
             cursor: pointer;
-            margin-top: 8px;
-            transition: opacity 0.2s;
+            margin-top: 6px;
+            letter-spacing: 0.5px;
+            transition: opacity 0.2s, transform 0.1s;
         }
         .submit-btn:hover { opacity: 0.88; }
+        .submit-btn:active { transform: scale(0.98); }
 
         /* ── Success banner ── */
         .success-banner {
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 16px 20px;
             margin-bottom: 20px;
-            font-weight: bold;
+            font-weight: 700;
             text-align: center;
+            font-size: 0.95rem;
         }
     </style>
 </head>
 <body>
 
-<!-- ── HEADER ── -->
+<!-- ── Header ── -->
 <div class="header">
     <h1>GALPHY ESSENTIALS</h1>
-    <p>Quality Plastics &amp; Home Essentials — Delivered to You</p>
+    <p>Quality Plastics &amp; Home Essentials — Delivered to Your Door</p>
 </div>
 
 <div class="container">
 
-    <!-- ── Success message after order ── -->
+    <!-- Success message -->
     {% if success %}
     <div class="success-banner">
-        ✅ Order placed successfully! We will contact you shortly to confirm delivery.
+        ✅ Order placed successfully! We will call you shortly to confirm your delivery.
     </div>
     {% endif %}
 
     <form action="/place_order" method="POST">
 
-        <!-- ── STEP 1: Delivery Details ── -->
-        <div class="card-section">
-            <h3>1️⃣ Your Delivery Details</h3>
+        <!-- ══ STEP 1: Delivery Details ══ -->
+        <div class="card">
+            <h3>📋 Step 1 — Your Details</h3>
 
-            <div class="input-group">
+            <div class="field">
                 <label>Full Name</label>
                 <input type="text" name="username" placeholder="Enter your full name" required>
             </div>
-            <div class="input-group">
+            <div class="field">
                 <label>Phone Number (Mobile Money)</label>
                 <input type="tel" name="phone" placeholder="07XX XXX XXX" required>
             </div>
-            <div class="input-group">
+            <div class="field">
                 <label>Delivery Location</label>
                 <input type="text" name="location" placeholder="e.g. Kyambogo, Banda, Ntinda…" required>
             </div>
+            <div class="field">
+                <label>📝 Notes / Special Request <span style="color:#bbb; font-weight:400;">(optional)</span></label>
+                <textarea name="notes"
+                          placeholder="Any specific details? e.g. preferred colours, sizes, quantities, packaging requests, delivery time preferences…"></textarea>
+            </div>
         </div>
 
-        <!-- ── STEP 2: Browse Products ── -->
+        <!-- ══ STEP 2: Browse Products ══ -->
         <div class="toggle-wrap">
             <button type="button" id="toggle-btn" onclick="toggleProducts()">
                 🛒 Tap to See Our Products
@@ -238,35 +322,44 @@
         <div id="product-section">
             {% if categories %}
                 {% for cat, items in categories.items() %}
-                <h2 class="category-title">{{ cat }}</h2>
+                <h2 class="category-title">🏷️ {{ cat }}</h2>
                 <div class="product-grid">
                     {% for p in items %}
                     <div class="product-card">
-                        <img src="{{ p.image_url }}" alt="{{ p.name }}"
-                             onerror="this.src='https://via.placeholder.com/130?text=No+Image'">
-                        <h4>{{ p.name }}</h4>
+                        <img src="{{ p.image_url }}"
+                             alt="{{ p.name }}"
+                             onerror="this.src='https://via.placeholder.com/120?text=No+Image'">
+                        <div class="product-name">{{ p.name }}</div>
+                        {% if p.description %}
+                        <div class="product-desc">{{ p.description }}</div>
+                        {% else %}
+                        <div class="product-desc"></div>
+                        {% endif %}
                         <div class="product-price">UGX {{ "{:,}".format(p.price) }}</div>
-                        <label style="font-size:11px; display:block; margin-bottom:4px; color:#777;">Qty</label>
-                        <input type="number" name="qty_{{ p.id }}"
-                               class="qty-input" value="0" min="0">
+                        <span class="qty-label">Quantity</span>
+                        <input type="number"
+                               name="qty_{{ p.id }}"
+                               class="qty-input"
+                               value="0"
+                               min="0">
                     </div>
                     {% endfor %}
                 </div>
                 {% endfor %}
             {% else %}
-            <p style="text-align:center; color:#999; padding:30px 0;">
-                No products available right now. Check back soon!
+            <p style="text-align:center; color:#999; padding:40px 0; font-size:0.95rem;">
+                No products available right now. Please check back soon!
             </p>
             {% endif %}
         </div>
 
-        <!-- ── STEP 3: Payment ── -->
-        <div class="card-section" style="margin-top:20px;">
-            <h3>2️⃣ Payment Details</h3>
+        <!-- ══ STEP 3: Payment ══ -->
+        <div class="card" style="margin-top: 20px;">
+            <h3>💳 Step 2 — Payment Details</h3>
 
-            <div class="input-group">
+            <div class="field">
                 <label>Payment Method</label>
-                <select name="payment_method" required>
+                <select name="payment_method" id="payment-method" required onchange="showPaymentInstructions()">
                     <option value="">— Select a method —</option>
                     <option value="MTN Mobile Money">MTN Mobile Money</option>
                     <option value="Airtel Money">Airtel Money</option>
@@ -275,33 +368,118 @@
                 </select>
             </div>
 
-            <div class="input-group">
-                <label>Amount You're Paying Now (UGX) — leave blank for Cash on Delivery</label>
-                <input type="number" name="amount_paid" placeholder="e.g. 20000" min="0">
+            <!-- Dynamic payment instructions appear here -->
+            <div id="pay-instructions" class="payment-instructions"></div>
+
+            <div class="field" style="margin-top: 14px;">
+                <label>Amount You're Paying Now (UGX)</label>
+                <input type="number"
+                       name="amount_paid"
+                       id="amount-paid"
+                       placeholder="Leave blank if paying cash on delivery"
+                       min="0">
             </div>
 
-            <button type="submit" class="submit-btn">✅ Place My Order</button>
+            <button type="submit" class="submit-btn">✅ Place My Order Now</button>
         </div>
 
     </form>
 </div>
 
 
-<!-- ── JAVASCRIPT ── -->
+<!-- ════════════════════════
+     JAVASCRIPT
+════════════════════════ -->
 <script>
+    /* ── Product section toggle ── */
     function toggleProducts() {
         var section = document.getElementById("product-section");
         var btn     = document.getElementById("toggle-btn");
+        var isHidden = section.style.display === "none" || section.style.display === "";
 
-        if (section.style.display === "none" || section.style.display === "") {
+        if (isHidden) {
             section.style.display = "block";
-            section.classList.add("section-revealed");
+            section.classList.add("revealed");
             btn.innerText = "🔼 Hide Products";
         } else {
             section.style.display = "none";
-            section.classList.remove("section-revealed");
+            section.classList.remove("revealed");
             btn.innerText = "🛒 Tap to See Our Products";
         }
+    }
+
+    /* ── Payment instructions ── */
+    const instructions = {
+        "MTN Mobile Money": {
+            icon: "📱",
+            title: "How to Pay via MTN Mobile Money",
+            steps: [
+                { num: "1", text: "Dial <span class='pay-highlight'>*165#</span> on your MTN line." },
+                { num: "2", text: "Select <span class='pay-highlight'>1 → Send Money</span>." },
+                { num: "3", text: "Enter Galphy's number: <span class='pay-highlight'>0772 XXX XXX</span> (Phionah N.)." },
+                { num: "4", text: "Enter the total amount from your cart." },
+                { num: "5", text: "Enter your PIN and confirm. <strong>Screenshot the confirmation!</strong>" },
+                { num: "6", text: "Add your <span class='pay-highlight'>transaction ID</span> in the Notes field above so we can verify." },
+            ]
+        },
+        "Airtel Money": {
+            icon: "📲",
+            title: "How to Pay via Airtel Money",
+            steps: [
+                { num: "1", text: "Dial <span class='pay-highlight'>*185#</span> on your Airtel line." },
+                { num: "2", text: "Select <span class='pay-highlight'>1 → Send Money</span>." },
+                { num: "3", text: "Enter Galphy's number: <span class='pay-highlight'>0752 XXX XXX</span> (Phionah N.)." },
+                { num: "4", text: "Enter the total amount for your order." },
+                { num: "5", text: "Confirm with your PIN. <strong>Keep the SMS confirmation.</strong>" },
+                { num: "6", text: "Add your <span class='pay-highlight'>transaction ID</span> in the Notes field above." },
+            ]
+        },
+        "GTBank Transfer": {
+            icon: "🏦",
+            title: "How to Pay via GTBank Transfer",
+            steps: [
+                { num: "1", text: "Log in to your GTBank app or visit a branch." },
+                { num: "2", text: "Account Name: <span class='pay-highlight'>Galphy Essentials</span>" },
+                { num: "3", text: "Account Number: <span class='pay-highlight'>XXX XXXX XXXX</span>" },
+                { num: "4", text: "Bank: <span class='pay-highlight'>Guaranty Trust Bank Uganda</span>" },
+                { num: "5", text: "Transfer the exact amount and use your <span class='pay-highlight'>phone number</span> as reference." },
+                { num: "6", text: "Screenshot the receipt and mention your reference number in Notes above." },
+            ]
+        },
+        "Cash on Delivery": {
+            icon: "💵",
+            title: "Pay Cash on Delivery",
+            steps: [
+                { num: "1", text: "No payment needed right now — <span class='pay-highlight'>pay our delivery person directly</span>." },
+                { num: "2", text: "Please have the <span class='pay-highlight'>exact amount ready</span> to make it easier." },
+                { num: "3", text: "Our rider will call you <span class='pay-highlight'>30 minutes before arrival</span>." },
+                { num: "4", text: "You can also make a part-payment now — just enter the amount in the field below." },
+            ]
+        }
+    };
+
+    function showPaymentInstructions() {
+        var method  = document.getElementById("payment-method").value;
+        var box     = document.getElementById("pay-instructions");
+
+        if (!method || !instructions[method]) {
+            box.style.display = "none";
+            box.innerHTML = "";
+            return;
+        }
+
+        var info = instructions[method];
+
+        var html = '<h4>' + info.icon + ' ' + info.title + '</h4>';
+        info.steps.forEach(function(step) {
+            html += '<div class="pay-step">'
+                  + '<span class="pay-num">' + step.num + '</span>'
+                  + '<span class="pay-text">' + step.text + '</span>'
+                  + '</div>';
+        });
+
+        box.innerHTML = html;
+        box.style.display = "block";
     }
 </script>
 
