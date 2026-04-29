@@ -25,9 +25,9 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/')
 def index():
-    """Main store page: fetches and groups products by category."""
+    """Main store page — fetches and groups products by category."""
     try:
-        res = supabase.table("products").select("*").execute()
+        res      = supabase.table("products").select("*").execute()
         products = res.data if res.data is not None else []
 
         categories = {}
@@ -41,7 +41,7 @@ def index():
             'index.html',
             categories=categories,
             success=request.args.get('success'),
-            method=request.args.get('method')
+            method=request.args.get('method'),
         )
     except Exception as e:
         print(f"Index Error: {e}")
@@ -50,12 +50,13 @@ def index():
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
-    """Handles order submission, calculates totals, and saves to Supabase."""
+    """Handles order submission — saves items, notes, payment info to Supabase."""
     try:
-        username = request.form.get('username')
-        phone    = request.form.get('phone')
-        location = request.form.get('location')
-        method   = request.form.get('payment_method')
+        username = request.form.get('username', '').strip()
+        phone    = request.form.get('phone',    '').strip()
+        location = request.form.get('location', '').strip()
+        method   = request.form.get('payment_method', '')
+        notes    = request.form.get('notes',    '').strip()
 
         try:
             paid = int(request.form.get('amount_paid', 0) or 0)
@@ -68,11 +69,14 @@ def place_order():
         selected_items, item_imgs, calc_total = [], [], 0
 
         for p in products:
-            qty = int(request.form.get(f"qty_{p['id']}", 0) or 0)
+            try:
+                qty = int(request.form.get(f"qty_{p['id']}", 0) or 0)
+            except (ValueError, TypeError):
+                qty = 0
             if qty > 0:
                 calc_total += p['price'] * qty
                 selected_items.append(f"{p['name']} (x{qty})")
-                item_imgs.append(p['image_url'])
+                item_imgs.append(p.get('image_url', ''))
 
         if not selected_items:
             return redirect(url_for('index'))
@@ -88,6 +92,7 @@ def place_order():
             "balance":        max(0, calc_total - paid),
             "status":         "ORDER RECEIVED",
             "payment_method": method,
+            "notes":          notes,
         }
 
         supabase.table("orders").insert(order_data).execute()
@@ -97,7 +102,7 @@ def place_order():
             success='true',
             method=method,
             user=username,
-            total=calc_total
+            total=calc_total,
         ))
     except Exception as e:
         print(f"Order Placement Error: {e}")
@@ -106,10 +111,10 @@ def place_order():
 
 @app.route('/get_status')
 def get_status():
-    """Live order-status lookup for the customer-facing tracker."""
-    phone = request.args.get('phone')
+    """Live order-status lookup for customers."""
+    phone = request.args.get('phone', '').strip()
     if not phone:
-        return jsonify({"status": "Enter your phone number"})
+        return jsonify({"status": "Please enter your phone number."})
     try:
         res = (
             supabase.table("orders")
@@ -119,7 +124,7 @@ def get_status():
             .limit(1)
             .execute()
         )
-        status = res.data[0]['status'] if res.data else "No order found for this number"
+        status = res.data[0]['status'] if res.data else "No order found for this number."
         return jsonify({"status": status})
     except Exception as e:
         print(f"Status Check Error: {e}")
@@ -132,19 +137,16 @@ def get_status():
 
 @app.route('/admin')
 def admin():
-    """Comprehensive dashboard for Orders and Inventory Management."""
+    """Full dashboard — Orders tab + Inventory tab."""
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     try:
-        # Orders — NoneType safe
         order_res = supabase.table("orders").select("*").order("created_at", desc=True).execute()
-        orders = order_res.data if order_res.data is not None else []
+        orders    = order_res.data if order_res.data is not None else []
 
-        # Products — NoneType safe
-        prod_res = supabase.table("products").select("*").execute()
-        prods = prod_res.data if prod_res.data is not None else []
+        prod_res  = supabase.table("products").select("*").execute()
+        prods     = prod_res.data  if prod_res.data  is not None else []
 
-        # Group products by category for the inventory tab
         inv_by_cat = {}
         for p in prods:
             cat = p.get('category', 'Other')
@@ -155,89 +157,92 @@ def admin():
         return render_template('admin.html', orders=orders, inventory_by_cat=inv_by_cat)
 
     except Exception as e:
-        print(f"Admin Access Error: {e}")
-        # Fallback: load dashboard with empty data rather than crashing
+        print(f"Admin Load Error: {e}")
         return render_template('admin.html', orders=[], inventory_by_cat={})
+
+
+@app.route('/update_status/<int:order_id>', methods=['POST'])
+def update_status(order_id):
+    """Updates delivery status — wrapped in try/except so it NEVER crashes."""
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    try:
+        new_status = request.form.get('status', 'ORDER RECEIVED')
+        supabase.table("orders") \
+                .update({"status": new_status}) \
+                .eq("id", order_id) \
+                .execute()
+    except Exception as e:
+        print(f"Update Status Error (order {order_id}): {e}")
+    return redirect(url_for('admin', tab='orders'))
 
 
 @app.route('/edit_product/<int:p_id>', methods=['POST'])
 def edit_product(p_id):
-    """Updates product name, price, category (+ optional image). Stays on Inventory tab."""
+    """Updates product name, price, category, description, and optional image."""
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     try:
         update_data = {
-            "name":     request.form.get('name'),
-            "price":    int(request.form.get('price') or 0),
-            "category": request.form.get('category'),
+            "name":        request.form.get('name',        '').strip(),
+            "price":       int(request.form.get('price') or 0),
+            "category":    request.form.get('category',    '').strip(),
+            "description": request.form.get('description', '').strip(),
         }
 
         file = request.files.get('product_image')
         if file and file.filename != '':
             filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
-            path = f"products/{filename}"
+            path     = f"products/{filename}"
             supabase.storage.from_("product-images").upload(path, file.read())
-            update_data["image_url"] = supabase.storage.from_("product-images").get_public_url(path)
+            update_data["image_url"] = supabase.storage \
+                                               .from_("product-images") \
+                                               .get_public_url(path)
 
         supabase.table("products").update(update_data).eq("id", p_id).execute()
-        return redirect(url_for('admin', tab='inventory'))
 
     except Exception as e:
-        print(f"Edit Product Error: {e}")
-        return redirect(url_for('admin', tab='inventory'))
+        print(f"Edit Product Error (id {p_id}): {e}")
+
+    return redirect(url_for('admin', tab='inventory'))
 
 
 @app.route('/delete_product/<int:p_id>')
 def delete_product(p_id):
-    """Permanently removes a product from the shop. Stays on Inventory tab."""
+    """Permanently removes a product."""
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     try:
         supabase.table("products").delete().eq("id", p_id).execute()
-        return redirect(url_for('admin', tab='inventory'))
     except Exception as e:
-        print(f"Delete Product Error: {e}")
-        return redirect(url_for('admin', tab='inventory'))
+        print(f"Delete Product Error (id {p_id}): {e}")
+    return redirect(url_for('admin', tab='inventory'))
 
 
 @app.route('/add_product', methods=['POST'])
 def add_product():
-    """Adds a brand-new product to the shop. Stays on Inventory tab."""
+    """Adds a brand-new product including description."""
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     try:
         file = request.files.get('product_image')
         if file and file.filename != '':
             filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
-            path = f"products/{filename}"
+            path     = f"products/{filename}"
             supabase.storage.from_("product-images").upload(path, file.read())
-            img_url = supabase.storage.from_("product-images").get_public_url(path)
+            img_url  = supabase.storage.from_("product-images").get_public_url(path)
 
             supabase.table("products").insert({
-                "name":      request.form.get('name'),
-                "category":  request.form.get('category'),
-                "price":     int(request.form.get('price') or 0),
-                "image_url": img_url,
+                "name":        request.form.get('name',        '').strip(),
+                "category":    request.form.get('category',    '').strip(),
+                "price":       int(request.form.get('price') or 0),
+                "description": request.form.get('description', '').strip(),
+                "image_url":   img_url,
             }).execute()
-
-        return redirect(url_for('admin', tab='inventory'))
     except Exception as e:
         print(f"Add Product Error: {e}")
-        return redirect(url_for('admin', tab='inventory'))
 
-
-@app.route('/update_status/<int:order_id>', methods=['POST'])
-def update_status(order_id):
-    """Updates delivery status for a customer order. Stays on Orders tab."""
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
-    try:
-        new_status = request.form.get('status')
-        supabase.table("orders").update({"status": new_status}).eq("id", order_id).execute()
-        return redirect(url_for('admin', tab='orders'))
-    except Exception as e:
-        print(f"Update Status Error: {e}")
-        return redirect(url_for('admin', tab='orders'))
+    return redirect(url_for('admin', tab='inventory'))
 
 
 # ─────────────────────────────────────────────
@@ -251,7 +256,7 @@ def login():
         if request.form.get('password') == 'phiona-plastics':
             session['logged_in'] = True
             return redirect(url_for('admin'))
-        error = "Incorrect password. Try again."
+        error = "Incorrect password. Please try again."
     return render_template('login.html', error=error)
 
 
