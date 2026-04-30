@@ -1,7 +1,10 @@
 import os
+import io
+import csv
 import json
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import (Flask, render_template, request, redirect,
+                   url_for, session, jsonify, Response)
 from supabase import create_client, Client
 from werkzeug.utils import secure_filename
 
@@ -9,7 +12,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "garphy-secure-key-2026")
 
 # ─────────────────────────────────────────────
-#  SUPABASE CONFIGURATION
+#  SUPABASE
 # ─────────────────────────────────────────────
 SUPABASE_URL = "https://vzeznntgcqzdwnfqwtra.supabase.co"
 SUPABASE_KEY = (
@@ -19,10 +22,23 @@ SUPABASE_KEY = (
 )
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+CATEGORIES = [
+    "TOILETRIES",
+    "BEDDINGS",
+    "PLASTICS AND KITCHENWARE",
+    "CLEANING ESSENTIALS",
+]
 
 # ─────────────────────────────────────────────
 #  HELPERS
 # ─────────────────────────────────────────────
+
+def safe_int(val, default=0):
+    try:
+        return int(val or default)
+    except (ValueError, TypeError):
+        return default
+
 
 def parse_images(raw):
     if raw is None:
@@ -39,13 +55,6 @@ def parse_images(raw):
         if raw:
             return [raw]
     return []
-
-
-def safe_int(val, default=0):
-    try:
-        return int(val or default)
-    except (ValueError, TypeError):
-        return default
 
 
 def prepare_orders(raw_list):
@@ -72,7 +81,6 @@ def prepare_orders(raw_list):
 
 @app.route('/')
 def index():
-    """Shop home — products grouped by category."""
     try:
         res      = supabase.table("products").select("*").execute()
         products = res.data if res.data is not None else []
@@ -84,23 +92,7 @@ def index():
                 categories[cat] = []
             categories[cat].append(p)
 
-        # Receipt data passed back after a successful order
-        receipt = None
-        if request.args.get('success') == 'true':
-            receipt = {
-                'username':    request.args.get('username',    ''),
-                'phone':       request.args.get('phone',       ''),
-                'location':    request.args.get('location',    ''),
-                'items':       request.args.get('items',       ''),
-                'total':       request.args.get('total',       '0'),
-                'paid':        request.args.get('paid',        '0'),
-                'balance':     request.args.get('balance',     '0'),
-                'method':      request.args.get('method',      ''),
-                'order_id':    request.args.get('order_id',    ''),
-                'timestamp':   datetime.now().strftime('%d %b %Y, %I:%M %p'),
-            }
-
-        return render_template('index.html', categories=categories, receipt=receipt)
+        return render_template('index.html', categories=categories)
     except Exception as e:
         print(f"[INDEX ERROR] {e}")
         return "Store temporarily offline. Please try again shortly.", 500
@@ -108,7 +100,6 @@ def index():
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
-    """Submit an order — returns receipt data in redirect."""
     try:
         username = request.form.get('username', '').strip()
         phone    = request.form.get('phone',    '').strip()
@@ -147,22 +138,11 @@ def place_order():
             "notes":          notes,
         }).execute()
 
-        # Grab the new order ID if Supabase returns it
-        order_id = ''
-        if result.data and len(result.data) > 0:
-            order_id = str(result.data[0].get('id', ''))
+        # Get the new order id for receipt
+        order_id = result.data[0]['id'] if result.data else None
 
         return redirect(url_for(
-            'index',
-            success='true',
-            username=username,
-            phone=phone,
-            location=location,
-            items=", ".join(selected_items),
-            total=calc_total,
-            paid=paid,
-            balance=balance,
-            method=method,
+            'receipt',
             order_id=order_id,
         ))
     except Exception as e:
@@ -170,42 +150,48 @@ def place_order():
         return f"Order failed: {str(e)}", 500
 
 
-@app.route('/get_status')
-def get_status():
-    """
-    Returns the latest order status for a given phone number.
-    Returns JSON — never crashes, always responds.
-    """
+@app.route('/receipt/<int:order_id>')
+def receipt(order_id):
+    """Shows a printable receipt after order placement."""
     try:
-        phone = (request.args.get('phone') or '').strip()
-        if not phone:
-            return jsonify({"ok": False, "status": "", "message": "Please enter your phone number."})
+        res   = supabase.table("orders").select("*").eq("id", order_id).execute()
+        order = prepare_orders(res.data)[0] if res.data else None
+        if not order:
+            return redirect(url_for('index'))
+        return render_template('receipt.html', order=order)
+    except Exception as e:
+        print(f"[RECEIPT ERROR] {e}")
+        return redirect(url_for('index'))
 
+
+@app.route('/check_status')
+def check_status():
+    """JSON endpoint — returns latest order status for a phone number."""
+    phone = request.args.get('phone', '').strip()
+    if not phone:
+        return jsonify({"error": "Please enter your phone number."})
+    try:
         res = (
             supabase.table("orders")
-            .select("id, status, item_name, total_price, balance, created_at")
+            .select("id, status, item_name, total_price, created_at")
             .eq("phone", phone)
             .order("created_at", desc=True)
             .limit(1)
             .execute()
         )
-
-        if not res.data:
-            return jsonify({"ok": False, "status": "", "message": "No order found for this number. Check the number and try again."})
-
-        row = res.data[0]
-        return jsonify({
-            "ok":          True,
-            "order_id":    str(row.get('id', '')),
-            "status":      row.get('status', 'ORDER RECEIVED'),
-            "items":       row.get('item_name', ''),
-            "total":       safe_int(row.get('total_price')),
-            "balance":     safe_int(row.get('balance')),
-            "message":     "",
-        })
+        if res.data:
+            o = res.data[0]
+            return jsonify({
+                "found":       True,
+                "status":      o.get('status', ''),
+                "item_name":   o.get('item_name', ''),
+                "total_price": o.get('total_price', 0),
+                "order_id":    o.get('id', ''),
+            })
+        return jsonify({"found": False, "error": "No order found for this number."})
     except Exception as e:
-        print(f"[GET STATUS ERROR] {e}")
-        return jsonify({"ok": False, "status": "", "message": "Could not reach the server. Please try again."})
+        print(f"[CHECK STATUS ERROR] {e}")
+        return jsonify({"error": "Status check failed — please try again."})
 
 
 # ─────────────────────────────────────────────
@@ -218,6 +204,8 @@ def admin():
         return redirect(url_for('login'))
 
     load_error = None
+    orders     = []
+    inv_by_cat = {}
 
     try:
         order_res = supabase.table("orders").select("*").order("created_at", desc=True).execute()
@@ -225,60 +213,67 @@ def admin():
         print(f"[ADMIN] {len(orders)} order(s) loaded.")
     except Exception as e:
         load_error = str(e)
-        orders     = []
         print(f"[ADMIN ORDER ERROR] {e}")
 
     try:
         prod_res = supabase.table("products").select("*").execute()
         prods    = prod_res.data if prod_res.data is not None else []
+        for p in prods:
+            cat = p.get('category', 'Other')
+            if cat not in inv_by_cat:
+                inv_by_cat[cat] = []
+            inv_by_cat[cat].append(p)
     except Exception as e:
-        prods = []
         print(f"[ADMIN PRODUCT ERROR] {e}")
 
-    inv_by_cat = {}
-    for p in prods:
-        cat = p.get('category', 'Other')
-        if cat not in inv_by_cat:
-            inv_by_cat[cat] = []
-        inv_by_cat[cat].append(p)
+    # ── Dashboard stats ──
+    total_revenue = sum(o['total_price'] for o in orders)
+    total_orders  = len(orders)
+    paid_revenue  = sum(o['amount_paid'] for o in orders)
+    outstanding   = sum(o['balance']     for o in orders)
+    status_counts = {
+        "ORDER RECEIVED": sum(1 for o in orders if o['status'] == 'ORDER RECEIVED'),
+        "ON THE WAY":     sum(1 for o in orders if o['status'] == 'ON THE WAY'),
+        "DELIVERED":      sum(1 for o in orders if o['status'] == 'DELIVERED'),
+    }
 
     return render_template(
         'admin.html',
         orders=orders,
         inventory_by_cat=inv_by_cat,
         load_error=load_error,
+        categories=CATEGORIES,
+        stats={
+            "total_revenue": total_revenue,
+            "total_orders":  total_orders,
+            "paid_revenue":  paid_revenue,
+            "outstanding":   outstanding,
+            "status_counts": status_counts,
+        },
     )
+
 
 @app.route('/update_status/<int:order_id>', methods=['POST'])
 def update_status(order_id):
+    """Update order status — never crashes, always returns JSON or redirects."""
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-
-    # 1. Get the status and ensure it's not empty
-    new_status = request.form.get('status')
-    
-    if not new_status:
-        print(f"[ERROR] No status provided for order {order_id}")
-        return redirect(url_for('admin', tab='orders'))
-
     try:
-        # 2. Perform the update and capture the response
-        # Using .execute() returns an object; .data contains the updated rows
-        response = supabase.table("orders") \
-            .update({"status": new_status}) \
-            .eq("id", order_id) \
-            .execute()
+        new_status = request.form.get('status', '').strip()
+        if not new_status:
+            print(f"[UPDATE STATUS] Empty status received for order {order_id}")
+            return redirect(url_for('admin', tab='orders'))
 
-        # 3. Check if any rows were actually updated
-        if len(response.data) == 0:
-            print(f"[WARNING] No order found with ID {order_id}. Check RLS policies or ID type.")
-        else:
-            print(f"[SUCCESS] Order {order_id} updated to {new_status}")
-
+        supabase.table("orders") \
+                .update({"status": new_status}) \
+                .eq("id", order_id) \
+                .execute()
+        print(f"[STATUS OK] Order {order_id} → {new_status}")
     except Exception as e:
-        print(f"[CRITICAL ERROR] {e}")
-
+        print(f"[UPDATE STATUS ERROR] order {order_id}: {e}")
+    # Always redirect — never crash
     return redirect(url_for('admin', tab='orders'))
+
 
 @app.route('/edit_product/<int:p_id>', methods=['POST'])
 def edit_product(p_id):
@@ -338,6 +333,53 @@ def add_product():
     except Exception as e:
         print(f"[ADD PRODUCT ERROR] {e}")
     return redirect(url_for('admin', tab='inventory'))
+
+
+@app.route('/export_orders_csv')
+def export_orders_csv():
+    """Download all orders as a CSV file."""
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    try:
+        res    = supabase.table("orders").select("*").order("created_at", desc=True).execute()
+        orders = prepare_orders(res.data)
+
+        output = io.StringIO()
+        writer = csv.writer(output)
+
+        # Header row
+        writer.writerow([
+            "Order ID", "Date", "Customer Name", "Phone", "Location",
+            "Items Ordered", "Total Price (UGX)", "Amount Paid (UGX)",
+            "Balance (UGX)", "Payment Method", "Status", "Notes"
+        ])
+
+        for o in orders:
+            writer.writerow([
+                o.get('id', ''),
+                o.get('created_at', '')[:19].replace('T', ' ') if o.get('created_at') else '',
+                o.get('username', ''),
+                o.get('phone', ''),
+                o.get('location', ''),
+                o.get('item_name', ''),
+                o.get('total_price', 0),
+                o.get('amount_paid', 0),
+                o.get('balance', 0),
+                o.get('payment_method', ''),
+                o.get('status', ''),
+                o.get('notes', ''),
+            ])
+
+        output.seek(0)
+        filename = f"garphy_orders_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+        return Response(
+            output.getvalue(),
+            mimetype="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    except Exception as e:
+        print(f"[CSV EXPORT ERROR] {e}")
+        return redirect(url_for('admin', tab='orders'))
 
 
 # ─────────────────────────────────────────────
