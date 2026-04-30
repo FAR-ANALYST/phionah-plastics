@@ -25,7 +25,6 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 # ─────────────────────────────────────────────
 
 def parse_images(raw):
-    """Normalise item_images regardless of how Supabase returns it."""
     if raw is None:
         return []
     if isinstance(raw, list):
@@ -50,7 +49,6 @@ def safe_int(val, default=0):
 
 
 def prepare_orders(raw_list):
-    """Sanitise every order dict so the template never throws."""
     out = []
     for o in (raw_list or []):
         o['item_images']    = parse_images(o.get('item_images'))
@@ -68,19 +66,13 @@ def prepare_orders(raw_list):
     return out
 
 
-def make_ref():
-    """Generate a simple human-readable order reference."""
-    return "GHE-" + datetime.now().strftime("%Y%m%d-%H%M%S")
-
-
 # ─────────────────────────────────────────────
 #  CUSTOMER STOREFRONT
 # ─────────────────────────────────────────────
 
 @app.route('/')
 def index():
-    """Shop home page — products grouped by category.
-       Pops the last_order receipt from session if present."""
+    """Shop home — products grouped by category."""
     try:
         res      = supabase.table("products").select("*").execute()
         products = res.data if res.data is not None else []
@@ -92,14 +84,23 @@ def index():
                 categories[cat] = []
             categories[cat].append(p)
 
-        # Receipt data (set by place_order, consumed once here)
-        receipt = session.pop('last_order', None)
+        # Receipt data passed back after a successful order
+        receipt = None
+        if request.args.get('success') == 'true':
+            receipt = {
+                'username':    request.args.get('username',    ''),
+                'phone':       request.args.get('phone',       ''),
+                'location':    request.args.get('location',    ''),
+                'items':       request.args.get('items',       ''),
+                'total':       request.args.get('total',       '0'),
+                'paid':        request.args.get('paid',        '0'),
+                'balance':     request.args.get('balance',     '0'),
+                'method':      request.args.get('method',      ''),
+                'order_id':    request.args.get('order_id',    ''),
+                'timestamp':   datetime.now().strftime('%d %b %Y, %I:%M %p'),
+            }
 
-        return render_template(
-            'index.html',
-            categories=categories,
-            receipt=receipt,            # None or dict with order details
-        )
+        return render_template('index.html', categories=categories, receipt=receipt)
     except Exception as e:
         print(f"[INDEX ERROR] {e}")
         return "Store temporarily offline. Please try again shortly.", 500
@@ -107,7 +108,7 @@ def index():
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
-    """Submit an order — saves to Supabase and stores receipt in session."""
+    """Submit an order — returns receipt data in redirect."""
     try:
         username = request.form.get('username', '').strip()
         phone    = request.form.get('phone',    '').strip()
@@ -131,9 +132,8 @@ def place_order():
             return redirect(url_for('index'))
 
         balance = max(0, calc_total - paid)
-        ref     = make_ref()
 
-        supabase.table("orders").insert({
+        result = supabase.table("orders").insert({
             "username":       username,
             "phone":          phone,
             "location":       location,
@@ -147,23 +147,24 @@ def place_order():
             "notes":          notes,
         }).execute()
 
-        # Store receipt in session — index will pop it once
-        session['last_order'] = {
-            "ref":      ref,
-            "username": username,
-            "phone":    phone,
-            "location": location,
-            "items":    selected_items,      # list of strings
-            "total":    calc_total,
-            "paid":     paid,
-            "balance":  balance,
-            "method":   method,
-            "notes":    notes,
-            "date":     datetime.now().strftime("%d %b %Y, %H:%M"),
-        }
+        # Grab the new order ID if Supabase returns it
+        order_id = ''
+        if result.data and len(result.data) > 0:
+            order_id = str(result.data[0].get('id', ''))
 
-        return redirect(url_for('index'))
-
+        return redirect(url_for(
+            'index',
+            success='true',
+            username=username,
+            phone=phone,
+            location=location,
+            items=", ".join(selected_items),
+            total=calc_total,
+            paid=paid,
+            balance=balance,
+            method=method,
+            order_id=order_id,
+        ))
     except Exception as e:
         print(f"[PLACE ORDER ERROR] {e}")
         return f"Order failed: {str(e)}", 500
@@ -171,16 +172,18 @@ def place_order():
 
 @app.route('/get_status')
 def get_status():
-    """AJAX endpoint — returns latest order status for a phone number.
-       Always returns JSON, never crashes."""
+    """
+    Returns the latest order status for a given phone number.
+    Returns JSON — never crashes, always responds.
+    """
     try:
         phone = (request.args.get('phone') or '').strip()
         if not phone:
-            return jsonify({"ok": False, "status": "Please enter your phone number."})
+            return jsonify({"ok": False, "status": "", "message": "Please enter your phone number."})
 
         res = (
             supabase.table("orders")
-            .select("status, item_name, total_price, created_at")
+            .select("id, status, item_name, total_price, balance, created_at")
             .eq("phone", phone)
             .order("created_at", desc=True)
             .limit(1)
@@ -188,20 +191,21 @@ def get_status():
         )
 
         if not res.data:
-            return jsonify({"ok": False, "status": "No order found for this number."})
+            return jsonify({"ok": False, "status": "", "message": "No order found for this number. Check the number and try again."})
 
         row = res.data[0]
         return jsonify({
-            "ok":        True,
-            "status":    row.get("status",      "—"),
-            "items":     row.get("item_name",   "—"),
-            "total":     safe_int(row.get("total_price")),
-            "date":      row.get("created_at",  "")[:10],
+            "ok":          True,
+            "order_id":    str(row.get('id', '')),
+            "status":      row.get('status', 'ORDER RECEIVED'),
+            "items":       row.get('item_name', ''),
+            "total":       safe_int(row.get('total_price')),
+            "balance":     safe_int(row.get('balance')),
+            "message":     "",
         })
-
     except Exception as e:
         print(f"[GET STATUS ERROR] {e}")
-        return jsonify({"ok": False, "status": "Status check failed — please try again."})
+        return jsonify({"ok": False, "status": "", "message": "Could not reach the server. Please try again."})
 
 
 # ─────────────────────────────────────────────
