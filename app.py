@@ -249,19 +249,36 @@ def admin():
         load_error=load_error,
     )
 
-
 @app.route('/update_status/<int:order_id>', methods=['POST'])
 def update_status(order_id):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    try:
-        new_status = request.form.get('status', 'ORDER RECEIVED')
-        supabase.table("orders").update({"status": new_status}).eq("id", order_id).execute()
-        print(f"[STATUS] Order {order_id} → {new_status}")
-    except Exception as e:
-        print(f"[UPDATE STATUS ERROR] order {order_id}: {e}")
-    return redirect(url_for('admin', tab='orders'))
 
+    # 1. Get the status and ensure it's not empty
+    new_status = request.form.get('status')
+    
+    if not new_status:
+        print(f"[ERROR] No status provided for order {order_id}")
+        return redirect(url_for('admin', tab='orders'))
+
+    try:
+        # 2. Perform the update and capture the response
+        # Using .execute() returns an object; .data contains the updated rows
+        response = supabase.table("orders") \
+            .update({"status": new_status}) \
+            .eq("id", order_id) \
+            .execute()
+
+        # 3. Check if any rows were actually updated
+        if len(response.data) == 0:
+            print(f"[WARNING] No order found with ID {order_id}. Check RLS policies or ID type.")
+        else:
+            print(f"[SUCCESS] Order {order_id} updated to {new_status}")
+
+    except Exception as e:
+        print(f"[CRITICAL ERROR] {e}")
+
+    return redirect(url_for('admin', tab='orders'))
 
 @app.route('/edit_product/<int:p_id>', methods=['POST'])
 def edit_product(p_id):
