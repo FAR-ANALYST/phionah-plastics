@@ -3,160 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garphy Home Essentials</title>
+    <title>Order Receipt — Garphy Home Essentials</title>
     <style>
-        /* ══════════════════════════════════════
-           ROOT & RESET
-        ══════════════════════════════════════ */
         :root {
-            --navy:    #001f3f;
-            --purple:  #5c0e91;
-            --gold:    #e8a800;
-            --green:   #1a7f37;
-            --red:     #c0392b;
-            --light:   #f5f6fa;
-            --white:   #ffffff;
-            --border:  #e2e6ea;
-            --text:    #2c3e50;
-            --muted:   #7f8c8d;
-            --radius:  14px;
-            --shadow:  0 4px 22px rgba(0,0,0,0.09);
+            --navy:   #001f3f;
+            --purple: #5c0e91;
+            --gold:   #e8a800;
+            --green:  #1a7f37;
+            --light:  #f5f6fa;
+            --white:  #ffffff;
+            --border: #e2e6ea;
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--light); color: var(--text); }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--light);
+            padding: 30px 16px 60px;
+            color: #2c3e50;
+        }
+        .receipt {
+            max-width: 520px;
+            margin: auto;
+            background: var(--white);
+            border-radius: 18px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
 
-        /* ══════════════════════════════════════
-           HEADER & TABS
-        ══════════════════════════════════════ */
-        .header {
-            background: linear-gradient(135deg, #001020 0%, var(--navy) 60%, #0a3460 100%);
-            padding: 34px 20px 0;
+        /* Header */
+        .receipt-header {
+            background: linear-gradient(135deg, var(--navy), #0a3d6b);
+            padding: 28px 26px 22px;
             text-align: center;
         }
-        .header-eyebrow {
-            display: inline-block;
-            background: rgba(232,168,0,0.15);
-            border: 1px solid rgba(232,168,0,0.35);
-            color: var(--gold);
-            font-size: 0.65rem;
+        .receipt-header .tick {
+            width: 54px; height: 54px;
+            background: var(--green);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+            margin: 0 auto 14px;
+        }
+        .receipt-header h2 { color: var(--white); font-size: 1.15rem; font-weight: 900; margin-bottom: 4px; }
+        .receipt-header p  { color: rgba(255,255,255,0.55); font-size: 0.82rem; }
+        .brand { color: var(--gold); font-weight: 800; font-size: 0.82rem; margin-bottom: 10px; letter-spacing: 1px; text-transform: uppercase; }
+
+        /* Body */
+        .receipt-body { padding: 24px 26px; }
+
+        .ref-badge {
+            text-align: center;
+            background: #f0f4f8;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+        .ref-badge span { font-size: 0.7rem; color: #7f8c8d; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.6px; }
+        .ref-badge strong { font-size: 1.1rem; color: var(--navy); font-weight: 900; }
+
+        .section-label {
+            font-size: 0.7rem;
             font-weight: 800;
-            letter-spacing: 2.5px;
             text-transform: uppercase;
-            padding: 4px 14px;
+            letter-spacing: 0.7px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            margin-top: 18px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.88rem;
+            gap: 12px;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row .lbl { color: #7f8c8d; flex-shrink: 0; }
+        .info-row .val { font-weight: 600; text-align: right; color: #2c3e50; }
+
+        .items-list { margin: 8px 0; }
+        .item-entry {
+            padding: 9px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 0.88rem;
+        }
+        .item-entry:last-child { border-bottom: none; }
+
+        .divider {
+            border: none;
+            border-top: 2px dashed #e0e0e0;
+            margin: 18px 0;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            font-size: 0.92rem;
+        }
+        .total-row.big { font-size: 1.1rem; font-weight: 900; color: var(--navy); }
+        .total-row.balance { color: #c0392b; font-weight: 700; }
+
+        .notes-box {
+            background: #fffbea;
+            border: 1.5px solid #ffe58f;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-top: 16px;
+            font-size: 0.85rem;
+            color: #555;
+            line-height: 1.55;
+        }
+        .notes-box strong { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.6px; color: #a07600; margin-bottom: 5px; }
+
+        /* Status badge */
+        .status-block {
+            text-align: center;
+            margin: 20px 0 10px;
+        }
+        .status-pill {
+            display: inline-block;
+            padding: 7px 20px;
             border-radius: 20px;
-            margin-bottom: 10px;
-        }
-        .header h1 {
-            font-size: clamp(1.45rem, 5vw, 2.2rem);
-            font-weight: 900;
-            color: var(--white);
-            margin-bottom: 6px;
-        }
-        .header h1 em { color: var(--gold); font-style: normal; }
-        .header p { color: rgba(255,255,255,0.5); font-size: 0.82rem; margin-bottom: 24px; }
-
-        .page-tabs { display: flex; border-top: 1px solid rgba(255,255,255,0.1); }
-        .page-tab {
-            flex: 1; padding: 14px 10px; text-align: center; cursor: pointer;
-            color: rgba(255,255,255,0.45); font-weight: 700; font-size: 0.85rem;
-            border-bottom: 3px solid transparent; transition: all 0.2s;
-        }
-        .page-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
-
-        /* ══════════════════════════════════════
-           CONTAINER & CARDS
-        ══════════════════════════════════════ */
-        .container { max-width: 860px; margin: auto; padding: 24px 15px 80px; }
-        .page-section { display: none; }
-        .page-section.active { display: block; animation: fadeUp 0.25s ease; }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            background: #fff3cd;
+            color: #856404;
         }
 
-        .card {
-            background: var(--white); border-radius: var(--radius);
-            box-shadow: var(--shadow); padding: 22px; margin-bottom: 18px;
-            border: 1px solid var(--border);
+        /* Footer */
+        .receipt-footer {
+            background: #f8f9fc;
+            border-top: 1px solid var(--border);
+            padding: 20px 26px;
+            text-align: center;
         }
-        .card-title {
-            font-size: 0.95rem; font-weight: 800; color: var(--navy);
-            margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--light);
-            display: flex; align-items: center; gap: 8px;
+        .receipt-footer p { font-size: 0.8rem; color: #7f8c8d; line-height: 1.6; margin-bottom: 16px; }
+
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .btn {
+            padding: 11px 22px;
+            border-radius: 9px;
+            border: none;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
+        .btn-print  { background: var(--navy);   color: white; }
+        .btn-home   { background: var(--purple);  color: white; }
+        .btn-track  { background: var(--green);   color: white; }
+        .btn:hover  { opacity: 0.85; }
 
-        /* Form Fields */
-        .field { margin-bottom: 14px; }
-        .field label { display: block; font-size: 0.73rem; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
-        .field input, .field textarea {
-            width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
-            border-radius: 9px; font-size: 0.92rem; background: #fafbfc;
+        @media print {
+            body { background: white; padding: 0; }
+            .receipt { box-shadow: none; border-radius: 0; }
+            .btn-row, .receipt-footer { display: none; }
         }
-
-        /* ══════════════════════════════════════
-           RECEIPT MODAL
-        ══════════════════════════════════════ */
-        .modal-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.7); z-index: 8000;
-            align-items: center; justify-content: center; padding: 16px;
-        }
-        .modal-overlay.active { display: flex; }
-
-        .receipt {
-            background: var(--white); border-radius: 18px; width: 100%;
-            max-width: 420px; max-height: 90vh; overflow-y: auto;
-            box-shadow: 0 24px 60px rgba(0,0,0,0.35); animation: popIn 0.25s ease;
-        }
-        @keyframes popIn { from { transform: scale(0.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        .receipt-header {
-            background: linear-gradient(135deg, var(--navy), #0a3460);
-            color: white; padding: 22px 22px 18px; text-align: center; border-radius: 18px 18px 0 0;
-        }
-        .check-circle {
-            width: 52px; height: 52px; background: var(--green); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;
-        }
-        .receipt-ref {
-            display: inline-block; background: rgba(232,168,0,0.2); border: 1px solid rgba(232,168,0,0.4);
-            color: var(--gold); font-size: 0.72rem; font-weight: 800; padding: 4px 12px; border-radius: 12px; margin-top: 10px;
-        }
-
-        .receipt-body { padding: 20px 22px; }
-        .receipt-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--light); }
-        .r-label { font-size: 0.73rem; color: var(--muted); font-weight: 700; text-transform: uppercase; }
-        .r-value { font-size: 0.88rem; color: var(--text); font-weight: 600; }
-
-        .receipt-items { background: var(--light); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
-        .receipt-item { font-size: 0.84rem; padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; gap: 6px; }
-
-        .receipt-total {
-            background: linear-gradient(135deg, var(--navy), #0a3460); border-radius: 11px;
-            padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; margin: 14px 0;
-        }
-        .receipt-total .tv { color: var(--gold); font-size: 1.3rem; font-weight: 900; }
-
-        .receipt-actions { display: flex; gap: 10px; margin-top: 16px; }
-        .btn-close-receipt { flex: 1; padding: 12px; border-radius: 10px; font-weight: 800; cursor: pointer; border: 1.5px solid var(--border); background: #fff; }
-        .btn-track { flex: 1; padding: 12px; border-radius: 10px; font-weight: 800; cursor: pointer; border: none; background: var(--purple); color: #fff; }
-
-        /* Lightbox */
-        .lightbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; cursor: zoom-out; }
-        .lightbox-overlay.active { display: flex; }
-        .lightbox-img { max-width: 90%; max-height: 80%; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-<div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
-    <img class="lightbox-img" id="lightbox-img" src="" alt="">
+<div class="receipt">
+
+    <!-- Header -->
+    <div class="receipt-header">
+        <div class="brand">Garphy Home Essentials</div>
+        <div class="tick">✓</div>
+        <h2>Order Placed Successfully!</h2>
+        <p>Thank you — we'll call you shortly to confirm delivery.</p>
+    </div>
+
+    <!-- Body -->
+    <div class="receipt-body">
+
+        <!-- Order reference -->
+        <div class="ref-badge">
+            <span>Order Reference</span>
+            <strong>#{{ order.id }}</strong>
+        </div>
+
+        <!-- Status -->
+        <div class="status-block">
+            <span class="status-pill">{{ order.status }}</span>
+        </div>
+
+        <!-- Customer details -->
+        <div class="section-label">👤 Customer Details</div>
+        <div class="info-row">
+            <span class="lbl">Name</span>
+            <span class="val">{{ order.username }}</span>
+        </div>
+        <div class="info-row">
+            <span class="lbl">Phone</span>
+            <span class="val">{{ order.phone }}</span>
+        </div>
+        <div class="info-row">
+            <span class="lbl">Location</span>
+            <span class="val">{{ order.location }}</span>
+        </div>
+        <div class="info-row">
+            <span class="lbl">Payment Method</span>
+            <span class="val">{{ order.payment_method }}</span>
+        </div>
+
+        <!-- Items -->
+        <div class="section-label">🛒 Items Ordered</div>
+        <div class="items-list">
+            {% set items = order.item_name.split(', ') %}
+            {% for item in items %}
+            <div class="item-entry">{{ item }}</div>
+            {% endfor %}
+        </div>
+
+        <hr class="divider">
+
+        <!-- Totals -->
+        <div class="total-row big">
+            <span>Total</span>
+            <span>UGX {{ "{:,}".format(order.total_price) }}</span>
+        </div>
+        <div class="total-row">
+            <span style="color:#1a7f37;">Amount Paid</span>
+            <span style="color:#1a7f37;font-weight:700;">UGX {{ "{:,}".format(order.amount_paid) }}</span>
+        </div>
+        {% if order.balance > 0 %}
+        <div class="total-row balance">
+            <span>Balance Due on Delivery</span>
+            <span>UGX {{ "{:,}".format(order.balance) }}</span>
+        </div>
+        {% endif %}
+
+        <!-- Notes -->
+        {% if order.notes %}
+        <div class="notes-box">
+            <strong>📝 Your Notes</strong>
+            {{ order.notes }}
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Footer -->
+    <div class="receipt-footer">
+        <p>
+            Keep this receipt for your records.<br>
+            You can track your order status anytime using your phone number.
+        </p>
+        <div class="btn-row">
+            <button class="btn btn-print" onclick="window.print()">🖨️ Print Receipt</button>
+            <a class="btn btn-home" href="/">🛍️ Shop Again</a>
+            <a class="btn btn-track" href="/?track=1">🔍 Track Order</a>
+        </div>
+    </div>
+
 </div>
 
-{% if receipt %}
-<div class="modal-overlay active" id="receipt-modal">
-    <div class="receipt">
-        <div class="receipt-header">
-            <div class="check-circle">✓</div>
-            <h2>Order Confirmed!</h2>
-            <p>Thank you, {{ receipt.username }}. We'll call you shortly.</p>
+</body>
+</html>
