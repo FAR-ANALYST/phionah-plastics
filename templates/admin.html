@@ -5,520 +5,205 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Garphy Admin — Control Panel</title>
     <style>
-        /* ═══════════════════════════════
-           VARIABLES & RESET
-        ════════════════════════════════ */
         :root {
-            --navy:   #001f3f;
-            --purple: #5c0e91;
-            --gold:   #e8a800;
-            --green:  #1a7f37;
-            --red:    #c0392b;
-            --light:  #f5f6fa;
-            --white:  #ffffff;
-            --border: #e2e6ea;
-            --text:   #2c3e50;
-            --muted:  #7f8c8d;
-            --sidebar-w: 230px;
+            --navy:    #001f3f;
+            --purple:  #5c0e91;
+            --gold:    #e8a800;
+            --green:   #1a7f37;
+            --red:     #c0392b;
+            --orange:  #e67e22;
+            --light:   #f5f6fa;
+            --white:   #ffffff;
+            --border:  #e2e6ea;
+            --text:    #2c3e50;
+            --muted:   #7f8c8d;
+            --sw:      230px;
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-            background: var(--light);
-            color: var(--text);
-        }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; display: flex; height: 100vh; overflow: hidden; background: var(--light); color: var(--text); }
 
-        /* ═══════════════════════════════
-           SIDEBAR
-        ════════════════════════════════ */
+        /* ══ SIDEBAR ══ */
         .sidebar {
-            width: var(--sidebar-w);
-            background: linear-gradient(180deg, #001020 0%, var(--navy) 100%);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            box-shadow: 3px 0 20px rgba(0,0,0,0.25);
-            z-index: 10;
+            width: var(--sw);
+            background: linear-gradient(180deg, #000e1f 0%, var(--navy) 100%);
+            display: flex; flex-direction: column; flex-shrink: 0;
+            box-shadow: 3px 0 20px rgba(0,0,0,0.25); z-index: 10;
         }
-        .sidebar-top {
-            padding: 26px 18px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            text-align: center;
-        }
-        .sidebar-brand {
-            font-size: 0.78rem;
-            font-weight: 900;
-            color: var(--gold);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            line-height: 1.3;
-        }
-        .sidebar-sub {
-            font-size: 0.62rem;
-            color: rgba(255,255,255,0.35);
-            letter-spacing: 1px;
-            margin-top: 4px;
-        }
-        .nav-group { padding: 14px 0; flex-grow: 1; }
+        .sidebar-top { padding: 24px 18px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); text-align: center; }
+        .brand-name { font-size: 0.8rem; font-weight: 900; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; line-height: 1.4; }
+        .brand-sub  { font-size: 0.6rem; color: rgba(255,255,255,0.3); letter-spacing: 1px; margin-top: 3px; }
+
+        .nav-group { padding: 12px 0; flex-grow: 1; overflow-y: auto; }
         .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 12px 20px;
-            cursor: pointer;
-            color: rgba(255,255,255,0.5);
-            font-weight: 600;
-            font-size: 0.88rem;
-            border-left: 4px solid transparent;
-            transition: all 0.2s;
-            text-decoration: none;
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 18px; cursor: pointer;
+            color: rgba(255,255,255,0.48); font-weight: 600; font-size: 0.86rem;
+            border-left: 4px solid transparent; transition: all 0.2s; text-decoration: none;
         }
-        .nav-item .icon { font-size: 1rem; width: 18px; text-align: center; flex-shrink: 0; }
-        .nav-item:hover { background: rgba(255,255,255,0.06); color: var(--white); }
-        .nav-item.active {
-            background: rgba(255,255,255,0.1);
-            color: var(--white);
-            border-left-color: var(--gold);
-        }
-        .sidebar-foot {
-            padding: 16px 20px;
-            border-top: 1px solid rgba(255,255,255,0.08);
-        }
-        .logout-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #ff6b6b;
-            font-size: 0.85rem;
-            font-weight: 700;
-            text-decoration: none;
-        }
+        .nav-item .ic { font-size: 0.95rem; width: 17px; text-align: center; flex-shrink: 0; }
+        .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
+        .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left-color: var(--gold); }
+        .sidebar-foot { padding: 14px 18px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .logout-a { display: flex; align-items: center; gap: 8px; color: #ff6b6b; font-size: 0.83rem; font-weight: 700; text-decoration: none; }
 
-        /* ═══════════════════════════════
-           MAIN CONTENT
-        ════════════════════════════════ */
-        .main { flex-grow: 1; overflow-y: auto; padding: 26px; }
-
+        /* ══ MAIN ══ */
+        .main { flex-grow: 1; overflow-y: auto; padding: 24px; }
         .panel { display: none; }
-        .panel.active { display: block; animation: fadeUp 0.25s ease; }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
+        .panel.active { display: block; animation: fadeUp 0.22s ease; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
+        .page-hd { font-size: 1.35rem; font-weight: 900; color: var(--navy); margin-bottom: 5px; }
+        .page-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 20px; }
 
-        .page-title {
-            font-size: 1.4rem;
-            font-weight: 900;
-            color: var(--navy);
-            margin-bottom: 6px;
-        }
-        .page-sub { font-size: 0.83rem; color: var(--muted); margin-bottom: 22px; }
-
-        /* ═══════════════════════════════
-           ERROR BANNER
-        ════════════════════════════════ */
-        .error-banner {
-            background: #fdecea;
-            border: 1.5px solid #f5c6cb;
-            border-radius: 10px;
-            padding: 14px 18px;
-            color: #721c24;
-            font-size: 0.85rem;
-            margin-bottom: 18px;
-        }
-
-        /* ═══════════════════════════════
-           ORDER CARDS
-        ════════════════════════════════ */
-        .order-card {
-            background: var(--white);
-            border: 1.5px solid var(--border);
-            border-radius: 14px;
-            margin-bottom: 12px;
-            overflow: hidden;
-            transition: box-shadow 0.2s, border-color 0.2s;
-        }
-        .order-card:hover { border-color: #b8a0dc; box-shadow: 0 4px 18px rgba(92,14,145,0.1); }
-
-        .order-header {
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-            gap: 12px;
-        }
-        .order-meta { flex-grow: 1; }
-        .order-meta strong { font-size: 0.98rem; color: var(--navy); display: block; margin-bottom: 3px; }
-        .order-meta small { font-size: 0.78rem; color: var(--muted); }
-
-        .order-right { text-align: right; flex-shrink: 0; }
-        .status-badge {
-            display: inline-block;
-            padding: 4px 11px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        .badge-received { background: #fff3cd; color: #856404; }
-        .badge-onway    { background: #cfe2ff; color: #084298; }
-        .badge-done     { background: #d1e7dd; color: #0f5132; }
-        .order-price { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
-        .chevron { font-size: 0.7rem; color: var(--muted); flex-shrink: 0; transition: transform 0.25s; }
-        .chevron.open { transform: rotate(180deg); }
-
-        /* Expanded area */
-        .order-body {
-            display: none;
-            border-top: 1px solid #f0f0f0;
-            padding: 20px;
-        }
-
-        .info-grid {
+        /* ══ STAT CARDS ══ */
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-bottom: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
         }
-        .info-box {
-            background: #f9f9fb;
-            border: 1px solid var(--border);
-            border-radius: 9px;
-            padding: 12px 14px;
-        }
-        .info-box label {
-            display: block;
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--muted);
-            margin-bottom: 5px;
-        }
-        .info-box p { font-size: 0.88rem; color: var(--text); font-weight: 600; }
-
-        /* Notes */
-        .notes-box {
-            background: #fffbea;
-            border: 1.5px solid #ffe58f;
-            border-radius: 10px;
-            padding: 13px 16px;
-            margin-bottom: 14px;
-        }
-        .notes-box label {
-            display: block;
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: #a07600;
-            margin-bottom: 6px;
-        }
-        .notes-box p { font-size: 0.88rem; color: #555; line-height: 1.55; }
-
-        /* Item rows */
-        .items-title {
-            font-size: 0.72rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.7px;
-            color: var(--muted);
-            margin-bottom: 10px;
-        }
-        .item-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 0;
-            border-bottom: 1px solid #f3f3f3;
-        }
-        .item-row:last-child { border-bottom: none; }
-        .item-thumb {
-            width: 54px;
-            height: 54px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid var(--border);
-            flex-shrink: 0;
-            cursor: zoom-in;
-            transition: transform 0.2s;
-        }
-        .item-thumb:hover { transform: scale(1.06); }
-        .item-name { font-weight: 700; font-size: 0.88rem; color: var(--navy); }
-        .item-sub  { font-size: 0.74rem; color: var(--muted); margin-top: 2px; }
-
-        /* Order footer */
-        .order-foot {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 16px;
-            padding-top: 14px;
-            border-top: 1px dashed #ddd;
-        }
-        .status-form label {
-            font-size: 0.78rem;
-            font-weight: 800;
-            color: var(--text);
-            margin-right: 8px;
-        }
-        .status-select {
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1.5px solid var(--border);
-            font-size: 0.85rem;
-            cursor: pointer;
-            background: var(--white);
-            font-family: inherit;
-            transition: border-color 0.2s;
-        }
-        .status-select:focus { outline: none; border-color: var(--purple); }
-        .status-btn {
-            background: var(--navy);
-            color: white;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 8px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-        .status-btn:hover { opacity: 0.85; }
-        .balance-tag { color: var(--red); font-weight: 800; font-size: 0.92rem; }
-
-        /* Empty state */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #ccc;
-        }
-        .empty-state span { font-size: 3rem; display: block; margin-bottom: 12px; }
-
-        /* ═══════════════════════════════
-           INVENTORY TABLE
-           KEY FIX: forms defined OUTSIDE
-           <table> and linked via form="id"
-        ════════════════════════════════ */
-        .hidden-forms { display: none; }
-
-        .inv-wrap {
+        .stat-card {
             background: var(--white);
             border-radius: 14px;
-            overflow: hidden;
+            padding: 18px 20px;
             box-shadow: 0 2px 14px rgba(0,0,0,0.06);
             border: 1px solid var(--border);
+            border-top: 4px solid var(--navy);
         }
-        .inv-table { width: 100%; border-collapse: collapse; }
-        .inv-table th {
-            background: #f0f4f8;
-            color: var(--navy);
-            font-size: 0.7rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.7px;
-            padding: 12px 14px;
-            text-align: left;
-        }
-        .inv-table td { padding: 10px 14px; border-bottom: 1px solid #f3f3f3; vertical-align: middle; }
-        .inv-table tr:last-child td { border-bottom: none; }
-        .inv-table tr:hover td { background: #fafbff; }
+        .stat-card.green  { border-top-color: var(--green); }
+        .stat-card.purple { border-top-color: var(--purple); }
+        .stat-card.orange { border-top-color: var(--orange); }
+        .stat-card.red    { border-top-color: var(--red); }
+        .stat-icon  { font-size: 1.5rem; margin-bottom: 8px; }
+        .stat-value { font-size: 1.3rem; font-weight: 900; color: var(--navy); margin-bottom: 3px; }
+        .stat-label { font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .cat-header td {
-            background: #f0eafa;
-            color: var(--purple);
-            font-size: 0.68rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 7px 14px;
+        .status-pills-row {
+            display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 22px;
         }
+        .s-pill {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+        .s-received { background: #fff3cd; color: #856404; }
+        .s-onway    { background: #cfe2ff; color: #084298; }
+        .s-done     { background: #d1e7dd; color: #0f5132; }
 
-        .inv-input {
-            width: 100%;
-            padding: 7px 10px;
-            border: 1.5px solid var(--border);
-            border-radius: 7px;
-            font-size: 0.84rem;
-            font-family: inherit;
-            background: #fafbfc;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .inv-input:focus {
-            outline: none;
-            border-color: var(--purple);
-            box-shadow: 0 0 0 3px rgba(92,14,145,0.1);
-            background: var(--white);
-        }
-        .inv-textarea {
-            width: 100%;
-            padding: 7px 10px;
-            border: 1.5px solid var(--border);
-            border-radius: 7px;
-            font-size: 0.82rem;
-            font-family: inherit;
-            min-height: 54px;
-            resize: vertical;
-            background: #fafbfc;
-            transition: border-color 0.2s;
-        }
-        .inv-textarea:focus { outline: none; border-color: var(--purple); background: var(--white); }
+        /* ══ ERROR BANNER ══ */
+        .err-banner { background:#fdecea; border:1.5px solid #f5c6cb; border-radius:10px; padding:13px 17px; color:#721c24; font-size:0.84rem; margin-bottom:16px; }
 
-        .prod-thumb {
-            width: 46px;
-            height: 46px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid var(--border);
-            display: block;
-            cursor: zoom-in;
-            transition: transform 0.2s;
-        }
-        .prod-thumb:hover { transform: scale(1.1); }
+        /* ══ ORDER CARDS ══ */
+        .order-card { background:var(--white); border:1.5px solid var(--border); border-radius:14px; margin-bottom:11px; overflow:hidden; transition:box-shadow 0.2s,border-color 0.2s; }
+        .order-card:hover { border-color:#b8a0dc; box-shadow:0 4px 18px rgba(92,14,145,0.1); }
+        .order-hd { padding:15px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; gap:12px; }
+        .order-meta strong { font-size:0.96rem; color:var(--navy); display:block; margin-bottom:3px; }
+        .order-meta small { font-size:0.77rem; color:var(--muted); }
+        .order-right { text-align:right; flex-shrink:0; }
+        .badge { display:inline-block; padding:4px 10px; border-radius:20px; font-size:0.68rem; font-weight:800; letter-spacing:0.4px; text-transform:uppercase; }
+        .b-recv { background:#fff3cd; color:#856404; }
+        .b-way  { background:#cfe2ff; color:#084298; }
+        .b-done { background:#d1e7dd; color:#0f5132; }
+        .o-price { font-size:0.76rem; color:var(--muted); margin-top:3px; }
+        .chev { font-size:0.68rem; color:var(--muted); flex-shrink:0; transition:transform 0.25s; }
+        .chev.open { transform:rotate(180deg); }
 
-        .action-btn {
-            background: none;
-            border: none;
-            font-size: 1.15rem;
-            cursor: pointer;
-            padding: 5px 7px;
-            border-radius: 7px;
-            transition: background 0.15s, transform 0.1s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .action-btn:hover { background: rgba(0,0,0,0.07); }
-        .action-btn:active { transform: scale(0.86); }
+        .order-body { display:none; border-top:1px solid #f0f0f0; padding:18px; }
+        .info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:14px; }
+        .info-box { background:#f9f9fb; border:1px solid var(--border); border-radius:9px; padding:11px 13px; }
+        .info-box label { display:block; font-size:0.63rem; font-weight:800; text-transform:uppercase; letter-spacing:0.7px; color:var(--muted); margin-bottom:4px; }
+        .info-box p { font-size:0.86rem; color:var(--text); font-weight:600; }
 
-        /* ═══════════════════════════════
-           ADD PRODUCT SECTION
-        ════════════════════════════════ */
-        .add-section {
-            background: var(--white);
-            border: 2px dashed #ccd5e0;
-            border-radius: 14px;
-            padding: 22px;
-            margin-top: 24px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-        }
-        .add-section h3 { color: var(--navy); font-size: 0.95rem; margin-bottom: 18px; }
-        .add-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
-            gap: 14px;
-            align-items: start;
-        }
-        .add-field label {
-            display: block;
-            font-size: 0.7rem;
-            font-weight: 800;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            margin-bottom: 5px;
-        }
-        .add-field input,
-        .add-field textarea {
-            width: 100%;
-            padding: 9px 12px;
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.88rem;
-            font-family: inherit;
-            background: #fafbfc;
-            transition: border-color 0.2s;
-        }
-        .add-field textarea { min-height: 62px; resize: vertical; }
-        .add-field input:focus,
-        .add-field textarea:focus { outline: none; border-color: var(--purple); background: var(--white); }
+        .notes-box { background:#fffbea; border:1.5px solid #ffe58f; border-radius:9px; padding:12px 14px; margin-bottom:13px; }
+        .notes-box label { display:block; font-size:0.63rem; font-weight:800; text-transform:uppercase; letter-spacing:0.7px; color:#a07600; margin-bottom:5px; }
+        .notes-box p { font-size:0.86rem; color:#555; line-height:1.5; }
 
-        .upload-btn {
-            background: linear-gradient(135deg, var(--purple), #7b2abf);
-            color: white;
-            padding: 11px 22px;
-            border: none;
-            border-radius: 9px;
-            font-weight: 800;
-            font-size: 0.88rem;
-            cursor: pointer;
-            transition: opacity 0.2s;
-            align-self: end;
-            width: 100%;
-        }
-        .upload-btn:hover { opacity: 0.87; }
+        .items-title { font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:var(--muted); margin-bottom:9px; }
+        .item-row { display:flex; align-items:center; gap:11px; padding:9px 0; border-bottom:1px solid #f3f3f3; }
+        .item-row:last-child { border-bottom:none; }
+        .item-thumb { width:52px; height:52px; border-radius:8px; object-fit:cover; border:1px solid var(--border); flex-shrink:0; cursor:zoom-in; transition:transform 0.2s; }
+        .item-thumb:hover { transform:scale(1.07); }
+        .item-name { font-weight:700; font-size:0.86rem; color:var(--navy); }
+        .item-sub  { font-size:0.72rem; color:var(--muted); margin-top:2px; }
 
-        /* ═══════════════════════════════
-           LIGHTBOX
-        ════════════════════════════════ */
-        .lightbox-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            cursor: zoom-out;
+        .order-foot { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-top:14px; padding-top:13px; border-top:1px dashed #ddd; }
+        .status-form { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+        .status-form label { font-size:0.77rem; font-weight:800; color:var(--text); }
+        .status-sel { padding:7px 11px; border-radius:8px; border:1.5px solid var(--border); font-size:0.83rem; cursor:pointer; background:var(--white); font-family:inherit; transition:border-color 0.2s; }
+        .status-sel:focus { outline:none; border-color:var(--purple); }
+        .save-btn { background:var(--navy); color:white; border:none; padding:8px 16px; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:pointer; transition:opacity 0.2s; }
+        .save-btn:hover { opacity:0.85; }
+        .balance-tag { color:var(--red); font-weight:800; font-size:0.9rem; }
+
+        /* ══ CSV BUTTON ══ */
+        .csv-btn {
+            display:inline-flex; align-items:center; gap:7px;
+            background: var(--green); color:white;
+            padding:9px 20px; border-radius:9px;
+            font-weight:700; font-size:0.85rem;
+            text-decoration:none; margin-bottom:18px;
+            transition:opacity 0.2s;
         }
-        .lightbox-overlay.active { display: flex; }
-        .lightbox-img {
-            max-width: 90vw;
-            max-height: 86vh;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-            object-fit: contain;
-            animation: zoomIn 0.2s ease;
-        }
-        @keyframes zoomIn {
-            from { transform: scale(0.82); opacity: 0; }
-            to   { transform: scale(1);    opacity: 1; }
-        }
-        .lightbox-close {
-            position: fixed;
-            top: 16px;
-            right: 20px;
-            color: white;
-            font-size: 1.8rem;
-            cursor: pointer;
-            background: rgba(255,255,255,0.15);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-        .lightbox-close:hover { background: rgba(255,255,255,0.3); }
+        .csv-btn:hover { opacity:0.87; }
+
+        /* ══ EMPTY STATE ══ */
+        .empty-st { text-align:center; padding:50px 20px; color:#ccc; }
+        .empty-st span { font-size:2.8rem; display:block; margin-bottom:10px; }
+
+        /* ══ INVENTORY TABLE ══ */
+        /* Forms defined OUTSIDE table, inputs linked via form="edit-N" */
+        .hidden-forms { display:none; }
+        .inv-wrap { background:var(--white); border-radius:14px; overflow:hidden; box-shadow:0 2px 14px rgba(0,0,0,0.06); border:1px solid var(--border); }
+        .inv-table { width:100%; border-collapse:collapse; }
+        .inv-table th { background:#f0f4f8; color:var(--navy); font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; padding:11px 13px; text-align:left; }
+        .inv-table td { padding:9px 13px; border-bottom:1px solid #f3f3f3; vertical-align:middle; }
+        .inv-table tr:last-child td { border-bottom:none; }
+        .inv-table tr:hover td { background:#fafbff; }
+        .cat-hd td { background:#f0eafa; color:var(--purple); font-size:0.66rem; font-weight:900; text-transform:uppercase; letter-spacing:0.9px; padding:6px 13px; }
+
+        .inv-inp { width:100%; padding:6px 9px; border:1.5px solid var(--border); border-radius:6px; font-size:0.82rem; font-family:inherit; background:#fafbfc; transition:border-color 0.2s; }
+        .inv-inp:focus { outline:none; border-color:var(--purple); background:var(--white); }
+        .inv-ta { width:100%; padding:6px 9px; border:1.5px solid var(--border); border-radius:6px; font-size:0.8rem; font-family:inherit; min-height:50px; resize:vertical; background:#fafbfc; transition:border-color 0.2s; }
+        .inv-ta:focus { outline:none; border-color:var(--purple); background:var(--white); }
+        .inv-sel { width:100%; padding:6px 9px; border:1.5px solid var(--border); border-radius:6px; font-size:0.82rem; font-family:inherit; background:#fafbfc; transition:border-color 0.2s; }
+        .inv-sel:focus { outline:none; border-color:var(--purple); background:var(--white); }
+
+        .prod-thumb { width:44px; height:44px; border-radius:7px; object-fit:cover; border:1px solid var(--border); display:block; cursor:zoom-in; transition:transform 0.2s; }
+        .prod-thumb:hover { transform:scale(1.1); }
+
+        .act-btn { background:none; border:none; font-size:1.1rem; cursor:pointer; padding:4px 6px; border-radius:6px; transition:background 0.15s,transform 0.1s; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; }
+        .act-btn:hover { background:rgba(0,0,0,0.07); }
+        .act-btn:active { transform:scale(0.86); }
+
+        /* ══ ADD PRODUCT ══ */
+        .add-sec { background:var(--white); border:2px dashed #ccd5e0; border-radius:14px; padding:20px; margin-top:22px; box-shadow:0 2px 12px rgba(0,0,0,0.04); }
+        .add-sec h3 { color:var(--navy); font-size:0.92rem; margin-bottom:16px; }
+        .add-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:13px; align-items:start; }
+        .add-fld label { display:block; font-size:0.68rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+        .add-fld input, .add-fld textarea, .add-fld select { width:100%; padding:8px 11px; border:1.5px solid var(--border); border-radius:7px; font-size:0.86rem; font-family:inherit; background:#fafbfc; transition:border-color 0.2s; }
+        .add-fld textarea { min-height:58px; resize:vertical; }
+        .add-fld input:focus, .add-fld textarea:focus, .add-fld select:focus { outline:none; border-color:var(--purple); background:var(--white); }
+        .up-btn { background:linear-gradient(135deg,var(--purple),#7b2abf); color:white; padding:10px 20px; border:none; border-radius:8px; font-weight:800; font-size:0.86rem; cursor:pointer; transition:opacity 0.2s; align-self:end; width:100%; }
+        .up-btn:hover { opacity:0.87; }
+
+        /* ══ LIGHTBOX ══ */
+        .lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9999; align-items:center; justify-content:center; padding:20px; cursor:zoom-out; }
+        .lightbox.active { display:flex; }
+        .lightbox img { max-width:90vw; max-height:86vh; border-radius:12px; object-fit:contain; animation:zIn 0.2s ease; }
+        @keyframes zIn { from{transform:scale(0.82);opacity:0;} to{transform:scale(1);opacity:1;} }
+        .lb-close { position:fixed; top:15px; right:18px; color:white; font-size:1.8rem; cursor:pointer; background:rgba(255,255,255,0.15); width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+        .lb-close:hover { background:rgba(255,255,255,0.3); }
     </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════
-     LIGHTBOX
-════════════════════════════════════════ -->
-<div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
-    <span class="lightbox-close" onclick="closeLightbox()">✕</span>
-    <img class="lightbox-img" id="lightbox-img" src="" alt="">
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLB()">
+    <span class="lb-close" onclick="closeLB()">✕</span>
+    <img id="lb-img" src="" alt="">
 </div>
 
-
-<!-- ═══════════════════════════════════════
-     HIDDEN EDIT FORMS
-     Defined outside the table so HTML is valid.
-     Inputs link to these via form="edit-{id}".
-════════════════════════════════════════ -->
+<!-- HIDDEN EDIT FORMS (outside table for valid HTML) -->
 <div class="hidden-forms">
     {% for cat, items in inventory_by_cat.items() %}
         {% for p in items %}
@@ -531,78 +216,139 @@
     {% endfor %}
 </div>
 
-
-<!-- ═══════════════════════════════════════
-     SIDEBAR
-════════════════════════════════════════ -->
+<!-- ══════════ SIDEBAR ══════════ -->
 <div class="sidebar">
     <div class="sidebar-top">
-        <div class="sidebar-brand">Garphy Home<br>Essentials</div>
-        <div class="sidebar-sub">Admin Panel</div>
+        <div class="brand-name">Garphy Home<br>Essentials</div>
+        <div class="brand-sub">Admin Panel</div>
     </div>
-
     <div class="nav-group">
-        <div id="nav-orders"    class="nav-item" onclick="switchTab('orders')">
-            <span class="icon">📦</span> Active Orders
+        <div id="nav-dashboard"  class="nav-item" onclick="switchTab('dashboard')">
+            <span class="ic">📊</span> Dashboard
         </div>
-        <div id="nav-inventory" class="nav-item" onclick="switchTab('inventory')">
-            <span class="icon">🛠️</span> Manage Inventory
+        <div id="nav-orders"     class="nav-item" onclick="switchTab('orders')">
+            <span class="ic">📦</span> Active Orders
+        </div>
+        <div id="nav-inventory"  class="nav-item" onclick="switchTab('inventory')">
+            <span class="ic">🛠️</span> Manage Inventory
         </div>
         <a href="/" target="_blank" class="nav-item" style="color:#7ec8e3;">
-            <span class="icon">🌐</span> View Shop
+            <span class="ic">🌐</span> View Shop
         </a>
     </div>
-
     <div class="sidebar-foot">
-        <a href="/logout" class="logout-btn">🔴 Logout</a>
+        <a href="/logout" class="logout-a">🔴 Logout</a>
     </div>
 </div>
 
-
-<!-- ═══════════════════════════════════════
-     MAIN CONTENT
-════════════════════════════════════════ -->
+<!-- ══════════ MAIN ══════════ -->
 <div class="main">
 
-    <!-- ══════════ ORDERS PANEL ══════════ -->
-    <div id="panel-orders" class="panel">
-        <div class="page-title">Customer Orders</div>
-        <div class="page-sub">Tap any order card to expand details. Change status and click Save.</div>
+    <!-- ════ DASHBOARD PANEL ════ -->
+    <div id="panel-dashboard" class="panel">
+        <div class="page-hd">📊 Dashboard</div>
+        <div class="page-sub">Overview of your store performance and order breakdown.</div>
 
         {% if load_error %}
-        <div class="error-banner">
-            ⚠️ <strong>Could not load orders:</strong> {{ load_error }}<br>
-            Check your Supabase table name, column names, and RLS policies.
+        <div class="err-banner">⚠️ <strong>Error loading orders:</strong> {{ load_error }}<br>Check your Supabase table columns and RLS policies.</div>
+        {% endif %}
+
+        <!-- Stat cards -->
+        <div class="stats-grid">
+            <div class="stat-card green">
+                <div class="stat-icon">💰</div>
+                <div class="stat-value">UGX {{ "{:,}".format(stats.total_revenue) }}</div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+            <div class="stat-card purple">
+                <div class="stat-icon">📦</div>
+                <div class="stat-value">{{ stats.total_orders }}</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value">UGX {{ "{:,}".format(stats.paid_revenue) }}</div>
+                <div class="stat-label">Amount Collected</div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-value">UGX {{ "{:,}".format(stats.outstanding) }}</div>
+                <div class="stat-label">Outstanding Balance</div>
+            </div>
         </div>
+
+        <!-- Order status pills -->
+        <div class="status-pills-row">
+            <span class="s-pill s-received">
+                📥 Order Received: {{ stats.status_counts['ORDER RECEIVED'] }}
+            </span>
+            <span class="s-pill s-onway">
+                🚚 On the Way: {{ stats.status_counts['ON THE WAY'] }}
+            </span>
+            <span class="s-pill s-done">
+                ✅ Delivered: {{ stats.status_counts['DELIVERED'] }}
+            </span>
+        </div>
+
+        <!-- CSV download button -->
+        <a href="/export_orders_csv" class="csv-btn">
+            📥 Download Orders as CSV
+        </a>
+
+        <!-- Mini order preview -->
+        <div style="font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:10px;">
+            Recent Orders
+        </div>
+        {% for o in orders[:5] %}
+        {% set badge = 'b-recv' if o.status == 'ORDER RECEIVED' else ('b-way' if o.status == 'ON THE WAY' else 'b-done') %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--white);border-radius:10px;margin-bottom:8px;border:1px solid var(--border);font-size:0.85rem;">
+            <div>
+                <strong style="color:var(--navy);">{{ o.username }}</strong>
+                <span style="color:var(--muted);margin-left:8px;font-size:0.78rem;">{{ o.phone }}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <span style="color:var(--purple);font-weight:700;">UGX {{ "{:,}".format(o.total_price) }}</span>
+                <span class="badge {{ badge }}">{{ o.status }}</span>
+            </div>
+        </div>
+        {% else %}
+        <p style="color:var(--muted);font-size:0.87rem;">No orders yet.</p>
+        {% endfor %}
+    </div>
+
+
+    <!-- ════ ORDERS PANEL ════ -->
+    <div id="panel-orders" class="panel">
+        <div class="page-hd">Customer Orders</div>
+        <div class="page-sub">Tap a card to expand. Select a status and click 💾 Save Status.</div>
+
+        <!-- CSV download button -->
+        <a href="/export_orders_csv" class="csv-btn">📥 Download Orders CSV</a>
+
+        {% if load_error %}
+        <div class="err-banner">⚠️ <strong>Error:</strong> {{ load_error }}</div>
         {% endif %}
 
         {% for o in orders %}
-        {% set badge =
-            'badge-received' if o.status == 'ORDER RECEIVED' else
-            ('badge-onway'   if o.status == 'ON THE WAY'     else 'badge-done')
-        %}
+        {% set bc = 'b-recv' if o.status == 'ORDER RECEIVED' else ('b-way' if o.status == 'ON THE WAY' else 'b-done') %}
         <div class="order-card">
-
-            <!-- Collapsed header -->
-            <div class="order-header" onclick="toggleOrder('{{ o.id }}')">
+            <div class="order-hd" onclick="toggleOrder('{{ o.id }}')">
                 <div class="order-meta">
                     <strong>{{ o.username }}</strong>
                     <small>{{ o.phone }} &nbsp;·&nbsp; 📍 {{ o.location }}</small>
                 </div>
                 <div class="order-right">
-                    <span class="status-badge {{ badge }}">{{ o.status }}</span>
-                    <div class="order-price">UGX {{ "{:,}".format(o.total_price) }}</div>
+                    <span class="badge {{ bc }}">{{ o.status }}</span>
+                    <div class="o-price">UGX {{ "{:,}".format(o.total_price) }}</div>
                 </div>
-                <span class="chevron" id="chev-{{ o.id }}">▼</span>
+                <span class="chev" id="chev-{{ o.id }}">▼</span>
             </div>
 
-            <!-- Expanded body -->
-            <div id="order-body-{{ o.id }}" class="order-body">
-
-                <!-- Key info grid -->
+            <div id="ob-{{ o.id }}" class="order-body">
+                <!-- Info grid -->
                 <div class="info-grid">
                     <div class="info-box">
-                        <label>💳 Payment Method</label>
+                        <label>💳 Payment</label>
                         <p>{{ o.payment_method }}</p>
                     </div>
                     <div class="info-box">
@@ -619,24 +365,23 @@
                     </div>
                 </div>
 
-                <!-- Customer notes -->
                 {% if o.notes %}
                 <div class="notes-box">
-                    <label>📝 Customer Notes / Special Request</label>
+                    <label>📝 Customer Notes</label>
                     <p>{{ o.notes }}</p>
                 </div>
                 {% endif %}
 
-                <!-- Items with images -->
+                <!-- Items -->
                 <div class="items-title">🛒 Items Ordered</div>
                 {% set names = o.item_name.split(', ') %}
                 {% for i in range(names|length) %}
                 <div class="item-row">
                     {% if o.item_images and i < o.item_images|length and o.item_images[i] %}
-                        <img src="{{ o.item_images[i] }}"
-                             class="item-thumb"
-                             onclick="openLightbox('{{ o.item_images[i] }}', '{{ names[i] }}')"
-                             onerror="this.style.display='none'">
+                    <img src="{{ o.item_images[i] }}"
+                         class="item-thumb"
+                         onclick="openLB('{{ o.item_images[i] }}','{{ names[i] }}')"
+                         onerror="this.style.display='none'">
                     {% endif %}
                     <div>
                         <div class="item-name">{{ names[i] }}</div>
@@ -645,12 +390,13 @@
                 </div>
                 {% endfor %}
 
-                <!-- Status update -->
+                <!-- Status update — explicit button, NOT onchange -->
                 <div class="order-foot">
-                    <form action="/update_status/{{ o.id }}" method="POST" class="status-form"
-                          style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <form action="/update_status/{{ o.id }}"
+                          method="POST"
+                          class="status-form">
                         <label>Update Status:</label>
-                        <select name="status" class="status-select">
+                        <select name="status" class="status-sel">
                             <option value="ORDER RECEIVED"
                                 {% if o.status == 'ORDER RECEIVED' %}selected{% endif %}>
                                 ORDER RECEIVED
@@ -664,141 +410,122 @@
                                 DELIVERED
                             </option>
                         </select>
-                        <button type="submit" class="status-btn">💾 Save Status</button>
+                        <button type="submit" class="save-btn">💾 Save Status</button>
                     </form>
                     <div class="balance-tag">
-                        Balance Due: UGX {{ "{:,}".format(o.balance) }}
+                        Balance: UGX {{ "{:,}".format(o.balance) }}
                     </div>
                 </div>
-
-            </div><!-- end order-body -->
-        </div><!-- end order-card -->
+            </div>
+        </div>
         {% else %}
-        <div class="empty-state">
-            <span>📭</span>
-            No orders yet — they'll appear here as customers start buying!
+        <div class="empty-st">
+            <span>📭</span>No orders yet — they'll appear here as customers buy!
         </div>
         {% endfor %}
     </div>
 
 
-    <!-- ══════════ INVENTORY PANEL ══════════ -->
+    <!-- ════ INVENTORY PANEL ════ -->
     <div id="panel-inventory" class="panel">
-        <div class="page-title">Manage Inventory</div>
-        <div class="page-sub">Edit any field inline, then click ✏️ to save. Click 🗑️ to permanently remove a product.</div>
+        <div class="page-hd">Manage Inventory</div>
+        <div class="page-sub">Edit fields inline → click ✏️ to save. Click 🗑️ to remove.</div>
 
         <div class="inv-wrap">
             <table class="inv-table">
                 <thead>
                     <tr>
-                        <th style="width:52px;">Photo</th>
-                        <th style="min-width:130px;">Name</th>
-                        <th style="width:115px;">Price (UGX)</th>
+                        <th style="width:50px;">Photo</th>
+                        <th style="min-width:120px;">Name</th>
+                        <th style="width:110px;">Price (UGX)</th>
+                        <th style="width:160px;">Category</th>
                         <th>Description</th>
-                        <th style="width:90px; text-align:center;">Actions</th>
+                        <th style="width:88px;text-align:center;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for cat, items in inventory_by_cat.items() %}
-                    <!-- Category separator row -->
-                    <tr class="cat-header">
-                        <td colspan="5">🏷️ {{ cat }}</td>
-                    </tr>
-
+                    <tr class="cat-hd"><td colspan="6">🏷️ {{ cat }}</td></tr>
                     {% for p in items %}
                     <tr>
-                        <!-- Thumbnail — click to magnify -->
                         <td>
-                            <img src="{{ p.image_url }}"
-                                 class="prod-thumb"
-                                 onclick="openLightbox('{{ p.image_url }}', '{{ p.name }}')"
-                                 onerror="this.src='https://via.placeholder.com/46?text=?'">
+                            <img src="{{ p.image_url }}" class="prod-thumb"
+                                 onclick="openLB('{{ p.image_url }}','{{ p.name }}')"
+                                 onerror="this.src='https://via.placeholder.com/44?text=?'">
                         </td>
-
-                        <!-- Editable Name (linked to form via form attr) -->
                         <td>
-                            <input type="text"
-                                   name="name"
-                                   value="{{ p.name }}"
-                                   class="inv-input"
-                                   form="edit-{{ p.id }}"
-                                   required>
-                            <input type="hidden"
-                                   name="category"
-                                   value="{{ p.category }}"
-                                   form="edit-{{ p.id }}">
+                            <input type="text" name="name" value="{{ p.name }}"
+                                   class="inv-inp" form="edit-{{ p.id }}" required>
                         </td>
-
-                        <!-- Editable Price -->
                         <td>
-                            <input type="number"
-                                   name="price"
-                                   value="{{ p.price }}"
-                                   class="inv-input"
-                                   form="edit-{{ p.id }}"
-                                   required>
+                            <input type="number" name="price" value="{{ p.price }}"
+                                   class="inv-inp" form="edit-{{ p.id }}" required>
                         </td>
-
-                        <!-- Editable Description -->
                         <td>
-                            <textarea name="description"
-                                      class="inv-textarea"
+                            <!-- Category autoselect for edit -->
+                            <select name="category" class="inv-sel" form="edit-{{ p.id }}">
+                                {% set cats = ['TOILETRIES','BEDDINGS','PLASTICS AND KITCHENWARE','CLEANING ESSENTIALS'] %}
+                                {% for c in cats %}
+                                <option value="{{ c }}"
+                                    {% if p.category == c %}selected{% endif %}>
+                                    {{ c }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <textarea name="description" class="inv-ta"
                                       form="edit-{{ p.id }}"
                                       placeholder="Short description…">{{ p.description or '' }}</textarea>
                         </td>
-
-                        <!-- Actions -->
-                        <td style="text-align:center; white-space:nowrap;">
-                            <button type="submit"
-                                    form="edit-{{ p.id }}"
-                                    class="action-btn"
-                                    title="Save Changes">✏️</button>
+                        <td style="text-align:center;white-space:nowrap;">
+                            <button type="submit" form="edit-{{ p.id }}"
+                                    class="act-btn" title="Save">✏️</button>
                             <a href="/delete_product/{{ p.id }}"
-                               class="action-btn"
-                               title="Delete Product"
+                               class="act-btn" title="Delete"
                                onclick="return confirm('Remove \'{{ p.name }}\' permanently?')">🗑️</a>
                         </td>
                     </tr>
                     {% endfor %}
                     {% else %}
-                    <tr>
-                        <td colspan="5" style="text-align:center; color:var(--muted); padding:30px;">
-                            No products yet — add your first one below!
-                        </td>
-                    </tr>
+                    <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:28px;">No products yet.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
 
         <!-- Add new product -->
-        <div class="add-section">
+        <div class="add-sec">
             <h3>➕ Add New Product</h3>
             <form action="/add_product" method="POST" enctype="multipart/form-data">
                 <div class="add-grid">
-                    <div class="add-field">
+                    <div class="add-fld">
                         <label>Product Name</label>
                         <input type="text" name="name" placeholder="e.g. 20L Bucket" required>
                     </div>
-                    <div class="add-field">
+                    <div class="add-fld">
                         <label>Category</label>
-                        <input type="text" name="category" placeholder="e.g. Buckets" required>
+                        <select name="category" required>
+                            {% for c in categories %}
+                            <option value="{{ c }}">{{ c }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <div class="add-field">
+                    <div class="add-fld">
                         <label>Price (UGX)</label>
                         <input type="number" name="price" placeholder="15000" required>
                     </div>
-                    <div class="add-field" style="grid-column: span 2;">
+                    <div class="add-fld" style="grid-column:span 2;">
                         <label>Description</label>
                         <textarea name="description" placeholder="Brief product description…"></textarea>
                     </div>
-                    <div class="add-field">
+                    <div class="add-fld">
                         <label>Product Image</label>
                         <input type="file" name="product_image" accept="image/*" required>
                     </div>
-                    <div class="add-field">
+                    <div class="add-fld">
                         <label>&nbsp;</label>
-                        <button type="submit" class="upload-btn">📤 Upload to Store</button>
+                        <button type="submit" class="up-btn">📤 Upload to Store</button>
                     </div>
                 </div>
             </form>
@@ -808,18 +535,14 @@
 </div><!-- end .main -->
 
 
-<!-- ═══════════════════════════════════════
-     JAVASCRIPT
-════════════════════════════════════════ -->
 <script>
-    /* ── Tab switching — reads ?tab= from URL on every load ── */
+    /* ── Tab switching — reads ?tab= from URL ── */
     window.onload = function () {
-        var tab = new URLSearchParams(window.location.search).get('tab') || 'orders';
+        var tab = new URLSearchParams(window.location.search).get('tab') || 'dashboard';
         switchTab(tab);
     };
-
     function switchTab(id) {
-        document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+        document.querySelectorAll('.panel').forEach(function(p)   { p.classList.remove('active'); });
         document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
         var panel = document.getElementById('panel-' + id);
         var nav   = document.getElementById('nav-'   + id);
@@ -829,15 +552,11 @@
 
     /* ── Order accordion ── */
     function toggleOrder(id) {
-        var body  = document.getElementById('order-body-' + id);
-        var chev  = document.getElementById('chev-' + id);
+        var body   = document.getElementById('ob-' + id);
+        var chev   = document.getElementById('chev-' + id);
         var isOpen = body.style.display === 'block';
-
-        /* Close all */
         document.querySelectorAll('.order-body').forEach(function(b) { b.style.display = 'none'; });
-        document.querySelectorAll('.chevron').forEach(function(c) { c.classList.remove('open'); });
-
-        /* Open clicked (toggle) */
+        document.querySelectorAll('.chev').forEach(function(c) { c.classList.remove('open'); });
         if (!isOpen) {
             body.style.display = 'block';
             if (chev) chev.classList.add('open');
@@ -845,20 +564,18 @@
     }
 
     /* ── Lightbox ── */
-    function openLightbox(src, name) {
+    function openLB(src, name) {
         if (!src || src.indexOf('placeholder') !== -1) return;
-        document.getElementById('lightbox-img').src = src;
-        document.getElementById('lightbox-img').alt = name || '';
+        document.getElementById('lb-img').src = src;
+        document.getElementById('lb-img').alt = name || '';
         document.getElementById('lightbox').classList.add('active');
         document.body.style.overflow = 'hidden';
     }
-    function closeLightbox() {
+    function closeLB() {
         document.getElementById('lightbox').classList.remove('active');
         document.body.style.overflow = '';
     }
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeLightbox();
-    });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLB(); });
 </script>
 
 </body>
