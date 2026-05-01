@@ -39,63 +39,117 @@ def safe_int(val, default=0):
     except (ValueError, TypeError):
         return default
 
+
 def parse_images(raw):
-    """Normalise item_images — handles list, JSON string, plain string, None."""
+    """Normalise item_images regardless of how Supabase returns it."""
     if raw is None:
         return []
     if isinstance(raw, list):
-        return [str(x) for x in raw if x]
+        return raw
     if isinstance(raw, str):
         raw = raw.strip()
         if raw.startswith('['):
             try:
-                parsed = json.loads(raw)
-                if isinstance(parsed, list):
-                    return [str(x) for x in parsed if x]
+                return json.loads(raw)
             except Exception:
                 pass
-        if raw:
-            return [raw]
+        return [raw] if raw else []
     return []
 
-def sanitise_order(o):
-    """Return a clean order dict that will never cause a template crash."""
-    return {
-        "id":             o.get("id")             or "",
-        "created_at":     o.get("created_at")     or "",
-        "username":       o.get("username")       or "Unknown",
-        "phone":          o.get("phone")          or "—",
-        "location":       o.get("location")       or "—",
-        "item_name":      o.get("item_name")      or "",
-        "item_images":    parse_images(o.get("item_images")),
-        "total_price":    safe_int(o.get("total_price")),
-        "amount_paid":    safe_int(o.get("amount_paid")),
-        "balance":        safe_int(o.get("balance")),
-        "status":         o.get("status")         or "ORDER RECEIVED",
-        "payment_method": o.get("payment_method") or "—",
-        "notes":          o.get("notes")          or "",
-    }
 
-def load_orders():
-    """Try to load orders. Falls back gracefully if columns are missing."""
-    try:
-        res = supabase.table("orders").select("*").order("created_at", desc=True).execute()
-        return [sanitise_order(o) for o in (res.data or [])], None
-    except Exception as first_err:
-        print(f"[ORDERS full query failed] {first_err}")
+def prepare_orders(raw_list):
+    """Sanitise every order dict so the template never raises a KeyError."""
+    out = []
+    for o in (raw_list or []):
+        o['item_images']    = parse_images(o.get('item_images'))
+        o['item_name']      = o.get('item_name')      or ''
+        o['username']       = o.get('username')       or 'Unknown'
+        o['phone']          = o.get('phone')          or '—'
+        o['location']       = o.get('location')       or '—'
+        o['status']         = o.get('status')         or 'ORDER RECEIVED'
+        o['notes']          = o.get('notes')          or ''
+        o['payment_method'] = o.get('payment_method') or '—'
+        o['total_price']    = safe_int(o.get('total_price'))
+        o['amount_paid']    = safe_int(o.get('amount_paid'))
+        o['balance']        = safe_int(o.get('balance'))
+        out.append(o)
+    return out
 
+
+def fetch_orders():
+    """
+    Try to fetch orders in three stages so a missing column never
+    blocks the whole admin page.
+
+    Returns (orders_list, error_string_or_None)
+    """
+    # Stage 1 — preferred: ordered by created_at
     try:
-        res = supabase.table("orders").select("id, username, phone, location, item_name, item_images, total_price, amount_paid, balance, status").execute()
-        cleaned = []
-        for o in (res.data or []):
-            o.setdefault("payment_method", "—")
-            o.setdefault("notes", "")
-            o.setdefault("created_at", "")
-            cleaned.append(sanitise_order(o))
-        return cleaned, None
-    except Exception as second_err:
-        print(f"[ORDERS minimal query failed] {second_err}")
-        return [], str(second_err)
+        res = (supabase.table("orders")
+               .select("*")
+               .order("created_at", desc=True)
+               .execute())
+        if res.data is not None:
+            print(f"[ORDERS] Loaded {len(res.data)} order(s) (ordered).")
+            return prepare_orders(res.data), None
+    except Exception as e1:
+        print(f"[ORDERS stage-1 fail] {e1}")
+
+    # Stage 2 — fallback: no ordering (avoids missing-column errors)
+    try:
+        res = supabase.table("orders").select("*").execute()
+        if res.data is not None:
+            print(f"[ORDERS] Loaded {len(res.data)} order(s) (unordered).")
+            return prepare_orders(res.data), None
+    except Exception as e2:
+        print(f"[ORDERS stage-2 fail] {e2}")
+        return [], str(e2)
+
+    return [], "Unknown error — check Render logs."
+
+
+def fetch_products():
+    """Fetch products, return (list, error_or_None)."""
+    try:
+        res = supabase.table("products").select("*").execute()
+        data = res.data if res.data is not None else []
+        print(f"[PRODUCTS] Loaded {len(data)} product(s).")
+        return data, None
+    except Exception as e:
+        print(f"[PRODUCTS error] {e}")
+        return [], str(e)
+
+
+# ─────────────────────────────────────────────
+#  DEBUG ROUTE  (admin-only, remove in production if desired)
+# ─────────────────────────────────────────────
+
+@app.route('/admin/debug')
+def admin_debug():
+    """
+    Shows raw Supabase responses so you can diagnose column/RLS issues.
+    Visit: https://your-app.onrender.com/admin/debug
+    """
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    results = {}
+
+    # Test orders table
+    for attempt, fn in [
+        ("orders_ordered",   lambda: supabase.table("orders").select("*").order("created_at", desc=True).limit(3).execute()),
+        ("orders_plain",     lambda: supabase.table("orders").select("*").limit(3).execute()),
+        ("orders_cols",      lambda: supabase.table("orders").select("id,username,phone,status").limit(1).execute()),
+        ("products_plain",   lambda: supabase.table("products").select("*").limit(3).execute()),
+    ]:
+        try:
+            r = fn()
+            results[attempt] = {"ok": True, "count": len(r.data or []), "sample": (r.data or [])[:1]}
+        except Exception as ex:
+            results[attempt] = {"ok": False, "error": str(ex)}
+
+    return jsonify(results)
+
 
 # ─────────────────────────────────────────────
 #  CUSTOMER STOREFRONT
@@ -104,10 +158,9 @@ def load_orders():
 @app.route('/')
 def index():
     try:
-        res      = supabase.table("products").select("*").execute()
-        products = res.data if res.data is not None else []
+        prods, _ = fetch_products()
         categories = {}
-        for p in products:
+        for p in prods:
             cat = p.get('category', 'Other')
             if cat not in categories:
                 categories[cat] = []
@@ -116,6 +169,7 @@ def index():
     except Exception as e:
         print(f"[INDEX ERROR] {e}")
         return "Store temporarily offline. Please try again shortly.", 500
+
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
@@ -127,11 +181,9 @@ def place_order():
         notes    = request.form.get('notes',    '').strip()
         paid     = safe_int(request.form.get('amount_paid', 0))
 
-        res_prod = supabase.table("products").select("*").execute()
-        products = res_prod.data if res_prod.data is not None else []
-
+        prods, _ = fetch_products()
         selected_items, item_imgs, calc_total = [], [], 0
-        for p in products:
+        for p in prods:
             qty = safe_int(request.form.get(f"qty_{p['id']}", 0))
             if qty > 0:
                 calc_total += p['price'] * qty
@@ -157,22 +209,23 @@ def place_order():
 
         order_id = result.data[0]['id'] if result.data else None
         return redirect(url_for('receipt', order_id=order_id))
-
     except Exception as e:
         print(f"[PLACE ORDER ERROR] {e}")
         return f"Order failed: {str(e)}", 500
 
+
 @app.route('/receipt/<int:order_id>')
 def receipt(order_id):
     try:
-        res = supabase.table("orders").select("*").eq("id", order_id).execute()
-        if not res.data:
+        res   = supabase.table("orders").select("*").eq("id", order_id).execute()
+        order = prepare_orders(res.data)[0] if res.data else None
+        if not order:
             return redirect(url_for('index'))
-        order = sanitise_order(res.data[0])
         return render_template('receipt.html', order=order)
     except Exception as e:
         print(f"[RECEIPT ERROR] {e}")
         return redirect(url_for('index'))
+
 
 @app.route('/check_status')
 def check_status():
@@ -180,7 +233,21 @@ def check_status():
     if not phone:
         return jsonify({"error": "Please enter your phone number."})
     try:
-        res = supabase.table("orders").select("id, status, item_name, total_price").eq("phone", phone).order("created_at", desc=True).limit(1).execute()
+        # Try ordered first, fall back to plain select
+        try:
+            res = (supabase.table("orders")
+                   .select("id, status, item_name, total_price, created_at")
+                   .eq("phone", phone)
+                   .order("created_at", desc=True)
+                   .limit(1)
+                   .execute())
+        except Exception:
+            res = (supabase.table("orders")
+                   .select("id, status, item_name, total_price")
+                   .eq("phone", phone)
+                   .limit(1)
+                   .execute())
+
         if res.data:
             o = res.data[0]
             return jsonify({
@@ -192,7 +259,9 @@ def check_status():
             })
         return jsonify({"found": False, "error": "No order found for this number."})
     except Exception as e:
+        print(f"[CHECK STATUS ERROR] {e}")
         return jsonify({"error": f"Check failed: {str(e)}"})
+
 
 # ─────────────────────────────────────────────
 #  ADMIN PANEL
@@ -203,54 +272,62 @@ def admin():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
 
-    orders, load_error = load_orders()
-    inv_by_cat = {}
-    try:
-        prod_res = supabase.table("products").select("*").execute()
-        for p in (prod_res.data or []):
-            cat = p.get('category', 'Other')
-            if cat not in inv_by_cat:
-                inv_by_cat[cat] = []
-            inv_by_cat[cat].append(p)
-    except Exception as e:
-        print(f"[ADMIN PRODUCT ERROR] {e}")
+    orders,     load_error    = fetch_orders()
+    prods,      product_error = fetch_products()
 
-    total_revenue = sum(o['total_price'] for o in orders)
-    paid_revenue  = sum(o['amount_paid'] for o in orders)
-    outstanding   = sum(o['balance']     for o in orders)
-    
-    status_counts = {
-        "ORDER RECEIVED": sum(1 for o in orders if o['status'] == 'ORDER RECEIVED'),
-        "ON THE WAY":     sum(1 for o in orders if o['status'] == 'ON THE WAY'),
-        "DELIVERED":      sum(1 for o in orders if o['status'] == 'DELIVERED'),
+    inv_by_cat = {}
+    for p in prods:
+        cat = p.get('category', 'Other')
+        if cat not in inv_by_cat:
+            inv_by_cat[cat] = []
+        inv_by_cat[cat].append(p)
+
+    # Combine errors for display
+    all_errors = []
+    if load_error:    all_errors.append(f"Orders: {load_error}")
+    if product_error: all_errors.append(f"Products: {product_error}")
+
+    stats = {
+        "total_revenue": sum(o['total_price'] for o in orders),
+        "total_orders":  len(orders),
+        "paid_revenue":  sum(o['amount_paid'] for o in orders),
+        "outstanding":   sum(o['balance']     for o in orders),
+        "status_counts": {
+            "ORDER RECEIVED": sum(1 for o in orders if o['status'] == 'ORDER RECEIVED'),
+            "ON THE WAY":     sum(1 for o in orders if o['status'] == 'ON THE WAY'),
+            "DELIVERED":      sum(1 for o in orders if o['status'] == 'DELIVERED'),
+        },
     }
 
     return render_template(
         'admin.html',
         orders=orders,
         inventory_by_cat=inv_by_cat,
-        load_error=load_error,
+        load_error=" | ".join(all_errors) if all_errors else None,
         categories=CATEGORIES,
-        stats={
-            "total_revenue": total_revenue,
-            "total_orders":  len(orders),
-            "paid_revenue":  paid_revenue,
-            "outstanding":   outstanding,
-            "status_counts": status_counts,
-        },
+        stats=stats,
     )
+
 
 @app.route('/update_status/<int:order_id>', methods=['POST'])
 def update_status(order_id):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    new_status = (request.form.get('status') or '').strip()
-    if new_status:
-        try:
-            supabase.table("orders").update({"status": new_status}).eq("id", order_id).execute()
-        except Exception as e:
-            print(f"[UPDATE STATUS ERROR] {e}")
+    try:
+        new_status = (request.form.get('status') or '').strip()
+        if not new_status:
+            print(f"[UPDATE STATUS] Empty status for order {order_id} — skipped.")
+            return redirect(url_for('admin', tab='orders'))
+        supabase.table("orders") \
+                .update({"status": new_status}) \
+                .eq("id", order_id) \
+                .execute()
+        print(f"[STATUS OK] Order {order_id} → '{new_status}'")
+    except Exception as e:
+        print(f"[UPDATE STATUS ERROR] order {order_id}: {e}")
+    # Always redirect — never let the browser see a crash
     return redirect(url_for('admin', tab='orders'))
+
 
 @app.route('/edit_product/<int:p_id>', methods=['POST'])
 def edit_product(p_id):
@@ -258,21 +335,25 @@ def edit_product(p_id):
         return redirect(url_for('login'))
     try:
         update_data = {
-            "name":        request.form.get('name', '').strip(),
+            "name":        request.form.get('name',        '').strip(),
             "price":       safe_int(request.form.get('price')),
-            "category":    request.form.get('category', '').strip(),
+            "category":    request.form.get('category',    '').strip(),
             "description": request.form.get('description', '').strip(),
         }
         file = request.files.get('product_image')
         if file and file.filename:
             filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
-            path = f"products/{filename}"
+            path     = f"products/{filename}"
             supabase.storage.from_("product-images").upload(path, file.read())
-            update_data["image_url"] = supabase.storage.from_("product-images").get_public_url(path)
+            update_data["image_url"] = (supabase.storage
+                                        .from_("product-images")
+                                        .get_public_url(path))
         supabase.table("products").update(update_data).eq("id", p_id).execute()
+        print(f"[EDIT] Product {p_id} updated.")
     except Exception as e:
-        print(f"[EDIT PRODUCT ERROR] {e}")
+        print(f"[EDIT PRODUCT ERROR] {p_id}: {e}")
     return redirect(url_for('admin', tab='inventory'))
+
 
 @app.route('/delete_product/<int:p_id>')
 def delete_product(p_id):
@@ -280,9 +361,11 @@ def delete_product(p_id):
         return redirect(url_for('login'))
     try:
         supabase.table("products").delete().eq("id", p_id).execute()
+        print(f"[DELETE] Product {p_id} removed.")
     except Exception as e:
-        print(f"[DELETE ERROR] {e}")
+        print(f"[DELETE PRODUCT ERROR] {p_id}: {e}")
     return redirect(url_for('admin', tab='inventory'))
+
 
 @app.route('/add_product', methods=['POST'])
 def add_product():
@@ -292,37 +375,63 @@ def add_product():
         file = request.files.get('product_image')
         if file and file.filename:
             filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
-            path = f"products/{filename}"
+            path     = f"products/{filename}"
             supabase.storage.from_("product-images").upload(path, file.read())
-            img_url = supabase.storage.from_("product-images").get_public_url(path)
+            img_url  = supabase.storage.from_("product-images").get_public_url(path)
             supabase.table("products").insert({
-                "name":        request.form.get('name', '').strip(),
-                "category":    request.form.get('category', '').strip(),
+                "name":        request.form.get('name',        '').strip(),
+                "category":    request.form.get('category',    '').strip(),
                 "price":       safe_int(request.form.get('price')),
                 "description": request.form.get('description', '').strip(),
                 "image_url":   img_url,
             }).execute()
+            print("[ADD] Product added.")
     except Exception as e:
-        print(f"[ADD ERROR] {e}")
+        print(f"[ADD PRODUCT ERROR] {e}")
     return redirect(url_for('admin', tab='inventory'))
+
 
 @app.route('/export_orders_csv')
 def export_orders_csv():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     try:
-        orders, _ = load_orders()
+        orders, _ = fetch_orders()
         output = io.StringIO()
         writer = csv.writer(output)
-        writer.writerow(["Order ID", "Date", "Customer Name", "Phone", "Location", "Items Ordered", "Total (UGX)", "Paid (UGX)", "Balance (UGX)", "Payment Method", "Status", "Notes"])
+        writer.writerow([
+            "Order ID", "Date", "Customer Name", "Phone", "Location",
+            "Items Ordered", "Total Price (UGX)", "Amount Paid (UGX)",
+            "Balance (UGX)", "Payment Method", "Status", "Notes"
+        ])
         for o in orders:
-            writer.writerow([o.get('id', ''), (o.get('created_at') or '')[:19].replace('T', ' '), o.get('username', ''), o.get('phone', ''), o.get('location', ''), o.get('item_name', ''), o.get('total_price', 0), o.get('amount_paid', 0), o.get('balance', 0), o.get('payment_method', ''), o.get('status', ''), o.get('notes', '')])
+            date_raw = o.get('created_at', '')
+            date_str = date_raw[:19].replace('T', ' ') if date_raw else ''
+            writer.writerow([
+                o.get('id', ''),
+                date_str,
+                o.get('username', ''),
+                o.get('phone', ''),
+                o.get('location', ''),
+                o.get('item_name', ''),
+                o.get('total_price', 0),
+                o.get('amount_paid', 0),
+                o.get('balance', 0),
+                o.get('payment_method', ''),
+                o.get('status', ''),
+                o.get('notes', ''),
+            ])
         output.seek(0)
-        fname = f"garphy_orders_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
-        return Response(output.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename={fname}"})
+        filename = f"garphy_orders_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+        return Response(
+            output.getvalue(),
+            mimetype="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
     except Exception as e:
-        print(f"[CSV ERROR] {e}")
+        print(f"[CSV EXPORT ERROR] {e}")
         return redirect(url_for('admin', tab='orders'))
+
 
 # ─────────────────────────────────────────────
 #  AUTH
@@ -338,10 +447,12 @@ def login():
         error = "Incorrect password. Please try again."
     return render_template('login.html', error=error)
 
+
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
