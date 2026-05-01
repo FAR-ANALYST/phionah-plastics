@@ -20,7 +20,11 @@
             --sw:      230px;
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; display: flex; height: 100vh; overflow: hidden; background: var(--light); color: var(--text); }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            display: flex; height: 100vh; overflow: hidden;
+            background: var(--light); color: var(--text);
+        }
 
         /* ══ SIDEBAR ══ */
         .sidebar {
@@ -29,10 +33,17 @@
             display: flex; flex-direction: column; flex-shrink: 0;
             box-shadow: 3px 0 20px rgba(0,0,0,0.25); z-index: 10;
         }
-        .sidebar-top { padding: 24px 18px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); text-align: center; }
-        .brand-name { font-size: 0.8rem; font-weight: 900; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; line-height: 1.4; }
-        .brand-sub  { font-size: 0.6rem; color: rgba(255,255,255,0.3); letter-spacing: 1px; margin-top: 3px; }
-
+        .sidebar-top {
+            padding: 24px 18px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            text-align: center;
+        }
+        .brand-name {
+            font-size: 0.8rem; font-weight: 900;
+            color: var(--gold); letter-spacing: 2px;
+            text-transform: uppercase; line-height: 1.4;
+        }
+        .brand-sub { font-size: 0.6rem; color: rgba(255,255,255,0.3); letter-spacing: 1px; margin-top: 3px; }
         .nav-group { padding: 12px 0; flex-grow: 1; overflow-y: auto; }
         .nav-item {
             display: flex; align-items: center; gap: 10px;
@@ -51,148 +62,193 @@
         .panel { display: none; }
         .panel.active { display: block; animation: fadeUp 0.22s ease; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
-        .page-hd { font-size: 1.35rem; font-weight: 900; color: var(--navy); margin-bottom: 5px; }
+        .page-hd  { font-size: 1.35rem; font-weight: 900; color: var(--navy); margin-bottom: 5px; }
         .page-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 20px; }
+
+        /* ══ ERROR / DEBUG BANNER ══ */
+        .err-banner {
+            background: #fdecea;
+            border: 2px solid #f5c6cb;
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-bottom: 18px;
+            color: #721c24;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .err-banner strong { display: block; font-size: 0.92rem; margin-bottom: 8px; }
+        .err-code {
+            background: #fff0f0;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 10px 13px;
+            font-family: monospace;
+            font-size: 0.82rem;
+            color: #5a1c24;
+            word-break: break-all;
+            margin: 8px 0;
+        }
+        .debug-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--navy); color: white;
+            padding: 7px 14px; border-radius: 7px;
+            font-size: 0.78rem; font-weight: 700;
+            text-decoration: none; margin-top: 10px;
+        }
+        .debug-link:hover { opacity: 0.85; }
 
         /* ══ STAT CARDS ══ */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 14px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+            gap: 14px; margin-bottom: 22px;
         }
         .stat-card {
-            background: var(--white);
-            border-radius: 14px;
-            padding: 18px 20px;
-            box-shadow: 0 2px 14px rgba(0,0,0,0.06);
-            border: 1px solid var(--border);
-            border-top: 4px solid var(--navy);
+            background: var(--white); border-radius: 14px;
+            padding: 18px 20px; box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+            border: 1px solid var(--border); border-top: 4px solid var(--navy);
         }
         .stat-card.green  { border-top-color: var(--green); }
         .stat-card.purple { border-top-color: var(--purple); }
         .stat-card.orange { border-top-color: var(--orange); }
         .stat-card.red    { border-top-color: var(--red); }
         .stat-icon  { font-size: 1.5rem; margin-bottom: 8px; }
-        .stat-value { font-size: 1.3rem; font-weight: 900; color: var(--navy); margin-bottom: 3px; }
-        .stat-label { font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 1.25rem; font-weight: 900; color: var(--navy); margin-bottom: 3px; word-break: break-word; }
+        .stat-label { font-size: 0.7rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .status-pills-row {
-            display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 22px;
-        }
-        .s-pill {
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.78rem;
-            font-weight: 700;
-        }
-        .s-received { background: #fff3cd; color: #856404; }
-        .s-onway    { background: #cfe2ff; color: #084298; }
-        .s-done     { background: #d1e7dd; color: #0f5132; }
-
-        /* ══ ERROR BANNER ══ */
-        .err-banner { background:#fdecea; border:1.5px solid #f5c6cb; border-radius:10px; padding:13px 17px; color:#721c24; font-size:0.84rem; margin-bottom:16px; }
-
-        /* ══ ORDER CARDS ══ */
-        .order-card { background:var(--white); border:1.5px solid var(--border); border-radius:14px; margin-bottom:11px; overflow:hidden; transition:box-shadow 0.2s,border-color 0.2s; }
-        .order-card:hover { border-color:#b8a0dc; box-shadow:0 4px 18px rgba(92,14,145,0.1); }
-        .order-hd { padding:15px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; gap:12px; }
-        .order-meta strong { font-size:0.96rem; color:var(--navy); display:block; margin-bottom:3px; }
-        .order-meta small { font-size:0.77rem; color:var(--muted); }
-        .order-right { text-align:right; flex-shrink:0; }
-        .badge { display:inline-block; padding:4px 10px; border-radius:20px; font-size:0.68rem; font-weight:800; letter-spacing:0.4px; text-transform:uppercase; }
-        .b-recv { background:#fff3cd; color:#856404; }
-        .b-way  { background:#cfe2ff; color:#084298; }
-        .b-done { background:#d1e7dd; color:#0f5132; }
-        .o-price { font-size:0.76rem; color:var(--muted); margin-top:3px; }
-        .chev { font-size:0.68rem; color:var(--muted); flex-shrink:0; transition:transform 0.25s; }
-        .chev.open { transform:rotate(180deg); }
-
-        .order-body { display:none; border-top:1px solid #f0f0f0; padding:18px; }
-        .info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:14px; }
-        .info-box { background:#f9f9fb; border:1px solid var(--border); border-radius:9px; padding:11px 13px; }
-        .info-box label { display:block; font-size:0.63rem; font-weight:800; text-transform:uppercase; letter-spacing:0.7px; color:var(--muted); margin-bottom:4px; }
-        .info-box p { font-size:0.86rem; color:var(--text); font-weight:600; }
-
-        .notes-box { background:#fffbea; border:1.5px solid #ffe58f; border-radius:9px; padding:12px 14px; margin-bottom:13px; }
-        .notes-box label { display:block; font-size:0.63rem; font-weight:800; text-transform:uppercase; letter-spacing:0.7px; color:#a07600; margin-bottom:5px; }
-        .notes-box p { font-size:0.86rem; color:#555; line-height:1.5; }
-
-        .items-title { font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:var(--muted); margin-bottom:9px; }
-        .item-row { display:flex; align-items:center; gap:11px; padding:9px 0; border-bottom:1px solid #f3f3f3; }
-        .item-row:last-child { border-bottom:none; }
-        .item-thumb { width:52px; height:52px; border-radius:8px; object-fit:cover; border:1px solid var(--border); flex-shrink:0; cursor:zoom-in; transition:transform 0.2s; }
-        .item-thumb:hover { transform:scale(1.07); }
-        .item-name { font-weight:700; font-size:0.86rem; color:var(--navy); }
-        .item-sub  { font-size:0.72rem; color:var(--muted); margin-top:2px; }
-
-        .order-foot { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-top:14px; padding-top:13px; border-top:1px dashed #ddd; }
-        .status-form { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-        .status-form label { font-size:0.77rem; font-weight:800; color:var(--text); }
-        .status-sel { padding:7px 11px; border-radius:8px; border:1.5px solid var(--border); font-size:0.83rem; cursor:pointer; background:var(--white); font-family:inherit; transition:border-color 0.2s; }
-        .status-sel:focus { outline:none; border-color:var(--purple); }
-        .save-btn { background:var(--navy); color:white; border:none; padding:8px 16px; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:pointer; transition:opacity 0.2s; }
-        .save-btn:hover { opacity:0.85; }
-        .balance-tag { color:var(--red); font-weight:800; font-size:0.9rem; }
+        .spills-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 22px; }
+        .sp { padding: 6px 14px; border-radius: 20px; font-size: 0.77rem; font-weight: 700; }
+        .sp-r { background:#fff3cd; color:#856404; }
+        .sp-o { background:#cfe2ff; color:#084298; }
+        .sp-g { background:#d1e7dd; color:#0f5132; }
 
         /* ══ CSV BUTTON ══ */
         .csv-btn {
-            display:inline-flex; align-items:center; gap:7px;
-            background: var(--green); color:white;
-            padding:9px 20px; border-radius:9px;
-            font-weight:700; font-size:0.85rem;
-            text-decoration:none; margin-bottom:18px;
-            transition:opacity 0.2s;
+            display: inline-flex; align-items: center; gap: 7px;
+            background: var(--green); color: white;
+            padding: 9px 18px; border-radius: 9px;
+            font-weight: 700; font-size: 0.84rem;
+            text-decoration: none; margin-bottom: 18px;
+            transition: opacity 0.2s;
         }
-        .csv-btn:hover { opacity:0.87; }
+        .csv-btn:hover { opacity: 0.87; }
+
+        /* ══ ORDER CARDS ══ */
+        .order-card {
+            background: var(--white); border: 1.5px solid var(--border);
+            border-radius: 14px; margin-bottom: 11px; overflow: hidden;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+        .order-card:hover { border-color: #b8a0dc; box-shadow: 0 4px 18px rgba(92,14,145,0.1); }
+        .order-hd {
+            padding: 15px 18px; display: flex; justify-content: space-between;
+            align-items: center; cursor: pointer; user-select: none; gap: 12px;
+        }
+        .order-meta strong { font-size: 0.96rem; color: var(--navy); display: block; margin-bottom: 3px; }
+        .order-meta small  { font-size: 0.77rem; color: var(--muted); }
+        .order-right { text-align: right; flex-shrink: 0; }
+        .badge {
+            display: inline-block; padding: 4px 10px; border-radius: 20px;
+            font-size: 0.68rem; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase;
+        }
+        .b-r { background:#fff3cd; color:#856404; }
+        .b-o { background:#cfe2ff; color:#084298; }
+        .b-g { background:#d1e7dd; color:#0f5132; }
+        .o-price { font-size: 0.76rem; color: var(--muted); margin-top: 3px; }
+        .chev { font-size: 0.68rem; color: var(--muted); flex-shrink: 0; transition: transform 0.25s; }
+        .chev.open { transform: rotate(180deg); }
+
+        .order-body { display: none; border-top: 1px solid #f0f0f0; padding: 18px; }
+        .info-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px; margin-bottom: 14px;
+        }
+        .info-box { background: #f9f9fb; border: 1px solid var(--border); border-radius: 9px; padding: 11px 13px; }
+        .info-box label { display: block; font-size: 0.63rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 4px; }
+        .info-box p { font-size: 0.86rem; color: var(--text); font-weight: 600; }
+
+        .notes-box { background: #fffbea; border: 1.5px solid #ffe58f; border-radius: 9px; padding: 12px 14px; margin-bottom: 13px; }
+        .notes-box label { display: block; font-size: 0.63rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.7px; color: #a07600; margin-bottom: 5px; }
+        .notes-box p { font-size: 0.86rem; color: #555; line-height: 1.5; }
+
+        .items-title { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 9px; }
+        .item-row { display: flex; align-items: center; gap: 11px; padding: 9px 0; border-bottom: 1px solid #f3f3f3; }
+        .item-row:last-child { border-bottom: none; }
+        .item-thumb { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; cursor: zoom-in; transition: transform 0.2s; }
+        .item-thumb:hover { transform: scale(1.07); }
+        .item-name { font-weight: 700; font-size: 0.86rem; color: var(--navy); }
+        .item-sub  { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+        .order-foot {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 10px; margin-top: 14px;
+            padding-top: 13px; border-top: 1px dashed #ddd;
+        }
+        .sf { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .sf label { font-size: 0.77rem; font-weight: 800; color: var(--text); }
+        .status-sel {
+            padding: 8px 11px; border-radius: 8px;
+            border: 1.5px solid var(--border); font-size: 0.83rem;
+            cursor: pointer; background: var(--white); font-family: inherit;
+        }
+        .status-sel:focus { outline: none; border-color: var(--purple); }
+        .save-btn {
+            background: var(--navy); color: white; border: none;
+            padding: 8px 18px; border-radius: 8px;
+            font-size: 0.82rem; font-weight: 700; cursor: pointer;
+        }
+        .save-btn:hover { opacity: 0.85; }
+        .bal-tag { color: var(--red); font-weight: 800; font-size: 0.9rem; }
 
         /* ══ EMPTY STATE ══ */
-        .empty-st { text-align:center; padding:50px 20px; color:#ccc; }
-        .empty-st span { font-size:2.8rem; display:block; margin-bottom:10px; }
+        .empty-st { text-align: center; padding: 50px 20px; color: #ccc; }
+        .empty-st span { font-size: 2.8rem; display: block; margin-bottom: 10px; }
 
-        /* ══ INVENTORY TABLE ══ */
-        /* Forms defined OUTSIDE table, inputs linked via form="edit-N" */
-        .hidden-forms { display:none; }
-        .inv-wrap { background:var(--white); border-radius:14px; overflow:hidden; box-shadow:0 2px 14px rgba(0,0,0,0.06); border:1px solid var(--border); }
-        .inv-table { width:100%; border-collapse:collapse; }
-        .inv-table th { background:#f0f4f8; color:var(--navy); font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; padding:11px 13px; text-align:left; }
-        .inv-table td { padding:9px 13px; border-bottom:1px solid #f3f3f3; vertical-align:middle; }
-        .inv-table tr:last-child td { border-bottom:none; }
-        .inv-table tr:hover td { background:#fafbff; }
-        .cat-hd td { background:#f0eafa; color:var(--purple); font-size:0.66rem; font-weight:900; text-transform:uppercase; letter-spacing:0.9px; padding:6px 13px; }
-
-        .inv-inp { width:100%; padding:6px 9px; border:1.5px solid var(--border); border-radius:6px; font-size:0.82rem; font-family:inherit; background:#fafbfc; transition:border-color 0.2s; }
-        .inv-inp:focus { outline:none; border-color:var(--purple); background:var(--white); }
-        .inv-ta { width:100%; padding:6px 9px; border:1.5px solid var(--border); border-radius:6px; font-size:0.8rem; font-family:inherit; min-height:50px; resize:vertical; background:#fafbfc; transition:border-color 0.2s; }
-        .inv-ta:focus { outline:none; border-color:var(--purple); background:var(--white); }
-        .inv-sel { width:100%; padding:6px 9px; border:1.5px solid var(--border); border-radius:6px; font-size:0.82rem; font-family:inherit; background:#fafbfc; transition:border-color 0.2s; }
-        .inv-sel:focus { outline:none; border-color:var(--purple); background:var(--white); }
-
-        .prod-thumb { width:44px; height:44px; border-radius:7px; object-fit:cover; border:1px solid var(--border); display:block; cursor:zoom-in; transition:transform 0.2s; }
-        .prod-thumb:hover { transform:scale(1.1); }
-
-        .act-btn { background:none; border:none; font-size:1.1rem; cursor:pointer; padding:4px 6px; border-radius:6px; transition:background 0.15s,transform 0.1s; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; }
-        .act-btn:hover { background:rgba(0,0,0,0.07); }
-        .act-btn:active { transform:scale(0.86); }
+        /* ══ INVENTORY ══ */
+        .hidden-forms { display: none; }
+        .inv-wrap {
+            background: var(--white); border-radius: 14px; overflow: hidden;
+            box-shadow: 0 2px 14px rgba(0,0,0,0.06); border: 1px solid var(--border);
+        }
+        .inv-table { width: 100%; border-collapse: collapse; }
+        .inv-table th {
+            background: #f0f4f8; color: var(--navy);
+            font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.6px; padding: 11px 13px; text-align: left;
+        }
+        .inv-table td { padding: 9px 13px; border-bottom: 1px solid #f3f3f3; vertical-align: middle; }
+        .inv-table tr:last-child td { border-bottom: none; }
+        .inv-table tr:hover td { background: #fafbff; }
+        .cat-hd td { background: #f0eafa; color: var(--purple); font-size: 0.66rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.9px; padding: 6px 13px; }
+        .inv-inp  { width: 100%; padding: 6px 9px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 0.82rem; font-family: inherit; background: #fafbfc; }
+        .inv-inp:focus  { outline: none; border-color: var(--purple); background: var(--white); }
+        .inv-ta   { width: 100%; padding: 6px 9px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 0.8rem; font-family: inherit; min-height: 50px; resize: vertical; background: #fafbfc; }
+        .inv-ta:focus   { outline: none; border-color: var(--purple); background: var(--white); }
+        .inv-sel  { width: 100%; padding: 6px 9px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 0.82rem; font-family: inherit; background: #fafbfc; }
+        .inv-sel:focus  { outline: none; border-color: var(--purple); background: var(--white); }
+        .prod-thumb { width: 44px; height: 44px; border-radius: 7px; object-fit: cover; border: 1px solid var(--border); display: block; cursor: zoom-in; transition: transform 0.2s; }
+        .prod-thumb:hover { transform: scale(1.1); }
+        .act-btn { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 4px 6px; border-radius: 6px; transition: background 0.15s; text-decoration: none; display: inline-flex; align-items: center; }
+        .act-btn:hover { background: rgba(0,0,0,0.07); }
 
         /* ══ ADD PRODUCT ══ */
-        .add-sec { background:var(--white); border:2px dashed #ccd5e0; border-radius:14px; padding:20px; margin-top:22px; box-shadow:0 2px 12px rgba(0,0,0,0.04); }
-        .add-sec h3 { color:var(--navy); font-size:0.92rem; margin-bottom:16px; }
-        .add-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:13px; align-items:start; }
-        .add-fld label { display:block; font-size:0.68rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
-        .add-fld input, .add-fld textarea, .add-fld select { width:100%; padding:8px 11px; border:1.5px solid var(--border); border-radius:7px; font-size:0.86rem; font-family:inherit; background:#fafbfc; transition:border-color 0.2s; }
-        .add-fld textarea { min-height:58px; resize:vertical; }
-        .add-fld input:focus, .add-fld textarea:focus, .add-fld select:focus { outline:none; border-color:var(--purple); background:var(--white); }
-        .up-btn { background:linear-gradient(135deg,var(--purple),#7b2abf); color:white; padding:10px 20px; border:none; border-radius:8px; font-weight:800; font-size:0.86rem; cursor:pointer; transition:opacity 0.2s; align-self:end; width:100%; }
-        .up-btn:hover { opacity:0.87; }
+        .add-sec { background: var(--white); border: 2px dashed #ccd5e0; border-radius: 14px; padding: 20px; margin-top: 22px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        .add-sec h3 { color: var(--navy); font-size: 0.92rem; margin-bottom: 16px; }
+        .add-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 13px; align-items: start; }
+        .add-fld label { display: block; font-size: 0.68rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .add-fld input, .add-fld textarea, .add-fld select { width: 100%; padding: 8px 11px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 0.86rem; font-family: inherit; background: #fafbfc; }
+        .add-fld textarea { min-height: 58px; resize: vertical; }
+        .add-fld input:focus, .add-fld textarea:focus, .add-fld select:focus { outline: none; border-color: var(--purple); background: var(--white); }
+        .up-btn { background: linear-gradient(135deg, var(--purple), #7b2abf); color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: 800; font-size: 0.86rem; cursor: pointer; width: 100%; align-self: end; }
+        .up-btn:hover { opacity: 0.87; }
 
         /* ══ LIGHTBOX ══ */
-        .lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9999; align-items:center; justify-content:center; padding:20px; cursor:zoom-out; }
-        .lightbox.active { display:flex; }
-        .lightbox img { max-width:90vw; max-height:86vh; border-radius:12px; object-fit:contain; animation:zIn 0.2s ease; }
+        .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; padding: 20px; cursor: zoom-out; }
+        .lightbox.active { display: flex; }
+        .lightbox img { max-width: 90vw; max-height: 86vh; border-radius: 12px; object-fit: contain; animation: zIn 0.2s ease; }
         @keyframes zIn { from{transform:scale(0.82);opacity:0;} to{transform:scale(1);opacity:1;} }
-        .lb-close { position:fixed; top:15px; right:18px; color:white; font-size:1.8rem; cursor:pointer; background:rgba(255,255,255,0.15); width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
-        .lb-close:hover { background:rgba(255,255,255,0.3); }
+        .lb-close { position: fixed; top: 15px; right: 18px; color: white; font-size: 1.8rem; cursor: pointer; background: rgba(255,255,255,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .lb-close:hover { background: rgba(255,255,255,0.3); }
     </style>
 </head>
 <body>
@@ -203,7 +259,7 @@
     <img id="lb-img" src="" alt="">
 </div>
 
-<!-- HIDDEN EDIT FORMS (outside table for valid HTML) -->
+<!-- HIDDEN EDIT FORMS (outside <table> for valid HTML) -->
 <div class="hidden-forms">
     {% for cat, items in inventory_by_cat.items() %}
         {% for p in items %}
@@ -244,16 +300,27 @@
 <!-- ══════════ MAIN ══════════ -->
 <div class="main">
 
-    <!-- ════ DASHBOARD PANEL ════ -->
+    <!-- ════ DASHBOARD ════ -->
     <div id="panel-dashboard" class="panel">
         <div class="page-hd">📊 Dashboard</div>
-        <div class="page-sub">Overview of your store performance and order breakdown.</div>
+        <div class="page-sub">Live overview of your store revenue and orders.</div>
 
+        <!-- Error banner — shows the ACTUAL Supabase error -->
         {% if load_error %}
-        <div class="err-banner">⚠️ <strong>Error loading orders:</strong> {{ load_error }}<br>Check your Supabase table columns and RLS policies.</div>
+        <div class="err-banner">
+            <strong>⚠️ Could not fully load data from Supabase</strong>
+            <div class="err-code">{{ load_error }}</div>
+            <p style="margin-bottom:8px;">
+                Common causes: RLS policies are blocking reads, a column name doesn't match,
+                or the table doesn't have a <code>created_at</code> column yet.
+                Run the SQL setup script, then check the debug page below.
+            </p>
+            <a href="/admin/debug" target="_blank" class="debug-link">
+                🔬 Open Debug Page (shows raw Supabase responses)
+            </a>
+        </div>
         {% endif %}
 
-        <!-- Stat cards -->
         <div class="stats-grid">
             <div class="stat-card green">
                 <div class="stat-icon">💰</div>
@@ -277,60 +344,54 @@
             </div>
         </div>
 
-        <!-- Order status pills -->
-        <div class="status-pills-row">
-            <span class="s-pill s-received">
-                📥 Order Received: {{ stats.status_counts['ORDER RECEIVED'] }}
-            </span>
-            <span class="s-pill s-onway">
-                🚚 On the Way: {{ stats.status_counts['ON THE WAY'] }}
-            </span>
-            <span class="s-pill s-done">
-                ✅ Delivered: {{ stats.status_counts['DELIVERED'] }}
-            </span>
+        <div class="spills-row">
+            <span class="sp sp-r">📥 Received: {{ stats.status_counts['ORDER RECEIVED'] }}</span>
+            <span class="sp sp-o">🚚 On the Way: {{ stats.status_counts['ON THE WAY'] }}</span>
+            <span class="sp sp-g">✅ Delivered: {{ stats.status_counts['DELIVERED'] }}</span>
         </div>
 
-        <!-- CSV download button -->
-        <a href="/export_orders_csv" class="csv-btn">
-            📥 Download Orders as CSV
-        </a>
+        <a href="/export_orders_csv" class="csv-btn">📥 Download Orders as CSV</a>
 
-        <!-- Mini order preview -->
-        <div style="font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:10px;">
+        <div style="font-size:0.76rem;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:10px;">
             Recent Orders
         </div>
         {% for o in orders[:5] %}
-        {% set badge = 'b-recv' if o.status == 'ORDER RECEIVED' else ('b-way' if o.status == 'ON THE WAY' else 'b-done') %}
+        {% set bc = 'b-r' if o.status == 'ORDER RECEIVED' else ('b-o' if o.status == 'ON THE WAY' else 'b-g') %}
         <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--white);border-radius:10px;margin-bottom:8px;border:1px solid var(--border);font-size:0.85rem;">
             <div>
                 <strong style="color:var(--navy);">{{ o.username }}</strong>
-                <span style="color:var(--muted);margin-left:8px;font-size:0.78rem;">{{ o.phone }}</span>
+                <span style="color:var(--muted);margin-left:8px;font-size:0.77rem;">{{ o.phone }}</span>
             </div>
             <div style="display:flex;align-items:center;gap:12px;">
                 <span style="color:var(--purple);font-weight:700;">UGX {{ "{:,}".format(o.total_price) }}</span>
-                <span class="badge {{ badge }}">{{ o.status }}</span>
+                <span class="badge {{ bc }}">{{ o.status }}</span>
             </div>
         </div>
         {% else %}
-        <p style="color:var(--muted);font-size:0.87rem;">No orders yet.</p>
+        <p style="color:var(--muted);font-size:0.86rem;">
+            No orders yet — or orders could not be loaded. See the error above.
+        </p>
         {% endfor %}
     </div>
 
 
-    <!-- ════ ORDERS PANEL ════ -->
+    <!-- ════ ORDERS ════ -->
     <div id="panel-orders" class="panel">
         <div class="page-hd">Customer Orders</div>
-        <div class="page-sub">Tap a card to expand. Select a status and click 💾 Save Status.</div>
-
-        <!-- CSV download button -->
-        <a href="/export_orders_csv" class="csv-btn">📥 Download Orders CSV</a>
+        <div class="page-sub">Tap a card to expand. Choose a status and click 💾 Save Status.</div>
 
         {% if load_error %}
-        <div class="err-banner">⚠️ <strong>Error:</strong> {{ load_error }}</div>
+        <div class="err-banner">
+            <strong>⚠️ Supabase Error</strong>
+            <div class="err-code">{{ load_error }}</div>
+            <a href="/admin/debug" target="_blank" class="debug-link">🔬 Debug Page</a>
+        </div>
         {% endif %}
 
+        <a href="/export_orders_csv" class="csv-btn">📥 Download Orders CSV</a>
+
         {% for o in orders %}
-        {% set bc = 'b-recv' if o.status == 'ORDER RECEIVED' else ('b-way' if o.status == 'ON THE WAY' else 'b-done') %}
+        {% set bc = 'b-r' if o.status == 'ORDER RECEIVED' else ('b-o' if o.status == 'ON THE WAY' else 'b-g') %}
         <div class="order-card">
             <div class="order-hd" onclick="toggleOrder('{{ o.id }}')">
                 <div class="order-meta">
@@ -345,7 +406,7 @@
             </div>
 
             <div id="ob-{{ o.id }}" class="order-body">
-                <!-- Info grid -->
+
                 <div class="info-grid">
                     <div class="info-box">
                         <label>💳 Payment</label>
@@ -372,7 +433,6 @@
                 </div>
                 {% endif %}
 
-                <!-- Items -->
                 <div class="items-title">🛒 Items Ordered</div>
                 {% set names = o.item_name.split(', ') %}
                 {% for i in range(names|length) %}
@@ -390,11 +450,9 @@
                 </div>
                 {% endfor %}
 
-                <!-- Status update — explicit button, NOT onchange -->
+                <!-- Status form — explicit submit button, no onchange -->
                 <div class="order-foot">
-                    <form action="/update_status/{{ o.id }}"
-                          method="POST"
-                          class="status-form">
+                    <form action="/update_status/{{ o.id }}" method="POST" class="sf">
                         <label>Update Status:</label>
                         <select name="status" class="status-sel">
                             <option value="ORDER RECEIVED"
@@ -412,24 +470,28 @@
                         </select>
                         <button type="submit" class="save-btn">💾 Save Status</button>
                     </form>
-                    <div class="balance-tag">
-                        Balance: UGX {{ "{:,}".format(o.balance) }}
-                    </div>
+                    <div class="bal-tag">Balance: UGX {{ "{:,}".format(o.balance) }}</div>
                 </div>
+
             </div>
         </div>
         {% else %}
         <div class="empty-st">
-            <span>📭</span>No orders yet — they'll appear here as customers buy!
+            <span>📭</span>
+            {% if load_error %}
+                Orders could not be loaded — see the error above.
+            {% else %}
+                No orders yet. They'll appear here as customers start buying!
+            {% endif %}
         </div>
         {% endfor %}
     </div>
 
 
-    <!-- ════ INVENTORY PANEL ════ -->
+    <!-- ════ INVENTORY ════ -->
     <div id="panel-inventory" class="panel">
         <div class="page-hd">Manage Inventory</div>
-        <div class="page-sub">Edit fields inline → click ✏️ to save. Click 🗑️ to remove.</div>
+        <div class="page-sub">Edit any field inline then click ✏️ to save. Click 🗑️ to remove a product.</div>
 
         <div class="inv-wrap">
             <table class="inv-table">
@@ -438,9 +500,9 @@
                         <th style="width:50px;">Photo</th>
                         <th style="min-width:120px;">Name</th>
                         <th style="width:110px;">Price (UGX)</th>
-                        <th style="width:160px;">Category</th>
+                        <th style="width:180px;">Category</th>
                         <th>Description</th>
-                        <th style="width:88px;text-align:center;">Actions</th>
+                        <th style="width:86px;text-align:center;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -462,14 +524,10 @@
                                    class="inv-inp" form="edit-{{ p.id }}" required>
                         </td>
                         <td>
-                            <!-- Category autoselect for edit -->
                             <select name="category" class="inv-sel" form="edit-{{ p.id }}">
-                                {% set cats = ['TOILETRIES','BEDDINGS','PLASTICS AND KITCHENWARE','CLEANING ESSENTIALS'] %}
-                                {% for c in cats %}
+                                {% for c in categories %}
                                 <option value="{{ c }}"
-                                    {% if p.category == c %}selected{% endif %}>
-                                    {{ c }}
-                                </option>
+                                    {% if p.category == c %}selected{% endif %}>{{ c }}</option>
                                 {% endfor %}
                             </select>
                         </td>
@@ -488,13 +546,16 @@
                     </tr>
                     {% endfor %}
                     {% else %}
-                    <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:28px;">No products yet.</td></tr>
+                    <tr>
+                        <td colspan="6" style="text-align:center;color:var(--muted);padding:28px;">
+                            No products yet — add one below.
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
 
-        <!-- Add new product -->
         <div class="add-sec">
             <h3>➕ Add New Product</h3>
             <form action="/add_product" method="POST" enctype="multipart/form-data">
@@ -536,21 +597,18 @@
 
 
 <script>
-    /* ── Tab switching — reads ?tab= from URL ── */
     window.onload = function () {
         var tab = new URLSearchParams(window.location.search).get('tab') || 'dashboard';
         switchTab(tab);
     };
     function switchTab(id) {
-        document.querySelectorAll('.panel').forEach(function(p)   { p.classList.remove('active'); });
+        document.querySelectorAll('.panel').forEach(function(p)    { p.classList.remove('active'); });
         document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
         var panel = document.getElementById('panel-' + id);
         var nav   = document.getElementById('nav-'   + id);
         if (panel) panel.classList.add('active');
         if (nav)   nav.classList.add('active');
     }
-
-    /* ── Order accordion ── */
     function toggleOrder(id) {
         var body   = document.getElementById('ob-' + id);
         var chev   = document.getElementById('chev-' + id);
@@ -562,8 +620,6 @@
             if (chev) chev.classList.add('open');
         }
     }
-
-    /* ── Lightbox ── */
     function openLB(src, name) {
         if (!src || src.indexOf('placeholder') !== -1) return;
         document.getElementById('lb-img').src = src;
